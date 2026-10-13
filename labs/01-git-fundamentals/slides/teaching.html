@@ -105,6 +105,11 @@ body{
 .cmd code{font-family:'IBM Plex Mono';font-size:13.5px;font-weight:600;color:var(--blue);white-space:nowrap}
 .cmd span{font-size:13px;color:var(--txt-dim);line-height:1.4}
 .cmd span b{color:var(--txt);font-weight:600}
+.code{background:var(--navy);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);overflow:auto}
+.code pre{font-family:'IBM Plex Mono';font-size:13.5px;color:#dbe6f5;line-height:1.7}
+.code .cm{color:#7d93ad}
+.code .cmd2{color:var(--peri2)}
+.code .hl{color:#f6c56b}
 
 /* vocabulary summary: side list (dark) */
 .vside{flex:1;align-self:center;max-width:460px;border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:26px 30px 20px;background:rgba(255,255,255,.03)}
@@ -309,7 +314,7 @@ body{
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>The world's most popular VCS</span></div>
 </section>
 
-<!-- 3 · DIVIDER · HOW DOES GIT DO IT -->
+<!-- 3 · DIVIDER · HOW GIT STORES YOUR PROJECT -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -317,8 +322,8 @@ body{
   </div>
   <div class="divider">
     <div class="eyebrow">Under the hood</div>
-    <div class="q">How does Git <em>do</em> it?</div>
-    <div class="sub2">What is actually happening inside <span class="mono" style="color:#dbe4f0">.git/</span> when you commit? Let's open the box.</div>
+    <div class="q">How Git stores your project in <em>.git/</em></div>
+    <div class="sub2">What happens inside <span class="mono" style="color:#dbe4f0">.git/</span> when you commit: blobs, trees, commits, then the branches and HEAD that point at them.</div>
   </div>
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>blobs → trees → commits → branches</span></div>
 </section>
@@ -669,7 +674,7 @@ body{
         <div class="vt">The rest of the vocabulary</div>
         <div class="vh">Start</div>
         <div class="vrow"><code>git init</code><span>turn a plain folder into a repo (creates <span class="mono" style="color:var(--peri2)">.git/</span>)</span></div>
-        <div class="vh" style="margin-top:22px">Inspect — always safe</div>
+        <div class="vh" style="margin-top:22px">Inspect: always safe</div>
         <div class="vrow"><code>git status</code><span>what's changed &amp; what's staged</span></div>
         <div class="vrow"><code>git blame</code><span>who last touched each line, and when</span></div>
         <div class="vh" style="margin-top:22px">Move the pointers</div>
@@ -690,7 +695,88 @@ body{
   </div>
 </section>
 
-<!-- 17 · IN THE LAB (closing) -->
+<!-- 17 · COMMANDS FOR THE WE-DO AND YOU-DO -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Teaching · in the lab</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">05</span>
+      <div>
+        <div class="title">Commands and options you use in the We-do and You-do</div>
+        <div class="lead">The vocabulary, plus the few options the exercises lean on. The We-do runs the branch, merge and recovery moves live.</div>
+      </div>
+    </div>
+    <div class="cmds">
+      <div class="cmd"><code>git switch -c feature/x</code><span>create a branch <b>and</b> switch to it, in one go</span></div>
+      <div class="cmd"><code>git branch -D feature/x</code><span>delete a branch, even one with commits that are merged nowhere</span></div>
+      <div class="cmd"><code>git commit -am "msg"</code><span>stage every change to files Git <b>already tracks</b>, then commit (new files are not included)</span></div>
+      <div class="cmd"><code>git add -p</code><span>stage hunk by hunk: <b>y</b> stage · <b>n</b> skip · <b>s</b> split · <b>e</b> edit · <b>q</b> quit</span></div>
+      <div class="cmd"><code>git ls-tree HEAD sample-app/</code><span>a tree's entries (mode, type, SHA, name): the commit → tree → blob walk in one command; <b>-r</b> recurses</span></div>
+      <div class="cmd"><code>git blame sample-app/app.py</code><span>who last touched each line; a <b>^</b> before the SHA means blame could not look further back</span></div>
+      <div class="cmd"><code>git log -L :farewell:sample-app/app.py</code><span>every commit that changed that <b>function's</b> lines, with the diff: the <i>why</i> behind a line</span></div>
+      <div class="cmd"><code>git merge --no-ff feature/x</code><span>always record a <b>merge commit</b>, even when a fast-forward was possible</span></div>
+      <div class="cmd"><code>git reset --soft HEAD~1</code><span>undo the last commit, keep its change <b>staged</b></span></div>
+      <div class="cmd"><code>git config --global core.editor "code --wait"</code><span>rebase -i, a merge without -m and rebase --continue open a <b>VS Code tab</b>: save, then close it</span></div>
+    </div>
+    <div class="callout">
+      <div class="lab" style="color:var(--blue)">Committed to the wrong branch?</div>
+      <p><code>git reset --soft HEAD~1</code> moves the branch back one commit and keeps the change staged. Then <code>git switch -c feature/x</code> and <code>git commit</code> put it on the branch where it belongs. <b>reset moves a ref; your blobs don't go anywhere.</b></p>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Keep this slide in mind for the You-do</span></div>
+</section>
+
+<!-- 18 · CONFLICT MARKERS -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Teaching · in the lab</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">06</span>
+      <div>
+        <div class="title">Resolve a conflict: read the markers, then continue or abort</div>
+        <div class="lead">When both sides changed the <b>same lines</b>, Git can't pick for you. It stops and writes <b>both versions</b> into the file.</div>
+      </div>
+    </div>
+    <div class="split">
+      <div>
+        <div class="code"><pre><span class="cm"># sample-app/app.py, halfway through a rebase</span>
+def greet(name, shout=False):
+<span class="hl">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+    # a comment added on main
+<span class="hl">=======</span>
+    """Return a friendly greeting."""
+<span class="hl">&gt;&gt;&gt;&gt;&gt;&gt;&gt; 0d839b7 (docs: add docstring)</span>
+    message = f"Hello, {name}!"</pre></div>
+        <div class="callout" style="margin-top:16px">
+          <div class="lab">Escape hatch</div>
+          <p><code>git rebase --abort</code> (or <code>git merge --abort</code>) puts everything back exactly as it was before you started. <b>Bailing out is always safe.</b></p>
+        </div>
+      </div>
+      <div class="does">
+        <div class="hd">Resolve it in four moves</div>
+        <ul>
+          <li><span class="d"></span><span><b>Read the two sides.</b> Above <span class="mono">=======</span>: the branch you're on (during a rebase, the branch you rebase <b>onto</b>). Below it: the incoming commit.</span></li>
+          <li><span class="d"></span><span><b>Edit to the result you want</b>: one side, the other, or both. Then delete the three marker lines.</span></li>
+          <li><span class="d"></span><span><b>Mark it resolved</b> with <span class="mono">git add sample-app/app.py</span>.</span></li>
+          <li><span class="d"></span><span><b>Carry on</b> with <span class="mono">git rebase --continue</span> (or <span class="mono">git merge --continue</span>). An editor opens with the commit message: save and close it.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Conflict → edit → add → continue (or abort)</span></div>
+</section>
+
+<!-- 19 · IN THE LAB (closing) -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -698,8 +784,8 @@ body{
   </div>
 
   <div class="body">
-    <div class="eyebrow">Now we make it real</div>
-    <div class="title" style="max-width:22ch;color:#fff">In the lab, you'll <em style="font-style:normal;color:var(--peri2)">see</em> these objects with your own eyes.</div>
+    <div class="eyebrow">Teaching done · next: We-do and You-do</div>
+    <div class="title" style="max-width:22ch;color:#fff">Next: run these commands on a real repo</div>
     <ul class="checks" style="max-width:900px;margin-top:22px">
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>We-do.</b> We crack open <span class="mono">.git/</span> live, running <span class="mono">git cat-file -p</span> on a commit, its tree, its blobs, and watch a commit produce a new tree + blob.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You-do (breakout rooms).</b> You spelunk the object graph yourself, then practise <span class="mono">add&nbsp;-p</span>, branch, <b>merge</b>, and <b>rebase</b> on a real repo.</span></li>
@@ -713,7 +799,7 @@ body{
 </div>
 
 <div class="hud"><div class="bar" id="bar"></div></div>
-<div class="pager" id="pager">01 / 17</div>
+<div class="pager" id="pager">01 / 19</div>
 <div class="hint" id="hint">↑ ↓ slides · ← → step the animation</div>
 
 <script>
@@ -1251,7 +1337,7 @@ function bindControls(slideEl,ctrl){
   T(gCommit,52,418,'COMMITS','#9fb6cf',11.5,{anchor:'start',ls:2});
   box(gCommit,285,430,430,260);
   T(gCommit,92,464,'local repo','#fff',22,{sans:1,w:800,anchor:'start'});
-  T(gCommit,92,662,'.git/ — the full history','#9fb6cf',11.5,{anchor:'start'});
+  T(gCommit,92,662,'.git/: the full history','#9fb6cf',11.5,{anchor:'start'});
   function chain(p,cx,color,cy,dx,r){
     [-dx,0,dx].forEach((d,i)=>{
       const x=cx+d;
@@ -1292,16 +1378,16 @@ function bindControls(slideEl,ctrl){
   }
   flow(488,false,'git push','send your new commits up','var(--teal-l)');
   flow(562,true,'git pull','update a repo you already have','var(--peri2)');
-  flow(636,true,'git clone','day one — copy the whole repo','var(--peri2)');
+  flow(636,true,'git clone','day one: copy the whole repo','var(--peri2)');
   /* ===== step controller ===== */
   const side=slides[15].querySelector('.vside');
   const lead=slides[15].querySelector('#vocab-step');
   const layers=[gWT,gStage,gCommit,gReset,gRemote];
   const steps=[
     'Start in the <b>working tree</b>: the files on your disk. Two files have edits (●).',
-    '<span class="mono">git add</span> stages exactly the changes you pick — the <b>staging area</b> is the draft of your next commit.',
-    '<span class="mono">git commit</span> turns what\'s staged into <b>commit C</b>: it points to a <b>tree</b> — a full snapshot of <b>all</b> your files. <b>main</b> moves to C.',
-    'Regret it? <span class="mono">git reset --hard</span> moves <b>main</b> back to an earlier commit — and throws your changes away.',
+    '<span class="mono">git add</span> stages exactly the changes you pick. The <b>staging area</b> is the draft of your next commit.',
+    '<span class="mono">git commit</span> turns what\'s staged into <b>commit C</b>: it points to a <b>tree</b>, a full snapshot of <b>all</b> your files. <b>main</b> moves to C.',
+    'Regret it? <span class="mono">git reset --hard</span> moves <b>main</b> back to an earlier commit, and throws your changes away.',
     '<b>origin</b> is just another copy of the repo: <span class="mono">clone</span> it once, then <span class="mono">push</span> yours up and <span class="mono">pull</span> theirs down.',
     'The rest of the vocabulary: safe <b>inspection</b> and the <b>pointer verbs</b>. And <span class="mono">git init</span> creates all of this in the first place.'
   ];

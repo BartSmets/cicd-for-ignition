@@ -190,6 +190,9 @@ body{
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Share your screen</b> in your breakout room. This is a "look over your shoulder" class, so we'll drop in where it's useful.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Open a scratch notebook.</b> <span class="inlinecode">NOTES.local.md</span> is gitignored, so write your answers there as you go.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Try it without AI.</b> The goal is the fundamentals in your fingers, so you'll steer AI far better afterwards.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b><span class="inlinecode">exercises/lab.md</span> is the source of truth;</b> these slides summarise it. When they differ, follow <span class="inlinecode">lab.md</span>.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Pre-flight passed?</b> Your setup came from <span class="inlinecode">./course-setup.sh</span>. Something off with git, gh or VS Code? Check <span class="inlinecode">preflight/troubleshooting.md</span> first.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Lab 01 stays on your machine: never push or Sync <span class="inlinecode">main</span> in this lab.</b> Lab 02 starts by resetting <span class="inlinecode">main</span> to your fork.</span></li>
     </ul>
     <div class="goal good-g">
       <span class="badge">Ask early</span>
@@ -261,13 +264,13 @@ body{
     <div class="stage">Warm-up · together</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num warm">WARM-UP · 0</span><div><div class="title">First: your fork, on your machine, in VS Code</div><div class="lead">Already forked and cloned before the session? Great — just do steps 3 and 4. Everyone works from the same place before we trace anything.</div></div></div>
+    <div class="sechead"><span class="num warm">WARM-UP · 0</span><div><div class="title">First: your fork, on your machine, in VS Code</div><div class="lead">Already forked and cloned before the session? Great: just do steps 3 and 4. Everyone works from the same place before we trace anything.</div></div></div>
     <div class="cols2">
       <div class="steps">
         <div class="step"><div class="ix t">1</div><div class="tx">Make <b>one parent folder</b> for the whole series: <span class="inlinecode">~/mustry-academy/</span>. The course repo lives in here, with one folder per lab under <span class="inlinecode">labs/</span>.</div></div>
-        <div class="step"><div class="ix t">2</div><div class="tx"><b>Fork &amp; clone.</b> <span class="inlinecode">gh repo fork … --clone</span> forks the course repo to <i>your</i> GitHub account and clones your fork, in one go. You fork once, for every lab. Prefer the website? Press <b>Fork</b> on github.com — but you still need to <span class="inlinecode">git clone</span> your fork afterwards.</div></div>
-        <div class="step"><div class="ix t">3</div><div class="tx"><b>Check the remote:</b> in <span class="inlinecode">git remote -v</span>, <span class="inlinecode">origin</span> must show <b>your username</b> — your fork is where you can commit, branch and push freely. An <span class="inlinecode">upstream</span> pointing at <span class="inlinecode">Mustry-Academy</span> is fine: <span class="inlinecode">gh</span> adds it so you can pull course updates.</div></div>
-        <div class="step"><div class="ix t">4</div><div class="tx">From the lab folder, open VS Code with <span class="inlinecode">code .</span> — then work from its integrated terminal (<span class="inlinecode">Ctrl+`</span>), which already sits in the right folder.</div></div>
+        <div class="step"><div class="ix t">2</div><div class="tx"><b>Fork &amp; clone.</b> <span class="inlinecode">gh repo fork … --clone</span> forks the course repo to <i>your</i> GitHub account and clones your fork, in one go. You fork once, for every lab. Prefer the website? Press <b>Fork</b> on github.com, but you still need to <span class="inlinecode">git clone</span> your fork afterwards.</div></div>
+        <div class="step"><div class="ix t">3</div><div class="tx"><b>Check the remote:</b> in <span class="inlinecode">git remote -v</span>, <span class="inlinecode">origin</span> must show <b>your username</b>: your fork is where you can commit, branch and push freely. An <span class="inlinecode">upstream</span> pointing at <span class="inlinecode">Mustry-Academy</span> is fine: <span class="inlinecode">gh</span> adds it so you can pull course updates.</div></div>
+        <div class="step"><div class="ix t">4</div><div class="tx">From the lab folder, open VS Code with <span class="inlinecode">code .</span>, then work from its integrated terminal (<span class="inlinecode">Ctrl+`</span>), which already sits in the right folder.</div></div>
       </div>
       <div>
         <div class="code"><pre><span class="cm"># 1: one home for the course</span>
@@ -286,7 +289,7 @@ git remote -v
 code .</pre></div>
         <div class="goal warn-g" style="margin-top:18px">
           <span class="badge">WSL2</span>
-          <p>Clone into your <b>Linux home</b> (<span class="inlinecode">~/…</span>), never <span class="inlinecode">/mnt/c/…</span> — Git is far slower across the Windows boundary and line endings get messy. <span class="inlinecode">code .</span> from WSL opens a window <b>connected to WSL</b> automatically.</p>
+          <p>Clone into your <b>Linux home</b> (<span class="inlinecode">~/…</span>), never <span class="inlinecode">/mnt/c/…</span>. Git is far slower across the Windows boundary and line endings get messy. <span class="inlinecode">code .</span> from WSL opens a window <b>connected to WSL</b> automatically.</p>
         </div>
       </div>
     </div>
@@ -304,7 +307,7 @@ code .</pre></div>
     <div class="sechead"><span class="num warm">WARM-UP · 1</span><div><div class="title">Trace a commit through the object graph</div><div class="lead">Follow the slide's commit → tree → blob chain on a real commit you just made.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix t">1</div><div class="tx">Add a single sentence to <span class="inlinecode">sample-app/README.md</span>.</div></div>
+        <div class="step"><div class="ix t">1</div><div class="tx">On <span class="inlinecode">main</span> (<span class="inlinecode">git switch main</span>), add a single sentence to <span class="inlinecode">sample-app/README.md</span>.</div></div>
         <div class="step"><div class="ix t">2</div><div class="tx">Stage &amp; commit it (see command).</div></div>
         <div class="step"><div class="ix t">3</div><div class="tx"><span class="inlinecode">git cat-file -p HEAD</span>, then read it aloud. Note the <b>tree</b> SHA and the <b>parent</b> SHA.</div></div>
         <div class="step"><div class="ix t">4</div><div class="tx">cat-file the <b>tree</b> → this is the <b>root</b> tree of the course repo, so the <span class="inlinecode">README.md</span> here is the course's own. Follow the <b>sub-trees</b> down instead: <span class="inlinecode">labs</span> → <span class="inlinecode">01-git-fundamentals</span> → <span class="inlinecode">sample-app</span> → note its SHA.</div></div>
@@ -313,7 +316,9 @@ code .</pre></div>
         <div class="step"><div class="ix t">7</div><div class="tx">Now let Git do that whole walk in one command: <span class="inlinecode">git ls-tree HEAD sample-app/</span>. The <span class="inlinecode">README.md</span> <b>blob SHA should match</b> the one you traced by hand: that matching SHA is the point.</div></div>
       </div>
       <div>
-        <div class="code"><pre><span class="cm"># step 2: make a commit to trace</span>
+        <div class="code"><pre><span class="cm"># steps 1 to 2: make a commit to trace</span>
+git switch main
+<span class="cm"># add a sentence to sample-app/README.md, then:</span>
 git add sample-app/README.md
 git commit -m <span class="cmd2">"docs: expand sample-app intro"</span>
 
@@ -345,14 +350,14 @@ git ls-tree HEAD sample-app/</pre></div>
     <div class="sechead"><span class="num warm">WARM-UP · 2</span><div><div class="title">Stage by hunk with <span class="mono" style="font-size:30px">add -p</span></div><div class="lead">A messy working tree becomes three small, logical commits.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix t">1</div><div class="tx">First reset the practice commit: <span class="inlinecode">git reset --hard HEAD~1</span> (that's fine, we're about to do it properly).</div></div>
+        <div class="step"><div class="ix t">1</div><div class="tx">First reset <span class="inlinecode">main</span> to your fork's state: <span class="inlinecode">git reset --hard origin/main</span>. That drops the practice commit (and anything you committed while following the We-do): fine, we're about to do it properly.</div></div>
         <div class="step"><div class="ix t">2</div><div class="tx">Branch off: <span class="inlinecode">git switch -c we-do-greeting-polish</span>.</div></div>
         <div class="step"><div class="ix t">3</div><div class="tx">Get a messy working tree: <b>either</b> run the seed script, <b>or</b> make <b>three unrelated edits</b> in <span class="inlinecode">sample-app/</span> yourself. Confirm with <span class="inlinecode">git status</span>.</div></div>
         <div class="step"><div class="ix t">4</div><div class="tx"><span class="inlinecode">git add -p</span> → stage <b>one</b> logical change, commit it. Repeat ×3.</div></div>
         <div class="step"><div class="ix t">5</div><div class="tx">After each commit, <span class="inlinecode">git ls-tree -r HEAD sample-app/</span>, and watch <b>which blob SHA changed</b>.</div></div>
       </div>
       <div>
-        <div class="code"><pre>git reset --hard HEAD~1
+        <div class="code"><pre>git reset --hard origin/main
 git switch -c we-do-greeting-polish
 
 ./scripts/seed-messy-state.sh   <span class="cm"># option A: seed a known messy tree</span>
@@ -382,7 +387,7 @@ git log --graph --decorate --oneline -5</pre></div>
   </div>
   <div class="body">
     <div class="eyebrow">Phase 1 · solo · read the object graph</div>
-    <div class="title" style="color:#fff;max-width:20ch">Read history like a detective</div>
+    <div class="title" style="color:#fff;max-width:22ch">Find who wrote a line, then make one focused commit</div>
     <p class="lead">Return to a clean baseline first, then work Phase 1 top to bottom, jotting each answer in <span class="mono" style="color:#dbe4f0">NOTES.local.md</span>.</p>
     <div class="code" style="max-width:640px"><pre>git switch main                      <span class="cm"># clean starting point</span>
 git branch -D we-do-greeting-polish  <span class="cm"># drop the warm-up branch</span></pre></div>
@@ -401,11 +406,11 @@ git branch -D we-do-greeting-polish  <span class="cm"># drop the warm-up branch<
     <div class="stage">Solo · Phase 1 · whodunnit</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num p">PHASE 1 · 1-4</span><div><div class="title">"Who on earth wrote <span class="mono" style="font-size:30px">this</span>?"</div><div class="lead">Every line in a file has an author and a commit. <span class="inlinecode">git blame</span> tells you exactly who to thank, or who to <i>blame</i>.</div></div></div>
+    <div class="sechead"><span class="num p">PHASE 1 · 1-4</span><div><div class="title">Find who wrote a line with <span class="mono" style="font-size:30px">git blame</span> and <span class="mono" style="font-size:30px">git log -L</span></div><div class="lead">Every line in a file has an author and a commit. <span class="inlinecode">git blame</span> tells you exactly who to thank, or who to <i>blame</i>.</div></div></div>
     <div class="cols2">
       <div class="steps">
         <div class="step"><div class="ix p">1</div><div class="tx">Open <span class="inlinecode">sample-app/app.py</span> and find the suspicious line in <span class="inlinecode">farewell()</span>, the one promising it's <i>"definitely safe to ship."</i></div></div>
-        <div class="step"><div class="ix p">2</div><div class="tx">Run <span class="inlinecode">git blame sample-app/app.py</span>. Each line shows its <b>commit · author · date</b>.</div></div>
+        <div class="step"><div class="ix p">2</div><div class="tx">Run <span class="inlinecode">git blame sample-app/app.py</span>. Each line shows its <b>commit · author · date</b>. A <span class="inlinecode">^</span> before the SHA means blame could not look further back: the line has been there since the first commit.</div></div>
         <div class="step"><div class="ix p">3</div><div class="tx"><b>Who wrote that line?</b> 👀 Read the author off the blame output. Anyone you recognise…?</div></div>
         <div class="step"><div class="ix p">4</div><div class="tx">Read the full story of that line: <span class="inlinecode">git log -p -L :farewell:sample-app/app.py</span>. Blame and log together are how you reconstruct <i>why</i> a line exists.</div></div>
       </div>
@@ -435,7 +440,7 @@ git log -p -L :farewell:sample-app/app.py</pre></div>
     <div class="sechead"><span class="num p">PHASE 1 · 5-7</span><div><div class="title">Make a focused commit, then check the gate</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix p">5</div><div class="tx">Add a line to <span class="inlinecode">sample-app/README.md</span> that contains the <b>literal words "lab participant"</b> plus your name, e.g. <span class="inlinecode">Lab participant: Ada Lovelace</span> — the gate script greps for those exact words. Commit it with a clear message.</div></div>
+        <div class="step"><div class="ix p">5</div><div class="tx">Add a line to <span class="inlinecode">sample-app/README.md</span> that contains the <b>literal words "lab participant"</b> plus your name, e.g. <span class="inlinecode">Lab participant: Ada Lovelace</span>. The gate script greps for those exact words. Commit it with a clear message.</div></div>
         <div class="step"><div class="ix p">6</div><div class="tx">Compare <span class="inlinecode">git ls-tree HEAD~1 sample-app/</span> with <span class="inlinecode">git ls-tree HEAD sample-app/</span> → confirm <b>only the README blob SHA changed</b>, not <span class="inlinecode">app.py</span>, not the <span class="inlinecode">tests/</span> tree.</div></div>
         <div class="step"><div class="ix p">7</div><div class="tx">Run <span class="inlinecode">scripts/verify-lab.sh</span>. It must print a green ✅. <b>Run it now, before Phase 2.</b></div></div>
       </div>
@@ -470,7 +475,7 @@ scripts/verify-lab.sh   <span class="cm"># → ✅</span></pre></div>
   <div class="body">
     <div class="eyebrow">Phase 2 · solo · branch, merge &amp; rebase</div>
     <div class="title" style="color:#fff;max-width:20ch">Make the workflows from the slides happen for real</div>
-    <p class="lead">Three parts — <b style="color:#fff">A</b>, <b style="color:#fff">B</b>, <b style="color:#fff">C</b>. Between them you'll reset the branch back to the same starting commit, so every workflow begins from the same clean history. You'll record that starting point as your first move in Part A.</p>
+    <p class="lead">Three parts: <b style="color:#fff">A</b>, <b style="color:#fff">B</b>, <b style="color:#fff">C</b>. Between them you'll reset the branch back to the same starting commit, so every workflow begins from the same clean history. You'll record that starting point as your first move in Part A.</p>
     <ul class="checks" style="margin-top:22px;max-width:900px">
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Part A:</b> three clean commits with <span class="mono" style="color:#dbe4f0">add -p</span>.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Part B:</b> a two-parent merge commit, when history has diverged.</span></li>
@@ -534,7 +539,7 @@ git commit -m <span class="cmd2">"…"</span>         <span class="cm"># …×3<
     <div class="cols2">
       <div class="steps">
         <div class="step"><div class="ix p">4</div><div class="tx">From Part A, <span class="inlinecode">feature/greeting-tweaks</span> is <b>three commits ahead</b>; <span class="inlinecode">main</span> still sits at your README commit.</div></div>
-        <div class="step"><div class="ix p">5</div><div class="tx">Put one small <b>unrelated</b> commit on <span class="inlinecode">main</span>: append a line to <span class="inlinecode">docs/why-version-control.md</span>, a file neither Phase 1 nor the seed touches. Now the branches have <b>diverged</b>, so a fast-forward is impossible.</div></div>
+        <div class="step"><div class="ix p">5</div><div class="tx"><span class="inlinecode">git switch main</span>, then put one small <b>unrelated</b> commit on it: append a line to <span class="inlinecode">docs/why-version-control.md</span>, a file neither Phase 1 nor the seed touches. Now the branches have <b>diverged</b>, so a fast-forward is impossible.</div></div>
         <div class="step"><div class="ix p">6</div><div class="tx"><span class="inlinecode">git merge feature/greeting-tweaks -m "…"</span>. Git can't fast-forward, so it records a <b>merge commit</b>. Passing <span class="inlinecode">-m</span> supplies its message inline, so no editor pops open.</div></div>
         <div class="step"><div class="ix p">7</div><div class="tx"><span class="inlinecode">git cat-file -p HEAD</span> → it lists <b>two parents</b>. <span class="inlinecode">git log --graph</span> shows the diamond where the branches rejoin.</div></div>
       </div>
@@ -567,7 +572,7 @@ git log --graph --decorate --oneline --all</pre></div>
     <div class="sechead"><span class="num phase2">PART C</span><div><div class="title">Linear rebase</div><div class="lead">The rebase slide, for real: feature commits get <b>new SHAs</b> on top of main.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix p">9</div><div class="tx">Reset once more — you're still on <span class="inlinecode">main</span> from Part B: <span class="inlinecode">git reset --hard BASE</span>. This drops Part B's merge <b>and</b> its note commit. <b>Redo the note commit</b> so <span class="inlinecode">main</span> is ahead of the fork point again; without it, the rebase has nothing to do.</div></div>
+        <div class="step"><div class="ix p">9</div><div class="tx">Reset once more (you're still on <span class="inlinecode">main</span> from Part B): <span class="inlinecode">git reset --hard BASE</span>. This drops Part B's merge <b>and</b> its note commit. <b>Redo the note commit</b> so <span class="inlinecode">main</span> is ahead of the fork point again; without it, the rebase has nothing to do.</div></div>
         <div class="step"><div class="ix p">10</div><div class="tx"><span class="inlinecode">git switch feature/greeting-tweaks &amp;&amp; git rebase main</span>. The three commits land on the new tip, <b>no merge commit</b>. Notice the <b>new SHAs</b>.</div></div>
         <div class="step"><div class="ix p">11</div><div class="tx"><span class="inlinecode">git switch main &amp;&amp; git merge feature/greeting-tweaks</span>. This <b>fast-forwards</b>. Linear history.</div></div>
         <div class="step"><div class="ix p">12</div><div class="tx">Compare your final graph to your Part B sketch: the same feature commits, in a <b>straight line</b> instead of a diamond.</div></div>
@@ -680,7 +685,7 @@ git diff HEAD~1 HEAD</pre></div>
     <div class="cols2">
       <div class="steps">
         <div class="step"><div class="ix p">1</div><div class="tx">Start clean: <span class="inlinecode">git switch main &amp;&amp; git reset --hard BASE</span>. Now <span class="inlinecode">main</span> is behind your feature work again.</div></div>
-        <div class="step"><div class="ix p">2</div><div class="tx">Grab one commit's SHA from <span class="inlinecode">git log --oneline feature/greeting-tweaks</span>. <b>Did Stretch 1 first?</b> Pick the <b>README (Run me)</b> or <b>test</b> commit — the rewritten docstring commit would conflict again.</div></div>
+        <div class="step"><div class="ix p">2</div><div class="tx">Grab one commit's SHA from <span class="inlinecode">git log --oneline feature/greeting-tweaks</span>. <b>Did Stretch 1 first?</b> Pick the <b>README (Run me)</b> or <b>test</b> commit: the rewritten docstring commit would conflict again.</div></div>
         <div class="step"><div class="ix p">3</div><div class="tx"><span class="inlinecode">git cherry-pick &lt;SHA&gt;</span>: Git replays just that change onto <span class="inlinecode">main</span> as a <b>new commit</b>.</div></div>
         <div class="step"><div class="ix p">4</div><div class="tx">Check <span class="inlinecode">git log</span>: the new commit has a <b>different SHA</b> than the original (same change, new identity) and <span class="inlinecode">feature/greeting-tweaks</span> is untouched.</div></div>
       </div>
@@ -712,7 +717,7 @@ git cherry-pick &lt;A&gt;~3..&lt;A&gt;   <span class="cm"># a contiguous range</
   </div>
   <div class="body">
     <div class="eyebrow">Nicely done</div>
-    <div class="title" style="color:#fff;max-width:22ch">You've seen what's under the hood.</div>
+    <div class="title" style="color:#fff;max-width:22ch">What you practised in Lab 01 and what the wrap-up covers</div>
     <ul class="checks" style="max-width:920px;margin-top:22px">
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>You read <b>blobs, trees and commits</b> straight out of the key-value store with <span class="mono" style="color:#dbe4f0">cat-file</span>.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>You watched a <b>branch move</b>, built a <b>two-parent merge commit</b>, and rewrote history with <b>rebase</b>.</span></li>

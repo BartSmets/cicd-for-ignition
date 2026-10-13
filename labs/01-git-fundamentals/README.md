@@ -47,6 +47,8 @@ One continuous ~3-hour lab (09:00–12:00) that interleaves Git's object model w
 ```
 labs/01-git-fundamentals/
 ├── README.md
+├── LICENSE
+├── .gitignore                    ← what Git leaves alone (.venv, caches, NOTES.local.md)
 ├── exercises/
 │   └── lab.md
 ├── docs/                         ← reference reading
@@ -63,6 +65,7 @@ labs/01-git-fundamentals/
 │   └── verify-lab.sh             ← sanity-check the solo focused-commit step
 └── sample-app/                   ← the tiny Python app we'll version together
     ├── app.py
+    ├── conftest.py               ← lets pytest import app.py from the lab folder or sample-app/
     ├── requirements.txt
     ├── tests/
     │   └── test_app.py
