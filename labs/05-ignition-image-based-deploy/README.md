@@ -169,7 +169,7 @@ That division is the point. The build half is portable and cheap; the last mile 
 
 - The build/promote jobs push to **your own fork's** namespace — the workflows derive `ghcr.io/<owner>/cicd-lab-05-ignition` from `github.repository_owner`, so a student's fork publishes under *their* account, not Mustry's. No image ever pushes to a registry you don't own.
 - Auth is the workflow's built-in `GITHUB_TOKEN` (the workflows request `packages: write`). No registry password in `.env`, no extra account.
-- The first push creates a GHCR package under your namespace. It defaults to **private**, so to pull it by hand you log Docker in once with a token that has `read:packages`, or flip the package to public in its settings:
+- The first push creates a GHCR package under your namespace, linked to your fork. From a public fork it is normally public and pulls need no login. If a pull says `denied` (a private fork, or an older private package with the same name), log Docker in once with a token that has `read:packages`, or flip the package to public in its settings:
   ```bash
   gh auth refresh -h github.com -s read:packages      # adds the scope (opens your browser once)
   gh auth token | docker login ghcr.io -u <your-user> --password-stdin

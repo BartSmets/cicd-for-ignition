@@ -59,7 +59,7 @@ That's why this lab needs no runner at all: with the build off-box, what's left 
 
 - **Push** (build/promote jobs): the workflow requests `permissions: packages: write` and logs in with the built-in `GITHUB_TOKEN`. No PAT, no stored registry password.
 - **Pull** (a deploy job, once you have one): log in with the same `GITHUB_TOKEN`. Pulling needs only `packages: read`, which `write` includes.
-- **First push** creates the package in your fork's namespace, **private** by default. Pulling it by hand therefore needs a one-off login with a token that has `read:packages` (`gh auth refresh -h github.com -s read:packages`, then `gh auth token | docker login ghcr.io -u <your-user> --password-stdin`); flip the package public if you'd rather pull anonymously.
+- **First push** creates the package in your fork's namespace, linked to the fork. From a public fork it is normally public; if it is private (a private fork, or an older package with the same name), pulling it by hand needs a one-off login with a token that has `read:packages` (`gh auth refresh -h github.com -s read:packages`, then `gh auth token | docker login ghcr.io -u <your-user> --password-stdin`); flip the package public if you'd rather pull anonymously.
 - **Don't** hand a deploy runner a broad PAT "to be safe." The job-scoped `GITHUB_TOKEN` is enough and expires with the run.
 
 ## File-based vs image-based: when each fits

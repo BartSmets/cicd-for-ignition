@@ -398,14 +398,17 @@ Three directions, pick by appetite:
    `gh repo set-default <you>/cicd-for-ignition` (you ran this once when you
    forked the course repo; it's stored per clone, so every lab shares it).
    Also a great take-home.
-   0. **Let Docker pull from your GHCR.** The first push creates a **private** package, so a
-      pull needs a login with a token that may read packages. Your `gh` token can't by
-      default; add the scope once (it opens your browser), then log Docker in with it:
+   0. **Can Docker pull from your GHCR?** The first push creates the package
+      `cicd-lab-05-ignition` under your account, linked to your fork. From a public fork it is
+      normally public, and the pull in step 2 needs no login. If that pull says `denied` (a
+      private fork, or an older private package with the same name), log Docker in with a token
+      that may read packages. Your `gh` token can't by default; add the scope once (it opens
+      your browser), then log in with it:
       ```bash
       gh auth refresh -h github.com -s read:packages
       gh auth token | docker login ghcr.io -u <your-user> --password-stdin
       ```
-      (Or make the package public once it exists: your GitHub profile → *Packages* →
+      (Or make the package public: your GitHub profile → *Packages* →
       `cicd-lab-05-ignition` → *Package settings* → *Change visibility*.)
    1. Start a branch from GitHub's `main`, not your local one (which holds the merges you
       never pushed): `git fetch origin && git checkout -b feature/ci-build origin/main`.

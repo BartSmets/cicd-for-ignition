@@ -132,9 +132,11 @@ setting on your fork:
 - **Wrong namespace / `invalid reference format`.** GHCR paths must be lowercase. CI lowercases the owner
   automatically; the local `scripts/lib.sh` also lowercases and ignores the `.env.example` placeholder.
   If you hand-edited an image name, check for capitals or stray `<…>`.
-- **`denied` / `unauthorized` on `docker pull` on your machine.** The package is **private** by
-  default and your Docker is not logged in to GHCR with a token that may read packages. The `gh`
-  token lacks `read:packages` until you add it (the first command opens your browser once):
+- **`denied` / `unauthorized` on `docker pull` on your machine.** The package is **private** (a
+  package the workflow creates from a public fork is normally public, but one from a private fork,
+  or an older package with the same name, is not) and your Docker is not logged in to GHCR with a
+  token that may read packages. The `gh` token lacks `read:packages` until you add it (the first
+  command opens your browser once):
   ```bash
   gh auth refresh -h github.com -s read:packages
   gh auth token | docker login ghcr.io -u <your-user> --password-stdin

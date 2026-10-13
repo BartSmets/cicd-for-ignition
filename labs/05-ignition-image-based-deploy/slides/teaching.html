@@ -821,7 +821,7 @@ docker inspect -f <span class="cmd2">'{{.Image}}'</span> lab05-ignition-test</pr
           <li><span class="d"></span><span><b><span class="mono">${VAR:-default}</span>:</b> compose fills in the variable, or the default when it is unset. A new value means a new image, so compose recreates the container. That is the whole deploy.</span></li>
           <li><span class="d"></span><span><b>The trap:</b> a later bare <span class="mono">docker compose up -d</span> without the variable recreates test on the <b>base image</b>: an empty gateway. Put the image in <span class="mono">.env</span> to make a deploy stick.</span></li>
           <li><span class="d"></span><span><b>Label vs digest:</b> the label names the commit; <span class="mono">{{.Image}}</span> names the exact bytes. Same digest on test and production means production runs what test ran.</span></li>
-          <li><span class="d"></span><span><b>Pulling from GHCR yourself</b> (the stretch): the package is private, so Docker logs in with a token that has <span class="mono">read:packages</span>: <span class="mono">gh auth refresh -h github.com -s read:packages</span>, then <span class="mono">gh auth token | docker login ghcr.io -u &lt;you&gt; --password-stdin</span>.</span></li>
+          <li><span class="d"></span><span><b>Pulling from GHCR yourself</b> (the stretch): if the package is private, Docker logs in with a token that has <span class="mono">read:packages</span>: <span class="mono">gh auth refresh -h github.com -s read:packages</span>, then <span class="mono">gh auth token | docker login ghcr.io -u &lt;you&gt; --password-stdin</span>.</span></li>
         </ul>
       </div>
     </div>

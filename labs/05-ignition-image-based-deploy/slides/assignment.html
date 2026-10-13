@@ -680,14 +680,14 @@ docker inspect -f <span class="cmd2">'{{ index .Config.Labels
     <div class="sechead"><span class="num warm">STRETCH</span><div><div class="title">Let GitHub build the image, then deploy it by hand</div><div class="lead">This moves the <b>build</b> half to CI: merge to <span class="inlinecode">main</span> builds and pushes, a <span class="inlinecode">lab05-v*</span> tag promotes. The deploy half stays yours. Needs your fork; a good take-home if the venue Wi-Fi hates 2 GB pulls.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix">0</div><div class="tx"><b>Two prerequisites.</b> Actions enabled on your fork (its Actions tab lists the workflows). And Docker logged in to GHCR with a token that has <span class="inlinecode">read:packages</span>: the package is <b>private</b> by default, so the pull in step 2 says <i>denied</i> without it. (Or make the package public in its settings.)</div></div>
+        <div class="step"><div class="ix">0</div><div class="tx"><b>Two prerequisites.</b> Actions enabled on your fork (its Actions tab lists the workflows). And a package Docker may pull: from a public fork it is normally public. If the pull in step 2 says <i>denied</i>, it is private: log Docker in with a token that has <span class="inlinecode">read:packages</span> (or make the package public in its settings).</div></div>
         <div class="step"><div class="ix">1</div><div class="tx"><b>Trigger <span class="inlinecode">lab05-deploy.yml</span>:</b> branch from <b>GitHub's</b> <span class="inlinecode">main</span> (your local one holds unpushed merges), open a PR with a small project change and <b>merge it on GitHub</b>. Wait until the deploy run is green: there is no image to pull before.</div></div>
         <div class="step"><div class="ix">2</div><div class="tx"><b>Deploy it yourself:</b> the run's <b>summary page</b> prints the image name. Pull it and point test at it: the same command as part 2, longer name.</div></div>
         <div class="step"><div class="ix">3</div><div class="tx"><b>Release:</b> tag GitHub's <span class="inlinecode">main</span> and push the tag. <span class="inlinecode">lab05-release.yml</span> checks that <span class="inlinecode">:test</span> was built from that commit, then re-tags it to <span class="inlinecode">:v0.1.0</span> + <span class="inlinecode">:production</span>: <b>no rebuild</b>. Deploy it to :8090 with <span class="inlinecode">IGNITION_PRODUCTION_IMAGE</span>.</div></div>
         <div class="step"><div class="ix">4</div><div class="tx"><b>The payoff:</b> <span class="inlinecode">{{.Image}}</span> is identical on test and production: production runs the exact bytes test validated. And you typed an image name twice: that last mile is what Labs 06 and 07 automate.</div></div>
       </div>
       <div>
-        <div class="code"><pre style="font-size:12.5px;line-height:1.6"><span class="cm"># 0: once: let Docker read your GHCR packages</span>
+        <div class="code"><pre style="font-size:12.5px;line-height:1.6"><span class="cm"># 0: only if a pull says denied: log Docker in</span>
 gh auth refresh -h github.com -s read:packages
 gh auth token | docker login ghcr.io -u &lt;you&gt; --password-stdin
 
