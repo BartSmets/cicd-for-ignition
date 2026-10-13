@@ -36,13 +36,23 @@ fi
 # setup.sh and validation in trigger-scan.sh.
 LAB_GATEWAYS=(local test production)
 
+# Host port for a docker-compose.yaml port variable: the environment wins,
+# then .env, then the default compose uses. Keep the defaults in sync with
+# docker-compose.yaml and .env.example.
+lab_port() {
+  local var="$1" default="$2" v
+  v="${!var:-}"
+  [ -z "$v" ] && v="$(env_value "$var")"
+  printf '%s' "${v:-$default}"
+}
+
 # Map a gateway name → its host-facing URL.
 gateway_url() {
   case "${1:-local}" in
-    local) printf 'http://localhost:8088' ;;
-    test)   printf 'http://localhost:8089' ;;
-    production)  printf 'http://localhost:8090' ;;
-    *)     return 1 ;;
+    local)      printf 'http://localhost:%s' "$(lab_port GATEWAY_PORT 8088)" ;;
+    test)       printf 'http://localhost:%s' "$(lab_port TEST_GATEWAY_PORT 8089)" ;;
+    production) printf 'http://localhost:%s' "$(lab_port PRODUCTION_GATEWAY_PORT 8090)" ;;
+    *)          return 1 ;;
   esac
 }
 

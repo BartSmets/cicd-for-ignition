@@ -53,10 +53,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: JSON validity sweep
         # Walks every *.json under projects/ and services/ and confirms it
@@ -145,11 +145,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: hadolint (Dockerfile)
         # Lints the Dockerfile for common mistakes (unpinned base, bad COPY, etc).
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: hadolint/hadolint-action@v3.5.0
         with:
           dockerfile: labs/05-ignition-image-based-deploy/Dockerfile
 
@@ -158,7 +158,7 @@ jobs:
         # We do NOT push here — pushing happens in deploy.yml after merge.
         # On a PR the head SHA is baked in; github.sha is the fallback for
         # other event types.
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: labs/05-ignition-image-based-deploy
           push: false
