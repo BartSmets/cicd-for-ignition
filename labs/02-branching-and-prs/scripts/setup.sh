@@ -60,7 +60,12 @@ docker compose up -d
 echo ""
 
 # ---- wait -----------------------------------------------------------------
-URL="http://localhost:8088"
+# Host port: GATEWAY_PORT from the shell, else from .env, else 8088 (the same
+# precedence docker compose uses for the port mapping).
+if [ -z "${GATEWAY_PORT:-}" ]; then
+  GATEWAY_PORT="$(grep -E '^GATEWAY_PORT=' .env | tail -n 1 | cut -d= -f2- | tr -d '"'"'"' \r' || true)"
+fi
+URL="http://localhost:${GATEWAY_PORT:-8088}"
 echo "${GREEN}Waiting for the gateway at $URL to become RUNNING (cold start is slow)...${NC}"
 attempts=0
 max_attempts=120   # ~4 minutes
@@ -95,7 +100,7 @@ echo "Useful commands:"
 echo "  docker compose ps                 # container state"
 echo "  docker logs -f lab02-ignition     # tail gateway logs"
 echo "  scripts/validate.sh               # validate project files (the PR check)"
-echo "  docker compose restart        # reload project files after an edit"
+echo "  docker compose restart            # reload project files after an edit"
 echo "  scripts/scan.sh                   # faster reload via scan API (needs an API key)"
 echo "  scripts/teardown.sh               # stop the gateway"
 echo "  scripts/teardown.sh --volumes     # stop and wipe gateway state"

@@ -67,6 +67,10 @@ scripts/setup.sh        # boots one Ignition gateway, waits for RUNNING, prints 
 # open http://localhost:8088  → log in with the .env credentials
 ```
 
+Port 8088 already taken on your machine? Set `GATEWAY_PORT` in `.env` (see
+`.env.example`); the setup script, the scan script and the printed URLs follow it.
+Stuck? See [`docs/TROUBLESHOOTING.md`](./docs/TROUBLESHOOTING.md).
+
 Before opening any PR, run the validator — the green/red signal this lab uses in
 place of a test suite (gateway-free, runs in a second):
 
@@ -122,6 +126,7 @@ labs/02-branching-and-prs/
 ├── docs/                         ← reference reading
 │   ├── branching-strategies.md
 │   ├── pr-review-style.md
+│   ├── TROUBLESHOOTING.md        ← port in use, leftover container, scan errors
 │   └── wsl-setup.md              ← Windows/WSL: read once before this lab
 ├── scripts/
 │   ├── preflight.sh              ← WSL/permission checks setup.sh runs first
@@ -152,7 +157,7 @@ A single Ignition 8.3 gateway. Two things to understand about how it's wired:
 services:
   ignition:
     image: inductiveautomation/ignition:8.3.8
-    ports: ["8088:8088"]
+    ports: ["${GATEWAY_PORT:-8088}:8088"]                  # host port from .env, default 8088
     volumes:
       - ignition-data:/usr/local/bin/ignition/data        # gateway-owned, self-generated, not in git
       - ./projects:/usr/local/bin/ignition/data/projects   # the one thing you edit
