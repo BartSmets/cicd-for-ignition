@@ -121,6 +121,16 @@ body{
 .inlinecode{font-family:'IBM Plex Mono';font-size:13px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--blue-d)}
 .dark .inlinecode{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);color:var(--peri2)}
 
+/* comparison table */
+.tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);margin-top:10px}
+.tbl th{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--txt-faint);font-weight:700;text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel2)}
+.tbl td{font-size:13.5px;color:var(--txt-dim);line-height:1.45;padding:10px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td b{color:var(--txt)}
+.tbl td.strat{font-weight:700;color:var(--txt);white-space:nowrap}
+.tbl code{font-family:'IBM Plex Mono';font-size:12px;color:var(--blue-d)}
+.tbl td.pick{background:rgba(37,99,235,.05)}
+
 /* tool table */
 .tools{display:flex;flex-direction:column;margin-top:8px}
 .trow{display:grid;grid-template-columns:190px 1fr 1.35fr;gap:20px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--line2)}
@@ -580,7 +590,7 @@ ign-lint --config rule_config.json <span class="cm">&larr; the CONFIG</span>
       </div>
     </div>
     <div class="refs">
-      <div class="ref"><b>config</b> rule_config.json at the <b>repo root</b>: a JSON map of rule &rarr; enabled + kwargs, tuned so the clean lab-project passes with zero findings</div>
+      <div class="ref"><b>config</b> rule_config.json in the <b>lab folder</b> (labs/03-github-actions/): a JSON map of rule &rarr; enabled + kwargs, tuned so the clean lab-project passes with zero findings</div>
       <div class="ref"><b>docs</b> bw-design-group.github.io/ignition-lint</div>
     </div>
   </div>
@@ -602,7 +612,7 @@ ign-lint --config rule_config.json <span class="cm">&larr; the CONFIG</span>
     <div class="hmiwrap">
       <div class="hmi reveal" data-step="0">
         <div class="hmihead">
-          <span class="t">Oatmakers — Site 04 Oat Line</span>
+          <span class="t">Oatmakers · Site 04 Oat Line</span>
           <span class="clock" id="hmi-clock">Clock · now(1000)</span>
         </div>
         <div class="tiles">
@@ -696,7 +706,55 @@ scripts/validate.sh
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Exit code = the PR's green/red signal</span></div>
 </section>
 
-<!-- 11 · DIVIDER · CH 2 -->
+<!-- 11 · PRE-COMMIT -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Validation &amp; linters · on your machine</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">07</span>
+      <div>
+        <div class="title"><span class="mono" style="font-size:34px">pre-commit</span>: the same linters, run at <span class="mono" style="font-size:34px">git commit</span></div>
+        <div class="lead"><b>pre-commit</b> is a small Python tool that runs a list of checks on the files you are about to commit and <b>refuses the commit</b> if one fails. Same linters as CI, minutes earlier, on your own laptop.</div>
+      </div>
+    </div>
+    <div class="cols2">
+      <div>
+        <div class="code"><pre><span class="cm"># .pre-commit-config.yaml (ships in the lab)</span>
+repos:
+  - repo: https://github.com/bw-design-group/ignition-lint
+    rev: v0.6.1                 <span class="cm"># pinned, like pip</span>
+    hooks:
+      - id: ign-lint
+        files: <span class="cmd2">^labs/03-github-actions/.*view\.json$</span>
+<span class="cm">  # + yamllint, shellcheck, actionlint the same way</span>
+
+<span class="cm"># install the tool; there is no `pre-commit install`</span>
+pip install pre-commit
+git config core.hooksPath     <span class="cm"># → scripts/git-hooks</span>
+pre-commit run --all-files --config .pre-commit-config.yaml</pre></div>
+      </div>
+      <div>
+        <ul class="checks">
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>How it runs:</b> each hook names a repo and a pinned <span class="mono">rev</span>. On first use pre-commit installs it into its own cache, then runs it only on the <b>staged</b> files that match <span class="mono">files:</span>.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>How this repo wires it:</b> Git allows one pre-commit hook per clone, and this clone holds every lab. <span class="mono">scripts/setup.sh</span> points Git at the repo's dispatcher (<span class="mono">core.hooksPath=scripts/git-hooks</span>), which runs the <span class="mono">.pre-commit-config.yaml</span> of each lab your commit touches. So <span class="mono">pip install pre-commit</span> is the only step.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Skippable on purpose:</b> <span class="mono">git commit --no-verify</span> skips every hook. Handy when you <i>want</i> a broken commit (the lab's "break it on purpose" step), and the reason CI stays the enforced net.</span></li>
+        </ul>
+        <div class="callout" style="margin-top:16px">
+          <div class="lab" style="color:var(--blue)">Two nets</div>
+          <p>Pre-commit is the <b>fast, local</b> net; CI is the <b>enforced, shared</b> one. You want both: local for speed, CI because hooks are opt-in and can be skipped. In the lab it's the Part 1 stretch.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 1 stretch · .pre-commit-config.yaml</span></div>
+</section>
+
+<!-- 12 · DIVIDER · CH 2 -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -710,7 +768,7 @@ scripts/validate.sh
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>workflows → jobs → steps</span></div>
 </section>
 
-<!-- 12 · A VALIDATOR RUNS INSIDE A PIPELINE -->
+<!-- 13 · A VALIDATOR RUNS INSIDE A PIPELINE -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -719,7 +777,7 @@ scripts/validate.sh
 
   <div class="body">
     <div class="sechead">
-      <span class="num">07</span>
+      <span class="num">08</span>
       <div>
         <div class="title">Your validators run inside a pipeline</div>
         <div class="lead">The linter run you did by hand in Chapter 1 already <b>had the shape of</b> a pipeline: a trigger, then steps that pass or fail. Wrap it in <span class="inlinecode">lab03-ci.yml</span> and your validators now <b>run inside the pipeline, as steps</b>, triggered automatically on every push and PR.</div>
@@ -757,7 +815,7 @@ on: pull_request        <span class="cm"># the trigger</span>
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Day 2 · your validators run inside a pipeline · triggered by an event, not your memory</span></div>
 </section>
 
-<!-- 13 · ANATOMY (stepped, dark) -->
+<!-- 14 · ANATOMY (stepped, dark) -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -777,15 +835,15 @@ on: pull_request        <span class="cm"># the trigger</span>
         <div class="jobrow">
           <div class="jobbox reveal" data-step="1">
             <div class="jl"><span class="n">job: lint</span><span class="m">runs-on: ubuntu-latest</span></div>
-            <div class="stp uses reveal" data-step="2"><span>actions/checkout@v4</span><span class="k">uses · an action</span></div>
-            <div class="stp uses reveal" data-step="2"><span>actions/setup-python@v5 · "3.12"</span><span class="k">uses</span></div>
+            <div class="stp uses reveal" data-step="2"><span>actions/checkout@v7</span><span class="k">uses · an action</span></div>
+            <div class="stp uses reveal" data-step="2"><span>actions/setup-python@v7 · "3.12"</span><span class="k">uses</span></div>
             <div class="stp runs reveal" data-step="2"><span>pip install yamllint==1.35.1 ign-lint==0.6.1</span><span class="k">run · shell</span></div>
             <div class="stp runs reveal" data-step="2"><span>yamllint · actionlint · shellcheck · ign-lint</span><span class="k">run</span></div>
             <div class="stp runs reveal" data-step="2"><span>docker compose config -q</span><span class="k">run</span></div>
           </div>
           <div class="jobbox reveal" data-step="1">
             <div class="jl"><span class="n">job: validate</span><span class="m">runs-on: ubuntu-latest</span></div>
-            <div class="stp uses reveal" data-step="2"><span>actions/checkout@v4</span><span class="k">uses</span></div>
+            <div class="stp uses reveal" data-step="2"><span>actions/checkout@v7</span><span class="k">uses</span></div>
             <div class="stp runs reveal" data-step="2"><span>scripts/validate.sh</span><span class="k">run</span></div>
           </div>
         </div>
@@ -800,7 +858,7 @@ on: pull_request        <span class="cm"># the trigger</span>
   </div>
 </section>
 
-<!-- 14 · SAME CONCEPTS, DIFFERENT NAMES -->
+<!-- 15 · SAME CONCEPTS, DIFFERENT NAMES -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -809,7 +867,7 @@ on: pull_request        <span class="cm"># the trigger</span>
 
   <div class="body">
     <div class="sechead">
-      <span class="num">08</span>
+      <span class="num">09</span>
       <div>
         <div class="title">Same concepts, different names</div>
         <div class="lead">We teach on GitHub Actions, but every CI tool has the <b>same building blocks</b>. Only the vocabulary changes. Learn the shape once and you can read any of them.</div>
@@ -876,7 +934,7 @@ on: pull_request        <span class="cm"># the trigger</span>
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Learn the shape once · the words are just labels</span></div>
 </section>
 
-<!-- 15 · TRIGGERS -->
+<!-- 16 · TRIGGERS -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -885,7 +943,7 @@ on: pull_request        <span class="cm"># the trigger</span>
 
   <div class="body">
     <div class="sechead">
-      <span class="num">09</span>
+      <span class="num">10</span>
       <div>
         <div class="title">Triggers: the <span class="mono" style="font-size:34px">on:</span> block</div>
         <div class="lead">Events start workflows. This lab uses two, plus <b>path filters</b> so docs-only PRs don't waste a runner.</div>
@@ -912,7 +970,7 @@ on:
         <ul class="checks">
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b><span class="mono">pull_request</span></b> runs on open and on every push to the PR branch. The workhorse for checks.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b><span class="mono">push: branches: [main]</span></b> is the backstop: it verifies main itself stays green after merges and direct pushes.</span></li>
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b><span class="mono">paths:</span></b> means a README-only PR doesn't spin up two VMs to lint files it never touched. The workflow is <b>skipped</b>, not passed, and you'll verify the difference in the lab.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b><span class="mono">paths:</span></b> means a README-only PR doesn't spin up two VMs to lint files it never touched. The workflow <b>never starts</b>: the PR's checks panel stays empty, not even a <i>Skipped</i> entry. You'll see that in the lab, and why it matters once checks are required.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Others you'll meet:</b> <span class="mono">workflow_dispatch</span> (a manual Run button, which the runner demo uses), <span class="mono">schedule</span> (cron), <span class="mono">release</span>.</span></li>
         </ul>
         <div class="callout" style="margin-top:16px">
@@ -927,7 +985,7 @@ on:
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>.github/workflows/lab03-ci.yml</span></div>
 </section>
 
-<!-- 16 · RUNNER MODEL (stepped, dark) -->
+<!-- 17 · RUNNER MODEL (stepped, dark) -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -967,7 +1025,7 @@ on:
   </div>
 </section>
 
-<!-- 17 · READING THE REAL CI.YML -->
+<!-- 18 · READING THE REAL CI.YML -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -976,14 +1034,14 @@ on:
 
   <div class="body">
     <div class="sechead">
-      <span class="num">10</span>
+      <span class="num">11</span>
       <div>
         <div class="title">Reading the lab's <span class="mono" style="font-size:34px">lab03-ci.yml</span></div>
         <div class="lead">This is the file you'll build from scratch in the We-do and finish in the lab. Two independent jobs: the Part 1 linters, and the validator.</div>
       </div>
     </div>
     <div class="cols2">
-      <div class="code"><pre>name: Lab 03 · CI
+      <div class="code"><pre style="font-size:12px;line-height:1.5">name: Lab 03 · CI
 on:
   pull_request:
     paths: [<span class="cmd2">"labs/03-github-actions/projects/**"</span>, …]
@@ -999,8 +1057,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: <span class="cmd2">"3.12"</span>   <span class="cm"># quoted!</span>
       - run: pip install yamllint==1.35.1 ign-lint==0.6.1
@@ -1012,7 +1070,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: scripts/validate.sh</pre></div>
       <div>
         <ul class="checks">
@@ -1020,6 +1078,7 @@ jobs:
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Steps are sequential:</b> a failing step skips the rest of its job and fails it. (<span class="mono">continue-on-error</span> and <span class="mono">needs:</span> exist for when you want different behaviour.)</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b><span class="mono">"3.12"</span> is quoted</b> because unquoted YAML coerces it to the float <b>3.1</b>. A classic. And <span class="mono">ign-lint</span> needs Python 3.10+, so the pin matters.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>The <span class="mono">--files</span> glob is quoted</b> so the runner's shell doesn't expand it before ign-lint sees it.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Check your build against this file</b> with <span class="mono">git diff --no-index .github/ci-reference.yml ../../.github/workflows/lab03-ci.yml</span>. <span class="mono">--no-index</span> makes <span class="mono">git diff</span> compare any two files on disk, tracked or not.</span></li>
         </ul>
       </div>
     </div>
@@ -1028,7 +1087,49 @@ jobs:
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Same commands you ran locally; that's the point</span></div>
 </section>
 
-<!-- 18 · PERMISSIONS & SECRETS -->
+<!-- 19 · CONCURRENCY -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">GitHub Actions · concurrency</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">12</span>
+      <div>
+        <div class="title"><span class="mono" style="font-size:34px">concurrency:</span> cancel a run that a newer push has made stale</div>
+        <div class="lead">Push twice in a minute and GitHub starts two full runs; the first one checks a commit nobody will merge. A <b>concurrency group</b> lets a newer run cancel the older one in the same group.</div>
+      </div>
+    </div>
+    <div class="cols2">
+      <div>
+        <div class="code"><pre><span class="cm"># the mental model: where each key lives</span>
+workflow ──contains──▶ jobs ──contains──▶ steps
+   │                     │                  │
+   │                     │                  └── env, working-directory
+   │                     └── runs-on, needs, strategy, permissions
+   └── on (triggers), permissions, <span class="cmd2">concurrency</span></pre></div>
+        <div class="code" style="margin-top:14px"><pre><span class="cm"># workflow level, next to on: and permissions:</span>
+concurrency:
+  group: <span class="cmd2">lab03-${{ github.workflow }}-${{ github.ref }}</span>
+  cancel-in-progress: true</pre></div>
+      </div>
+      <div>
+        <ul class="checks">
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>A group is just a string.</b> Runs that compute the same string share one lane: only one runs at a time, and <span class="mono">cancel-in-progress: true</span> cancels the older one instead of queueing.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b><span class="mono">github.ref</span> gives every PR its own lane</b> (<span class="mono">refs/pull/12/merge</span>), so your pushes cancel your stale run and never someone else's.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>What you see:</b> push two commits quickly and the first run flips to <b>cancelled</b> in the Actions tab; only the newest commit gets a verdict.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>In this course:</b> the Lab 03 reference workflow leaves it out on purpose (it's a stretch goal); the Lab 04-06 CI workflows all use it.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Stretch: add concurrency to lab03-ci.yml</span></div>
+</section>
+
+<!-- 20 · PERMISSIONS & SECRETS -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -1037,23 +1138,38 @@ jobs:
 
   <div class="body">
     <div class="sechead">
-      <span class="num">11</span>
+      <span class="num">13</span>
       <div>
         <div class="title">Permissions & secrets</div>
         <div class="lead">A workflow is code that runs with credentials. Treat those credentials like production access, because one day they will be.</div>
       </div>
     </div>
-    <ul class="checks" style="max-width:960px">
+    <div class="cols2">
+    <ul class="checks">
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b><span class="mono">permissions: contents: read</span></b> sets what the workflow may do to the repo: read repo contents (all <span class="mono">checkout</span> needs), nothing else. No pushing, no writing issues or releases. The default grant is broader than a lint job ever needs, so we cut it down. Human access to the repo is untouched.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Secrets</b> are encrypted at rest, injected on demand, and <b>masked as <span class="mono">***</span> in logs</b>. In the We-do we add an <span class="mono">EXAMPLE_SECRET</span>, echo it, and watch GitHub censor it live.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Variables</b> are the unencrypted sibling. Fine for a gateway URL; never for a password. If it would hurt in a screenshot, it's a secret.</span></li>
     </ul>
+    <div>
+      <div class="code"><pre><span class="cm"># create a repo secret from the terminal</span>
+gh secret set EXAMPLE_SECRET --body <span class="cmd2">"hunter2"</span> \
+  -R <span class="cmd2">"$(gh repo set-default --view)"</span>
+
+<span class="cm"># read it in a step; GitHub masks the value</span>
+      - run: echo <span class="cmd2">"leak? ${{ secrets.EXAMPLE_SECRET }}"</span>
+<span class="cm"># log → leak? ***</span></pre></div>
+      <div class="callout" style="margin-top:16px">
+        <div class="lab" style="color:var(--blue)">Why the -R</div>
+        <p>Your clone has two remotes (your fork and the course repo). <span class="mono">gh pr create</span> follows <span class="mono">gh repo set-default</span>, but <span class="mono">gh secret set</span> refuses to guess: <i>"multiple remotes detected"</i>. <span class="mono">-R "$(gh repo set-default --view)"</span> names the repo you already picked.</p>
+      </div>
+    </div>
+    </div>
   </div>
 
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Least privilege by default</span></div>
 </section>
 
-<!-- 19 · BRANCH PROTECTION -->
+<!-- 21 · BRANCH PROTECTION -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -1062,26 +1178,30 @@ jobs:
 
   <div class="body">
     <div class="sechead">
-      <span class="num">12</span>
+      <span class="num">14</span>
       <div>
-        <div class="title">Branch protection: require <span class="mono" style="font-size:32px">lint</span> and <span class="mono" style="font-size:32px">validate</span> to pass</div>
-        <div class="lead"><b>Branch protection</b> is a rule on <span class="mono">main</span> that disables the merge button until conditions are met. We make our two CI jobs <b>required status checks</b>: a green workflow on its own is just information; branch protection turns it into enforcement.</div>
+        <div class="title">Protect <span class="mono" style="font-size:32px">main</span> with a ruleset that requires <span class="mono" style="font-size:32px">lint</span> and <span class="mono" style="font-size:32px">validate</span></div>
+        <div class="lead"><b>Branch protection</b> is a set of rules on <span class="mono">main</span> that disables the merge button until conditions are met. On GitHub you write those rules as a <b>ruleset</b>. We make our two CI jobs <b>required status checks</b>: a green workflow on its own is just information; the ruleset turns it into enforcement.</div>
       </div>
     </div>
     <div class="cols2">
       <div>
         <ul class="checks">
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Where it lives: Settings → Branches → add a rule for <span class="mono">main</span>.</b> Four rules do the job:</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Where it lives: Settings → Rules → Rulesets → New branch ruleset.</b> Four rules do the job:</span></li>
         </ul>
-        <div class="code" style="margin-top:14px"><pre>[✓] Require a pull request before merging  <span class="cm"># blocks direct commits</span>
-[✓] Require status checks to pass          <span class="cm"># select lint + validate</span>
-[✓] Block force pushes                     <span class="cm"># no rewriting history</span>
-[✓] Restrict deletions                     <span class="cm"># main can't be deleted</span>
-<span class="bad">[ ] Restrict updates                       # trap: blocks PR merges too</span></pre></div>
+        <div class="code" style="margin-top:14px"><pre>Name             protect-main
+Enforcement      Active
+Bypass list      <span class="cm">(empty: the rules bind admins too)</span>
+Target branches  Include default branch
+[✓] Restrict deletions                 <span class="cm"># main can't be deleted</span>
+[✓] Require a pull request before merging
+      Required approvals: 0            <span class="cm"># solo: no self-approval</span>
+[✓] Require status checks to pass      <span class="cm"># add lint + validate</span>
+[✓] Block force pushes                 <span class="cm"># no rewriting history</span>
+<span class="bad">[ ] Restrict updates                   # trap: blocks PR merges too</span></pre></div>
         <ul class="checks" style="margin-top:14px">
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>The shift in language:</b> from <i>"please remember to run the linters"</i> to <i>"you <b>cannot</b> merge until they pass."</i> The safety net stops depending on memory.</span></li>
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You'll prove it in the lab:</b> plant the broken state, open a PR, and watch GitHub physically block the merge, then fix, re-push, and merge.</span></li>
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>One interaction to know:</b> a required check that a <span class="mono">paths:</span> filter skips <b>never reports</b> — the PR hangs on <i>"Expected — waiting for status"</i>. You'll walk into this deliberately in the lab; the documented fix is a no-op twin workflow.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>One interaction to know:</b> a required check whose workflow a <span class="mono">paths:</span> filter kept from starting <b>never reports</b>, so the PR hangs on <i>Expected</i>. You'll walk into this deliberately in the lab; two slides on is the fix.</span></li>
         </ul>
       </div>
       <div>
@@ -1089,21 +1209,107 @@ jobs:
           <div class="lab">It's a team contract</div>
           <p>A required check is a <b>contract with the team</b>, not just a setting. Who decides what's blocking? Who maintains CI when it's flaky? A check the team routinely overrides is worse than no check: it trains everyone to ignore red.</p>
         </div>
-        <!-- Verified 2026-07-06: a paths-skipped required check stays "Expected" and blocks the PR;
-             GitHub has no skipped-counts-as-passed behaviour. The documented fix is the no-op twin
-             workflow — taught in lab.md's step-4 callout and stretch. -->
+        <!-- Verified 2026-10-13 on a ruleset with an empty bypass list: a path-filtered required
+             check stays "Expected" and blocks the PR, even for an admin merge (gh pr merge --admin).
+             The fix is the scoped no-op twin, taught on the trap slide and in lab.md's stretch. -->
         <div class="callout" style="margin-top:16px">
           <div class="lab" style="color:var(--blue)">Also in this club</div>
-          <p><b>Required reviews</b> (Day 1's PR discipline) and required checks compose: human judgement <i>and</i> machine verification, both enforced by the same branch-protection rule.</p>
+          <p><b>Required reviews</b> (Day 1's PR discipline) and required checks compose: human judgement <i>and</i> machine verification, both enforced by the same ruleset.</p>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Branch protection on main · lint + validate</span></div>
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Ruleset on main · lint + validate</span></div>
 </section>
 
-<!-- 20 · DIVIDER · CH 3 -->
+<!-- 22 · CLASSIC BRANCH PROTECTION VS RULESETS -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">GitHub Actions · branch protection</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">15</span>
+      <div>
+        <div class="title">Classic branch protection vs rulesets, and why the lab uses a ruleset</div>
+        <div class="lead">GitHub has two screens that protect a branch. Both can enforce the same four rules; they differ in <b>who the rules bind</b> and in their defaults. Two of those defaults lock a solo developer out or let an admin walk around the wall.</div>
+      </div>
+    </div>
+    <table class="tbl">
+      <tr><th style="width:22%"></th><th>Classic branch protection</th><th>Ruleset (what the lab uses)</th></tr>
+      <tr><td class="strat">Where</td><td>Settings → Branches → Add rule</td><td class="pick">Settings → Rules → Rulesets → New branch ruleset</td></tr>
+      <tr><td class="strat">Admins</td><td>Exempt, unless you also tick <i>Do not allow bypassing the above settings</i>: your direct push "bypasses" the rule and lands</td><td class="pick">Bound by every rule unless they're on the <b>bypass list</b>. Empty list = nobody gets around it, you included</td></tr>
+      <tr><td class="strat">Approvals</td><td>Ticking <i>Require a pull request</i> can pre-tick <i>Require approvals: 1</i>. GitHub never lets you approve your own PR, so alone you can never merge</td><td class="pick">You set <b>Required approvals</b> yourself: <b>0</b> for a solo fork, 1 or more for a team</td></tr>
+      <tr><td class="strat">Targets</td><td>One branch-name pattern per rule</td><td class="pick">Patterns or simply <i>Include default branch</i>; several rulesets can stack on one branch</td></tr>
+      <tr><td class="strat">Switch off</td><td>Delete the rule</td><td class="pick">Set Enforcement to <i>Disabled</i>, or delete the ruleset</td></tr>
+    </table>
+    <div class="callout">
+      <div class="lab" style="color:var(--blue)">Why we switched</div>
+      <p>The lab's proof is "even the repo owner cannot push to <span class="mono">main</span>, and can still merge a green PR alone". A ruleset with an <b>empty bypass list</b> and <b>0 required approvals</b> gives exactly that; a classic rule needs two non-default ticks to get there. Existing classic rules keep working, and both screens enforce together if you use both.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Ruleset · empty bypass list · 0 approvals</span></div>
+</section>
+
+<!-- 23 · THE SKIPPED-CHECK TRAP AND THE NO-OP TWIN -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">GitHub Actions · required checks</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">16</span>
+      <div>
+        <div class="title">Why a docs-only PR can never merge, and the no-op twin that fixes it</div>
+        <div class="lead">A required check is satisfied only by a check run <b>with that name</b> that passed. A path filter that keeps the workflow from starting produces <b>no check run at all</b>, so the PR waits on <i>Expected</i> forever.</div>
+      </div>
+    </div>
+    <div class="cols2">
+      <div>
+        <div class="code"><pre style="font-size:12px;line-height:1.55"><span class="cm"># .github/workflows/lab03-ci-noop.yml</span>
+name: Lab 03 · CI (no-op twin)
+on:
+  pull_request:
+    paths:
+      - <span class="cmd2">"labs/03-github-actions/**"</span>           <span class="cm"># this lab...</span>
+      - <span class="cmd2">"!labs/03-github-actions/projects/**"</span> <span class="cm"># ...minus what</span>
+      - <span class="cmd2">"!labs/03-github-actions/scripts/**"</span>  <span class="cm"># lab03-ci.yml</span>
+      - <span class="cmd2">"!labs/03-github-actions/docker-compose.yml"</span>
+      - <span class="cmd2">"!labs/03-github-actions/.yamllint.yml"</span>
+      - <span class="cmd2">"!labs/03-github-actions/rule_config.json"</span>
+      - <span class="cmd2">"!labs/03-github-actions/.github/**"</span>
+permissions: {}
+jobs:
+  lint:                   <span class="cm"># same job ids = same check names</span>
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No lint-relevant files changed."
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No validate-relevant files changed."</pre></div>
+      </div>
+      <div>
+        <ul class="checks">
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>GitHub's documented fix:</b> a twin workflow with the <b>same job names</b> that just echoes, triggered by the <b>opposite</b> path filter. On the PRs the real CI skips, the twin reports a green <span class="mono">lint</span> and <span class="mono">validate</span> in seconds.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b><span class="mono">paths-ignore:</span></b> is how GitHub's docs write the opposite filter: "run unless every changed file is in this list". In a monorepo that also matches <b>every other lab's</b> PR, and the twin would hand them a fake green <span class="mono">lint</span> and <span class="mono">validate</span>.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Scope it with <span class="mono">paths:</span> and <span class="mono">!</span> negations:</b> patterns apply in order, and a later <span class="mono">!</span> pattern removes files an earlier one matched. The twin runs only if a changed file is in this lab <b>and</b> outside the real filter.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>The caveat:</b> a PR that touches docs <i>and</i> code starts both workflows, and two check runs report under each name.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 2 trap callout · stretch: build the twin</span></div>
+</section>
+
+<!-- 24 · DIVIDER · CH 3 -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -1114,10 +1320,10 @@ jobs:
     <div class="q">What if CI can't <em>reach</em> the gateway you want to deploy to?</div>
     <div class="sub2">GitHub-hosted runners live in GitHub's cloud. Your production gateway lives behind a firewall, on a customer VPN, next to a PLC network. Sooner or later, CI has to come to <span style="color:#fff">you</span>.</div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>a look ahead · hands-on in Labs 04 and 05</span></div>
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>a look ahead · hands-on in Labs 04 and 06</span></div>
 </section>
 
-<!-- 21 · SELF-HOSTED · ARCHITECTURE & WHEN -->
+<!-- 25 · SELF-HOSTED · ARCHITECTURE & WHEN -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -1144,7 +1350,7 @@ jobs:
     </div>
 
     <ul class="checks" style="max-width:1050px">
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>When you need one: network isolation</b>, the big one for Ignition;  </span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>When you need one: network isolation</b>, the big one for Ignition. The gateway you deploy to sits behind a firewall or a customer VPN that GitHub's cloud can't reach. Also: compliance or data residency, real hardware, and cost at very high volume.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>When you don't:</b> everything in today's lab. Lint and validate run on a standard image, so use GitHub-hosted and move on. A runner host is a machine you now <b>own, patch, and monitor</b>.</span></li>
     </ul>
   </div>
@@ -1152,7 +1358,7 @@ jobs:
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>docs/self-hosted-runners.md</span></div>
 </section>
 
-<!-- 22 · SELF-HOSTED · THE ONE RULE -->
+<!-- 26 · SELF-HOSTED · THE ONE RULE -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -1161,7 +1367,7 @@ jobs:
 
   <div class="body">
     <div class="sechead">
-      <span class="num">13</span>
+      <span class="num">17</span>
       <div>
         <div class="title">The one rule, and the guardrails</div>
         <div class="lead">A self-hosted runner <b>executes arbitrary workflow code inside your network</b>, with the host's filesystem, network reach, and cached credentials. Treat it as highly trusted infrastructure.</div>
@@ -1173,12 +1379,6 @@ jobs:
           <div class="lab" style="color:var(--red)">Never do this</div>
           <p><b>Never attach a self-hosted runner to a public repo that accepts fork PRs.</b> A malicious PR edits the workflow, the runner dutifully executes it, and the result is exfiltrated secrets, a backdoor, a pivot into the PLC network. This is not theoretical.</p>
         </div>
-        <div class="code" style="margin-top:16px"><pre><span class="cm"># Settings → Actions → Runners → New self-hosted runner</span>
-<span class="cm"># GitHub generates these commands for you, token included:</span>
-curl -o actions-runner.tar.gz -L <span class="cmd2">https://github.com/actions/runner/…</span>
-tar xzf actions-runner.tar.gz
-./config.sh --url <span class="cmd2">https://github.com/&lt;you&gt;/&lt;repo&gt;</span> --token <span class="cmd2">ABC123…</span>
-./run.sh  <span class="cm"># polls for work; runs-on: self-hosted lands here</span></pre></div>
         <div class="callout" style="margin-top:16px">
           <div class="lab" style="color:var(--blue)">Same animal, other names</div>
           <p>Every CI platform has this exact concept: a small agent you install on your own machine that polls the server outbound for jobs. GitLab calls it a <b>Runner</b>, Azure DevOps a <b>self-hosted agent</b>, Jenkins an <b>agent</b> (or node), TeamCity a <b>build agent</b>. Learn it once, recognise it everywhere.</p>
@@ -1190,7 +1390,7 @@ tar xzf actions-runner.tar.gz
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Private repos only</b>, restricted workflow triggers, approval required for first-time contributors.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Network-isolate the runner:</b> its own subnet, only the outbound access it needs. Never production credentials on the host; short-lived tokens via OIDC.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>The runner only has what you put on it.</b> No preinstalled shellcheck, no Python: the "works on ubuntu-latest" assumption dies here. You'll see this live in the demo.</span></li>
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Where it sits for Ignition:</b> a dedicated build host with network access <b>to</b> the gateway, not on the gateway server itself. Hands-on in Labs 04 and 05.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Where it sits for Ignition:</b> a dedicated build host with network access <b>to</b> the gateway, not on the gateway server itself. Hands-on in Labs 04 and 06.</span></li>
         </ul>
       </div>
     </div>
@@ -1199,7 +1399,55 @@ tar xzf actions-runner.tar.gz
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Ephemeral · private · isolated · short-lived credentials</span></div>
 </section>
 
-<!-- 23 · CLOSING / HANDOFF -->
+<!-- 27 · REGISTER A RUNNER IN DOCKER -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Self-hosted runners · registering one</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">18</span>
+      <div>
+        <div class="title">Register an ephemeral runner in Docker with a short-lived registration token</div>
+        <div class="lead">A runner joins a repo with a <b>registration token</b>. <span class="mono">gh api</span> mints one with your existing login, valid for about an hour. The <span class="mono">myoung34/github-runner</span> image wraps GitHub's runner agent, so one <span class="mono">docker run</span> registers it and starts polling.</div>
+      </div>
+    </div>
+    <div class="cols2">
+      <div>
+        <div class="code"><pre><span class="cm"># your repo, detected from the clone</span>
+REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
+
+<span class="cm"># short-lived registration token (expires in ~1 h)</span>
+RUNNER_TOKEN=$(gh api -X POST \
+  <span class="cmd2">"repos/$REPO/actions/runners/registration-token"</span> --jq .token)
+
+<span class="cm"># one container = one runner</span>
+docker run -d --rm --name lab03-runner \
+  -e REPO_URL=<span class="cmd2">"https://github.com/$REPO"</span> \
+  -e RUNNER_TOKEN=<span class="cmd2">"$RUNNER_TOKEN"</span> \
+  -e LABELS=<span class="cmd2">"self-hosted,local-lab03"</span> \
+  -e EPHEMERAL=true \
+  myoung34/github-runner:latest
+
+docker logs -f lab03-runner   <span class="cm"># → "Listening for Jobs"</span></pre></div>
+      </div>
+      <div>
+        <ul class="checks">
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Labels route jobs.</b> A job with <span class="mono">runs-on: [self-hosted, local-lab03]</span> waits until a runner carrying <b>all</b> those labels picks it up. A typo means the job sits queued forever.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b><span class="mono">EPHEMERAL=true</span>:</b> one job, then the runner deregisters and the container exits (<span class="mono">--rm</span> removes it). Nothing survives into the next job.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Where to look:</b> <span class="mono">docker logs</span> shows only the runner's side (<i>Running job</i>, <i>completed</i>). The job's own output is in the <b>run log</b>: <span class="mono">gh run view --log</span>.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Production route:</b> Settings → Actions → Runners → New self-hosted runner generates the commands to install the agent on a host (<span class="mono">config.sh</span>, then <span class="mono">run.sh</span>, usually as a service). Same agent, same token, no container.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 3 optional hands-on · docs/self-hosted-runners.md</span></div>
+</section>
+
+<!-- 28 · CLOSING / HANDOFF -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -1211,7 +1459,7 @@ tar xzf actions-runner.tar.gz
     <div class="title" style="max-width:24ch;color:#fff">Next: we <em style="font-style:normal;color:var(--peri2)">break</em> the project on purpose, and let the machines find it.</div>
     <ul class="checks" style="max-width:960px;margin-top:22px">
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>We-do (10:00).</b> <span class="mono">scripts/seed.sh</span> plants seven realistic bugs, including the brittle binding and the runaway poll you just saw. We run every linter live, read the output, fix one finding each. Then we build <span class="mono">lab03-ci.yml</span> from scratch, open a PR, watch a secret get masked, and register an ephemeral runner.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You-do (11:00, breakout rooms).</b> You hunt the remaining findings yourself, tune <span class="mono">.yamllint.yml</span>, then finish the workflow in <b>your own repo</b>: path filters, compose validation, a badge, and a required check that blocks a red PR.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You-do (11:00, breakout rooms).</b> You hunt the remaining findings yourself, read how <span class="mono">.yamllint.yml</span> documents a deliberate mute, then finish the workflow in <b>your own repo</b>: path filters, compose validation, and a ruleset whose required checks block a red PR.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>The payoff.</b> By lunch, "broken project files can't reach <span class="mono">main</span>" is not a promise, it's a setting. <b>After lunch (Lab 04) we point that green pipeline at a real gateway and actually deploy.</b></span></li>
     </ul>
   </div>
@@ -1222,7 +1470,7 @@ tar xzf actions-runner.tar.gz
 </div>
 
 <div class="hud"><div class="bar" id="bar"></div></div>
-<div class="pager" id="pager">01 / 23</div>
+<div class="pager" id="pager">01 / 28</div>
 <div class="hint" id="hint">↑ ↓ slides · ← → step the animation</div>
 
 <script>

@@ -52,10 +52,14 @@ Lingering offline runners in your settings page is a smell — clean them up.
 ### Docker-based ephemeral (lab choice)
 
 ```bash
+# a short-lived registration token, minted with your existing gh login
+RUNNER_TOKEN=$(gh api -X POST "repos/<you>/<repo>/actions/runners/registration-token" --jq .token)
+
 docker run -d --rm \
   --name my-runner \
-  -e REPO_URL="https://github.com/user/repo" \
-  -e RUNNER_TOKEN="..." \
+  -e REPO_URL="https://github.com/<you>/<repo>" \
+  -e RUNNER_TOKEN="$RUNNER_TOKEN" \
+  -e LABELS="self-hosted,local-lab03" \
   -e EPHEMERAL=true \
   myoung34/github-runner:latest
 ```
@@ -89,7 +93,7 @@ For an Ignition CI/CD pipeline:
 - **What it deploys.** File-based deploys: rsync or scp the project into `<gateway>/data/projects/<project>/`. Then poke the gateway's REST API to scan for project changes.
 - **Permissions.** The runner needs to write to gateway data directories. Use a dedicated service account, not your personal credentials.
 
-We'll build a real Ignition deploy job (against a sandbox gateway) in Lab 05.
+You'll run a real Ignition deploy job on a self-hosted runner in Labs 04 and 06 (Lab 05's image-based deploy stays on GitHub-hosted runners).
 
 ## Further reading
 
