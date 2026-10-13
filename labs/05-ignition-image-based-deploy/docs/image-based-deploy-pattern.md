@@ -34,7 +34,7 @@ tag lab05-v0.1.0 (on main) ─▶ promote ─┘ re-tag :test ──▶ :v0.1.0 
                         (no rebuild — same digest)
 ```
 
-`lab05-release.yml` does **not** rebuild on a tag. It runs `docker buildx imagetools create` to copy the manifest of the already-tested **`:test`** image (the one test is running) onto new tags (`:v0.1.0`, `:production`; the git tag's `lab05-` prefix is stripped, it only keeps this lab's release from firing other labs' workflows in the shared course repo). Server-side, no layers moved. (Why `:test` and not a rebuild from the tagged commit? A rebuild could pull a newer base layer and ship bytes test never ran — we promote *what test validated*.) Prove it:
+`lab05-release.yml` does **not** rebuild on a tag. It runs `docker buildx imagetools create` to copy the manifest of the already-tested **`:test`** image (the one test is running) onto new tags (`:v0.1.0`, `:production`; the git tag's `lab05-` prefix is stripped, it only keeps this lab's release from firing other labs' workflows in the shared course repo). Server-side, no layers moved. (Why `:test` and not a rebuild from the tagged commit? A rebuild could pull a newer base layer and ship bytes test never ran: we promote *what test validated*.) Because `:test` moves with every merge, the release first reads its `org.opencontainers.image.revision` label and fails unless that build has the tagged commit's image inputs, so a tag pushed too early or on the wrong commit never promotes a different image. Prove the promotion:
 
 ```bash
 docker inspect -f '{{.Image}}' lab05-ignition-test
@@ -59,7 +59,7 @@ That's why this lab needs no runner at all: with the build off-box, what's left 
 
 - **Push** (build/promote jobs): the workflow requests `permissions: packages: write` and logs in with the built-in `GITHUB_TOKEN`. No PAT, no stored registry password.
 - **Pull** (a deploy job, once you have one): log in with the same `GITHUB_TOKEN`. Pulling needs only `packages: read`, which `write` includes.
-- **First push** creates the package in your fork's namespace, **private** by default. Pulling it by hand therefore needs a one-off `docker login ghcr.io`; flip the package public if you'd rather pull anonymously.
+- **First push** creates the package in your fork's namespace, **private** by default. Pulling it by hand therefore needs a one-off login with a token that has `read:packages` (`gh auth refresh -h github.com -s read:packages`, then `gh auth token | docker login ghcr.io -u <your-user> --password-stdin`); flip the package public if you'd rather pull anonymously.
 - **Don't** hand a deploy runner a broad PAT "to be safe." The job-scoped `GITHUB_TOKEN` is enough and expires with the run.
 
 ## File-based vs image-based: when each fits

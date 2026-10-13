@@ -42,7 +42,8 @@ ARG GATEWAY_DATA_PATH=/usr/local/bin/ignition/data
 # Project content changes most often → keep it last so a project edit doesn't
 # bust the (larger, slower) module layer above it.
 
-# 1. Third-party .modl binaries — large, rarely change. Mounted at runtime via
+# 1. Third-party .modl binaries: large, rarely change. The gateway loads them
+#    from here because it runs with
 #    -Dignition.gateway.externalModulesFolder=/third-party-modules (see compose).
 COPY --chown=2003:0 third-party-modules/  /third-party-modules/
 

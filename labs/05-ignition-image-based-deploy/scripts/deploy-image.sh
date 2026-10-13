@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# deploy-image.sh — the LOCAL mirror of the CI deploy step.
+# deploy-image.sh: the deploy one-liner, plus a wait and a token reinstall.
 #
 # Recreates a gateway container from a given image tag and waits for it to come
-# back healthy. This is the "pull → run" half of the image-based pattern — the
+# back healthy. This is the "pull → run" half of the image-based pattern: the
 # half that has to happen next to the gateway, which is why this lab has you run
-# it by hand instead of from CI.
+# it by hand (no workflow deploys anything in this lab).
 #
 # How it works: docker-compose.yaml reads IGNITION_TEST_IMAGE / IGNITION_PRODUCTION_IMAGE
 # to decide which image the test/production gateway runs. This script sets that variable
@@ -71,7 +71,7 @@ while [ $attempts -lt $max_attempts ]; do
   if curl -fsS --max-time 3 "$URL/StatusPing" 2>/dev/null | grep -q RUNNING; then
     echo ""
     echo -e "${GREEN}$ENV_NAME gateway RUNNING — now serving $IMAGE${NC}"
-    echo "  Verify which image it runs: docker inspect -f '{{.Config.Image}}' $CONTAINER"
+    echo "  Verify which build it runs: docker inspect -f '{{ index .Config.Labels \"org.opencontainers.image.revision\" }}' $CONTAINER"
     # A recreated container has no API token (tokens are never baked into the
     # image) and commissioning reset the scan permissions — reinstall both so
     # the gateway stays scannable with the generated key in .env. Skips

@@ -10,7 +10,7 @@ The [`Dockerfile`](../Dockerfile) bakes the *deployable state* of a gateway on t
 |---|---|---|
 | `third-party-modules/*.modl` | `/third-party-modules/` | The gateway loads them via `-Dignition.gateway.externalModulesFolder`. Baking them = the module binaries ship with the artifact. |
 | `services/modules.json` | `data/modules.json` | Which modules turn on at boot. **A scan can't apply this — only a restart can.** That's the Lab 04 gap image-based closes. |
-| `services/config/` | `data/config/` | Gateway-level config (DB connections, tag providers). Scanned at startup. The scan-API token is deliberately NOT baked — a published image must never carry credentials; deploys reinstall it into the container (`scripts/install-api-token.sh`). |
+| `services/config/` | `data/config/` | Gateway-level config (DB connections, tag providers). Scanned at startup. The scan-API token is deliberately NOT baked — a published image must never carry credentials; deploys reinstall it into the container (`scripts/install-api-token.sh`). A `RUN sed` right after this `COPY` re-arms the OPC UA module's one-time flag, so each gateway creates its own `opcua-module` login (the user source every OPC tag reads through) at first boot. |
 | `projects/` | `data/projects/` | Project content (Perspective views, scripts, tags). Scanned at startup. |
 
 Everything else in the repo — docs, scripts, `.github/`, `.env` — is kept out by [`.dockerignore`](../.dockerignore). So is anything that belongs to **one** gateway rather than the artifact: the internal identity (`user-source/default/` holds an admin password hash — baking it would ship one gateway's login to every gateway running the image), per-instance keystores/UUIDs (`config/local/`, `config/resources/local/`), and `security-properties` (it names the internal user source, which isn't in the image — commissioning creates a fresh `default` identity from the container's `GATEWAY_ADMIN_*` env vars instead).
@@ -31,15 +31,17 @@ FROM inductiveautomation/ignition:${IGNITION_VERSION}
 Each `COPY` is its own layer. Docker caches a layer keyed on its inputs and reuses it on rebuild if nothing changed. So order from **least- to most-frequently-changed**:
 
 ```dockerfile
-COPY third-party-modules/  ...   # big, rarely changes  → top (rebuilt least often)
-COPY services/modules.json ...
-COPY services/config/      ...
-COPY projects/             ...   # changes daily        → bottom (rebuilt most often)
+COPY --chown=2003:0 third-party-modules/  ...   # big, rarely changes  → first (rebuilt least often)
+RUN sha256sum /third-party-modules/*.modl ...  # 5 s stand-in for a module scan
+COPY --chown=2003:0 services/modules.json ...
+COPY --chown=2003:0 services/config/      ...
+RUN sed -i ... one-time/config.json            # OPC UA module recreates its login
+COPY --chown=2003:0 projects/             ...   # changes daily        → last (rebuilt most often)
 ```
 
-Editing a Perspective view busts only the bottom layer and anything below it. If you put `projects/` at the top, every view tweak would also re-copy the (much larger) modules layer. Same files, slower builds.
+Editing a Perspective view busts only the last layer. If you put `projects/` first, every view tweak would also re-copy the modules and pay the 5-second module check again. Same files, slower builds.
 
-> A busted layer busts **all layers after it**. That's why "most volatile last" works: the volatile thing has nothing expensive beneath it to invalidate.
+> A busted layer busts **all layers after it**. That's why "most volatile last" works: the volatile thing has nothing expensive after it to invalidate.
 
 ## Tagging strategy
 
@@ -49,10 +51,10 @@ One image, several names:
 |---|---|---|---|
 | `:sha-<short>` | **Immutable** | build | The thing you actually deploy. A SHA tag always points at one specific build. |
 | `:test` | Moving | build | "Whatever's latest on test." Convenient pointer, never deploy *by this name* (it moves under you). |
-| `:vX.Y.Z` | **Immutable** | promote | A released version. Re-tag of the tested `:sha-…`, no rebuild. |
+| `:vX.Y.Z` | **Immutable** | promote | A released version. Re-tag of the tested `:test` image (checked to be the tagged commit's build), no rebuild. |
 | `:production` | Moving | promote | "Whatever's live in production." Same caveat as `:test`. |
 
-Rule of thumb: **deploy immutable tags, navigate with moving tags.** `lab05-deploy.yml` recreates the gateway from `:sha-<short>`, not `:test`, precisely so the running container pins to one build.
+Rule of thumb: **deploy immutable tags, navigate with moving tags.** That's why `lab05-deploy.yml`'s run summary hands you the `:sha-<short>` name to deploy, not `:test`: the running container pins to one build. (Neither workflow deploys anything itself; you recreate the gateway by hand.)
 
 ## Provenance labels
 
@@ -88,7 +90,7 @@ The **build context** is the tarball Docker sends the daemon before running the 
 
 ## When you'd reach for more
 
-This Dockerfile is deliberately single-stage — the IA image *is* the runtime, and we only copy files. You'd add a **builder stage** when you need tools that shouldn't ship in the final image:
+This Dockerfile is deliberately single-stage: the IA image *is* the runtime, and we only copy files and run two tiny shell steps. You'd add a **builder stage** when you need tools that shouldn't ship in the final image:
 
 - Compiling a custom Ignition module from source.
 - Running a project/JSON linter or codegen that needs a toolchain.
