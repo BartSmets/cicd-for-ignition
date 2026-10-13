@@ -1,19 +1,24 @@
 name: Preflight · CI
 
-# The preflight script is the first thing students run in a CI/CD course, so it
-# should practise what it preaches: syntax-check and lint the shell on every
-# push/PR that touches it. shellcheck is pinned to a fixed version so the result
-# is reproducible and doesn't drift with whatever the runner image ships.
+# The preflight script (and the course-setup.sh that runs it) is the first thing
+# students run in a CI/CD course, so it should practise what it preaches:
+# syntax-check and lint the shell on every push/PR that touches it. shellcheck
+# is pinned to a fixed version so the result is reproducible and doesn't drift
+# with whatever the runner image ships.
 
 on:
   push:
     branches: [main]
     paths:
       - "preflight/**"
+      - "course-setup.sh"
+      - "scripts/install-git-config.sh"
       - ".github/workflows/preflight-ci.yml"
   pull_request:
     paths:
       - "preflight/**"
+      - "course-setup.sh"
+      - "scripts/install-git-config.sh"
       - ".github/workflows/preflight-ci.yml"
 
 env:
@@ -31,7 +36,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: bash syntax check
-        run: bash -n scripts/preflight.sh
+        run: |
+          bash -n scripts/preflight.sh
+          bash -n ../course-setup.sh
+          bash -n ../scripts/install-git-config.sh
 
       # Unpacks into $RUNNER_TEMP rather than the checkout so the extracted
       # shellcheck-*/ folder can't end up inside the preflight/ tree.
@@ -44,4 +52,4 @@ jobs:
           shellcheck --version
 
       - name: shellcheck
-        run: shellcheck scripts/*.sh
+        run: shellcheck scripts/*.sh ../course-setup.sh ../scripts/install-git-config.sh

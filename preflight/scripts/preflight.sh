@@ -132,12 +132,10 @@ is_wsl() {
 # ---------------------------------------------------------------------------
 # Docker / smoke-test helpers (shared by the image + smoke checks)
 # ---------------------------------------------------------------------------
-# The labs span two Ignition versions, so both have to be on the laptop before
-# Day 1. IGNITION_IMAGE is the one the smoke test and the bind-mount check run
-# against — they only ever need a single gateway — while IGNITION_IMAGES is the
-# full set that gets pulled.
-IGNITION_IMAGE="inductiveautomation/ignition:8.3.6"
-IGNITION_IMAGES="$IGNITION_IMAGE inductiveautomation/ignition:8.3.8"
+# The Ignition image every lab runs. The smoke test and the bind-mount check
+# start it, and the image pull below fetches it with the other course images.
+# When the labs move to a new Ignition version, change it here too.
+IGNITION_IMAGE="inductiveautomation/ignition:8.3.8"
 SMOKE_CONTAINER="mustry-preflight-gateway"
 
 # docker_ready — Docker is installed AND its daemon answers.
@@ -246,15 +244,30 @@ container_cert_issuer() {
 # Images every lab laptop needs. Pulled in full during the preflight so the
 # multi-GB download happens a week early and not over classroom Wi-Fi — and
 # because Docker Hub rate-limits anonymous pulls PER IP ADDRESS, a whole room
-# behind one NAT pulling on Day 1 gets throttled. (Capstone server-side images
-# such as caddy/postgres are deliberately not in this list.)
-# migrate/migrate (Labs 06-07 scripts/migrate.sh) and alpine:3 (the Labs 04-06
-# setup.sh volume probe) are small, but come from Docker Hub too, on the day.
-COURSE_IMAGES="$IGNITION_IMAGES timescale/timescaledb:latest-pg16 myoung34/github-runner:latest migrate/migrate:v4.17.1 alpine:3"
+# behind one NAT pulling on Day 1 gets throttled. (The server-side images
+# behind Lab 07's production gateway are deliberately not in this list.)
+# timescaledb:latest-pg16 is the Labs 04-06 database, 2.30.2-pg17 the Lab 07
+# one (demo-oatmakers). migrate/migrate (Lab 06 scripts/migrate.sh) and
+# alpine:3 (the Labs 04-06 setup.sh volume probe) are small, but come from
+# Docker Hub too, on the day.
+COURSE_IMAGES="$IGNITION_IMAGE timescale/timescaledb:latest-pg16 timescale/timescaledb:2.30.2-pg17 myoung34/github-runner:latest migrate/migrate:v4.17.1 alpine:3"
 
-# Host ports the lab compose files publish (labs 02–07). 80/443 are only used
-# by the capstone's server-side stack, so they are not checked here.
+# Host ports the lab compose files publish by default (labs 02-07). 80/443 are
+# only used by Lab 07's server-side stack, so they are not checked here.
 LAB_PORTS="8088 8089 8090 8060 8061 8062 5432"
+
+# port_env_var PORT: the variable in a lab's .env that moves PORT to another
+# host port, or nothing when the port has no such variable. Labs 04-06 run
+# test on 8089 and production on 8090; Lab 07 has no production gateway on
+# the laptop and runs test on 8090 (TEST_GATEWAY_PORT there).
+port_env_var() {
+  case "$1" in
+    8088) echo "GATEWAY_PORT" ;;
+    8089) echo "TEST_GATEWAY_PORT" ;;
+    8090) echo "PRODUCTION_GATEWAY_PORT" ;;
+    5432) echo "POSTGRES_PORT" ;;
+  esac
+}
 
 # docker_hub_logged_in — Docker keeps a per-registry entry in config.json once
 # `docker login` has succeeded, even when the secret itself lives in a
@@ -688,7 +701,7 @@ if command -v gh >/dev/null 2>&1; then
       log_missing "$REQUIRED" "git has no way to authenticate to GitHub (no credential helper, no SSH key)" "Run 'gh auth setup-git' — GitHub does not accept passwords for git push"
     fi
   else
-    log_missing "$REQUIRED" "gh is not authenticated" "Run 'gh auth login' and follow the prompts"
+    log_missing "$REQUIRED" "gh is not authenticated" "Run 'gh auth login -s workflow' and follow the prompts"
   fi
 else
   log_missing "$REQUIRED" "gh (GitHub CLI) not found" "Install from https://cli.github.com/"
@@ -913,7 +926,7 @@ else
           done
           if [ -z "$CA_FAILED_HOST" ]; then
             log_pass "Containers can reach GitHub over HTTPS using your corporate CA ($CORP_CA_FILE; proxy issuer: ${ISSUER:-unknown})"
-            log_info "Remember the docker-compose.corp-ca.yaml override for the Lab 06 / capstone runner — see troubleshooting.md → 'TLS interception detected'"
+            log_info "Remember the docker-compose.corp-ca.yaml override for the Lab 06 / Lab 07 runner: see troubleshooting.md → 'TLS interception detected'"
           elif [ "$CA_RC" -eq 60 ]; then
             log_missing "$REQUIRED" "TLS interception detected: $CORP_CA_FILE does not make $CA_FAILED_HOST verify (issuer: ${ISSUER:-unknown})" "Wrong certificate, or a different CA is used for this host. Export the root named as issuer above — see troubleshooting.md → 'TLS interception detected'"
           else
@@ -927,12 +940,15 @@ else
   fi
 fi
 
-# --- Host ports (required) -------------------------------------------------
-# The labs publish fixed ports. Rather than reading the host's listener table
+# --- Host ports (required; recommended where a lab .env can move it) -------
+# The labs publish default ports. Rather than reading the host's listener table
 # (which on WSL2 can't see Windows programs), bind them all through Docker's
-# real publish path with a container that exits immediately — if a port is
+# real publish path with a container that exits immediately: if a port is
 # taken, the run fails naming it. A locally installed PostgreSQL (5432) or
-# Ignition (8088) are the usual culprits.
+# Ignition (8088) are the usual culprits. The gateway and database ports can
+# be moved per lab with GATEWAY_PORT / TEST_GATEWAY_PORT /
+# PRODUCTION_GATEWAY_PORT / POSTGRES_PORT in that lab's .env, so a busy one is
+# a warning that says how; a busy port without such a variable still fails.
 section "Host ports"
 if ! docker_ready; then
   log_warn "Skipping port check (Docker not available)" "Fix Docker first, then re-run"
@@ -944,14 +960,32 @@ else
   if docker run --rm "${PORT_ARGS[@]}" "$CURL_IMAGE" --version >/dev/null 2>&1; then
     log_pass "Lab ports are free ($LAB_PORTS)"
   else
-    BUSY_PORTS=""
+    BUSY_FIXED=""      # busy, and no lab .env variable can move it
+    BUSY_MOVABLE=""    # busy, but movable with a lab .env variable
+    MOVE_HINT=""
     for port in $LAB_PORTS; do
       if ! docker run --rm -p "$port:$port" "$CURL_IMAGE" --version >/dev/null 2>&1; then
         owner="$(port_owner "$port")"
-        BUSY_PORTS="$BUSY_PORTS $port${owner:+ ($owner)}"
+        var="$(port_env_var "$port")"
+        if [ -n "$var" ]; then
+          BUSY_MOVABLE="$BUSY_MOVABLE $port${owner:+ ($owner)}"
+          MOVE_HINT="$MOVE_HINT $var=1$port"
+          # Lab 07 has no production gateway on the laptop: 8090 is its test one.
+          [ "$port" = "8090" ] && MOVE_HINT="$MOVE_HINT (Lab 07: TEST_GATEWAY_PORT=18090)"
+        else
+          BUSY_FIXED="$BUSY_FIXED $port${owner:+ ($owner)}"
+        fi
       fi
     done
-    log_missing "$REQUIRED" "Port(s) already in use:${BUSY_PORTS:- (could not tell which)}" "Stop whatever is listening: 'docker compose down' in a lab you left running, or a local Ignition gateway (8088) / PostgreSQL (5432). On WSL2 the owner may be a Windows program that isn't visible from here"
+    STOP_HINT="Stop whatever is listening: 'docker compose down' in a lab you left running, or a local Ignition gateway (8088) / PostgreSQL (5432). On WSL2 the owner may be a Windows program that isn't visible from here"
+    if [ -n "$BUSY_MOVABLE" ]; then
+      log_warn "Port(s) already in use:$BUSY_MOVABLE" "$STOP_HINT. If you can't free it, move the lab to another host port in that lab's .env, e.g.$MOVE_HINT. See troubleshooting.md → 'Port(s) already in use'"
+    fi
+    if [ -n "$BUSY_FIXED" ]; then
+      log_missing "$REQUIRED" "Port(s) already in use:$BUSY_FIXED" "$STOP_HINT. See troubleshooting.md → 'Port(s) already in use'"
+    elif [ -z "$BUSY_MOVABLE" ]; then
+      log_missing "$REQUIRED" "Port(s) already in use: (could not tell which)" "$STOP_HINT. See troubleshooting.md → 'Port(s) already in use'"
+    fi
   fi
 fi
 
@@ -993,15 +1027,29 @@ elif ! docker image inspect "$IGNITION_IMAGE" >/dev/null 2>&1; then
 else
   bind_mount_cleanup
   trap 'bind_mount_cleanup' EXIT
-  if mkdir -p "$BIND_MOUNT_DIR" 2>/dev/null \
-     && chmod g+w,g+s "$BIND_MOUNT_DIR" 2>/dev/null \
-     && docker run --rm --user 2003:0 --group-add "$(id -g)" \
-          -v "$BIND_MOUNT_DIR:/preflight-mount" --entrypoint sh "$IGNITION_IMAGE" \
-          -c 'touch /preflight-mount/.written' >/dev/null 2>&1 \
-     && [ -e "$BIND_MOUNT_DIR/.written" ]; then
-    log_pass "The gateway container (uid 2003, with your group) can write to a directory mounted from here"
+  # Each step is reported on its own, so a refused chmod is never mistaken
+  # for a container that cannot write.
+  if ! mkdir -p "$BIND_MOUNT_DIR" 2>/dev/null; then
+    log_missing "$REQUIRED" "Could not create a directory in $PREFLIGHT_DIR" "You need to own the course repo. Check with 'ls -ld $PREFLIGHT_DIR'; a clone made with sudo is owned by root, so re-clone it as yourself"
+  elif ! chmod g+w "$BIND_MOUNT_DIR" 2>/dev/null; then
+    log_missing "$REQUIRED" "chmod g+w is not permitted on directories in $PREFLIGHT_DIR" "The labs make their mounted folders group-writable, so you need to own the course repo. Check with 'ls -ld $PREFLIGHT_DIR'"
   else
-    log_missing "$REQUIRED" "The gateway container (uid 2003, with your group) cannot write to a directory mounted from $PREFLIGHT_DIR" "The labs' ./projects and ./services/config must be writable by the gateway — see troubleshooting.md → 'The gateway container cannot write to a directory mounted from here'"
+    # The labs' setup scripts try setgid and carry on without it, so a refusal
+    # is a warning. Typical cause: the directory's group (e.g. wheel on macOS
+    # under /tmp) is not one of your groups.
+    if ! chmod g+s "$BIND_MOUNT_DIR" 2>/dev/null; then
+      # GNU stat first, BSD (macOS) stat as the fallback.
+      BM_GROUP="$(stat -c %G "$BIND_MOUNT_DIR" 2>/dev/null || stat -f %Sg "$BIND_MOUNT_DIR" 2>/dev/null || echo unknown)"
+      log_warn "chmod g+s (setgid) is not permitted on directories in $PREFLIGHT_DIR (group: $BM_GROUP)" "The labs work without it, but files the gateway creates won't inherit the folder's group. Usually the folder belongs to a group you are not in: keep the course repo under your home directory (~/mustry-academy)"
+    fi
+    if docker run --rm --user 2003:0 --group-add "$(id -g)" \
+         -v "$BIND_MOUNT_DIR:/preflight-mount" --entrypoint sh "$IGNITION_IMAGE" \
+         -c 'touch /preflight-mount/.written' >/dev/null 2>&1 \
+       && [ -e "$BIND_MOUNT_DIR/.written" ]; then
+      log_pass "The gateway container (uid 2003, with your group) can write to a directory mounted from here"
+    else
+      log_missing "$REQUIRED" "The gateway container (uid 2003, with your group) cannot write to a directory mounted from $PREFLIGHT_DIR" "The labs' ./projects and ./services/config must be writable by the gateway: see troubleshooting.md → 'The gateway container cannot write to a directory mounted from here'"
+    fi
   fi
   bind_mount_cleanup
 fi

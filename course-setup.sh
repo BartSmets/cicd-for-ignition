@@ -22,12 +22,33 @@ WARNINGS=0; FAILURES=0
 
 step() { echo; echo "── $* ──────────────────────────────────────────"; }
 
+echo "CI/CD for Ignition: course setup"
+echo "Step 4 asks for a GitHub classic Personal Access Token with the 'repo' scope"
+echo "(github.com/settings/tokens → Generate new token (classic)). Have it ready, or"
+echo "press Enter at the prompt and add it to labs/04-*/.env and labs/06-*/.env later."
+
 # ---- 1. Preflight -------------------------------------------------------------
 step "1/4 Preflight"
+PREFLIGHT_REPORT="preflight/preflight-report.txt"
 if ./preflight/scripts/preflight.sh "$@"; then
-    ok "Preflight passed (report: preflight/preflight-report.txt)"
+    ok "Preflight passed (report: $PREFLIGHT_REPORT)"
+    preflight_ok=1
 else
-    fail "Preflight found problems — fix those first (report: preflight/preflight-report.txt)"
+    preflight_ok=0
+fi
+# Count preflight's own failures and warnings in the summary below, so
+# "N problem(s)" matches what preflight printed. Its report ends with
+# "Summary: N failures, M warnings".
+pf_failures="$(sed -n 's/^Summary: \([0-9]*\) failures.*/\1/p' "$PREFLIGHT_REPORT" 2>/dev/null | tail -1)"
+pf_warnings="$(sed -n 's/^Summary: [0-9]* failures, \([0-9]*\) warnings.*/\1/p' "$PREFLIGHT_REPORT" 2>/dev/null | tail -1)"
+WARNINGS=$((WARNINGS + ${pf_warnings:-0}))
+if [ "$preflight_ok" -eq 0 ]; then
+    if [ "${pf_failures:-0}" -gt 0 ]; then
+        echo -e "${RED}✗${NC} Preflight: $pf_failures required check(s) failed. Fix those first (report: $PREFLIGHT_REPORT)"
+        FAILURES=$((FAILURES + pf_failures))
+    else
+        fail "Preflight failed. Fix that first (report: $PREFLIGHT_REPORT)"
+    fi
 fi
 
 # ---- 2. Git config ------------------------------------------------------------
@@ -56,7 +77,7 @@ fi
 if ! command -v gh >/dev/null 2>&1; then
     fail "GitHub CLI (gh) not found — preflight explains how to install it"
 elif ! gh auth status >/dev/null 2>&1; then
-    fail "gh is not logged in. Run: gh auth login"
+    fail "gh is not logged in. Run: gh auth login -s workflow"
 elif [ -n "$fork_slug" ] && [ "$fork_owner" != "Mustry-Academy" ]; then
     default_repo="$(gh repo set-default --view 2>/dev/null || true)"
     if [ "$default_repo" = "$fork_slug" ]; then

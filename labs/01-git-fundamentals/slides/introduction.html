@@ -234,7 +234,7 @@ body{
     </div>
   </div>
 
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Lab 01 today → Lab 07 capstone</span></div>
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Lab 01 today → Lab 07 multi-gateway</span></div>
 </section>
 
 <!-- 4 · FORK THE REPO -->
@@ -250,35 +250,35 @@ body{
     <div class="sechead">
       <span class="num">03</span>
       <div>
-        <div class="title">Get your own copy — fork the repo</div>
-        <div class="lead">The whole course lives in one repo on <b>GitHub</b>, one folder per lab. <b>Fork</b> it to your own account once — that gives you a personal copy to commit to, branch, and break things in safely.</div>
+        <div class="title">Get your own copy: fork the repo</div>
+        <div class="lead">The whole course lives in one repo on <b>GitHub</b>, one folder per lab. <b>Fork</b> it to your own account once. That gives you a personal copy to commit to, branch, and break things in safely.</div>
       </div>
     </div>
     <div class="tiles">
       <div class="tile">
         <div class="step">STEP 01</div>
-        <div class="val">Open the repo</div>
-        <div class="note">Go to the course's GitHub page — we'll drop the link in the chat.</div>
+        <div class="val">One folder</div>
+        <div class="note">Make <span class="mono">~/mustry-academy/</span> the home for the whole series. On Windows: your <b>Linux</b> home in WSL.</div>
       </div>
       <div class="tile">
         <div class="step">STEP 02</div>
-        <div class="val">Click Fork</div>
-        <div class="note">Top-right of the page. Pick <b>your own account</b> as the owner and confirm.</div>
+        <div class="val">Fork &amp; clone</div>
+        <div class="note"><span class="mono">gh repo fork --clone</span> forks the course repo to <b>your own account</b> and clones your fork, in one go.</div>
       </div>
       <div class="tile">
         <div class="step">STEP 03</div>
-        <div class="val">Clone it</div>
-        <div class="note">Copy your fork's URL and clone it to your machine, or open it in VS Code.</div>
+        <div class="val">Check origin</div>
+        <div class="note"><span class="mono">git remote -v</span>: <span class="mono">origin</span> shows <b>your username</b>. An <span class="mono">upstream</span> at Mustry-Academy is fine.</div>
       </div>
       <div class="tile">
         <div class="step">STEP 04</div>
         <div class="val">Work freely</div>
-        <div class="note">Commit, branch and push — it's all in <b>your</b> fork, separate from everyone else.</div>
+        <div class="note">Commit, branch and push: it's all in <b>your</b> fork, separate from everyone else.</div>
       </div>
     </div>
     <div class="callout" style="margin-top:22px">
-      <div class="lab">Clone your fork</div>
-      <p><span class="mono" style="color:var(--blue-d)">git clone https://github.com/&lt;your-username&gt;/cicd-for-ignition.git</span><br>Because it's <b>your</b> fork, you can <span class="mono">push</span> to it freely — your work never collides with anyone else's.</p>
+      <div class="lab">Fork and clone, from your terminal</div>
+      <p><span class="mono" style="color:var(--blue-d)">mkdir -p ~/mustry-academy &amp;&amp; cd ~/mustry-academy &amp;&amp; gh repo fork Mustry-Academy/cicd-for-ignition --clone</span><br>Already did this before the session? Then you're set. Because it's <b>your</b> fork, your work never collides with anyone else's.</p>
     </div>
   </div>
 
@@ -299,18 +299,18 @@ body{
       <span class="num">04</span>
       <div>
         <div class="title">Why we're not using Windows</div>
-        <div class="lead">Nothing against Windows — but <b>CI/CD lives in the Linux world</b>, so that's where we work.</div>
+        <div class="lead">Nothing against Windows, but <b>CI/CD lives in the Linux world</b>, so that's where we work.</div>
       </div>
     </div>
     <ul class="checks" style="max-width:880px">
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>The pipeline runs on Linux.</b> GitHub Actions runners are Linux machines — working the same way locally means what works on your laptop also works in CI.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Deployments land on Linux.</b> Production Ignition gateways run on Linux-based systems — servers and containers alike. What we build here has to run <b>there</b>.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>File paths are different.</b> Windows says <span class="mono">C:\Projects\app</span>, Linux says <span class="mono">/home/you/app</span> — different separators, no drive letters, and case-sensitive. Scripts that mix the two break in confusing ways.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Line endings: CRLF vs LF.</b> Windows ends lines with <span class="mono">CRLF</span>, Linux with <span class="mono">LF</span>. One stray <span class="mono">CR</span> silently breaks shell scripts and pollutes Git diffs — a classic time-sink we skip entirely.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>The pipeline runs on Linux.</b> GitHub Actions runners are Linux machines. Working the same way locally means what works on your laptop also works in CI.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Deployments land on Linux.</b> Production Ignition gateways run on Linux-based systems, servers and containers alike. What we build here has to run <b>there</b>.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>File paths are different.</b> Windows says <span class="mono">C:\Projects\app</span>, Linux says <span class="mono">/home/you/app</span>: different separators, no drive letters, and case-sensitive. Scripts that mix the two break in confusing ways.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Line endings: CRLF vs LF.</b> Windows ends lines with <span class="mono">CRLF</span>, Linux with <span class="mono">LF</span>. One stray <span class="mono">CR</span> silently breaks shell scripts and pollutes Git diffs: a classic time-sink we skip entirely.</span></li>
     </ul>
     <div class="callout" style="margin-top:22px">
       <div class="lab">On a Windows machine?</div>
-      <p>You're not excluded — install <b>WSL2</b>, enable Docker Desktop's <b>WSL2 backend</b>, and run all lab commands <b>inside WSL</b>, not in PowerShell or Git Bash. See the platform notes in your welcome package.</p>
+      <p>You're not excluded: install <b>WSL2</b>, enable Docker Desktop's <b>WSL2 backend</b>, and run all lab commands <b>inside WSL</b>, not in PowerShell or Git Bash. See the platform notes in your welcome package.</p>
     </div>
   </div>
 
@@ -358,7 +358,7 @@ body{
     </div>
     <div class="callout" style="margin-top:22px">
       <div class="lab">Questions</div>
-      <p><b>Interrupt us anytime</b> — if something isn't clear to you, it probably isn't clear to others either. And for <b>sensitive or company-specific questions</b>, join the <b>office hours at the end of the day</b>.</p>
+      <p><b>Interrupt us anytime</b>: if something isn't clear to you, it probably isn't clear to others either. And for <b>sensitive or company-specific questions</b>, join the <b>office hours at the end of the day</b>.</p>
     </div>
     <p class="lead" style="margin-top:18px">Notes you take in <span class="mono">NOTES.local.md</span> are gitignored, so they're yours to keep.</p>
   </div>
@@ -403,8 +403,8 @@ body{
 
   <div class="body">
     <div class="eyebrow">A challenge to you</div>
-    <div class="title" style="max-width:18ch">AI can probably one-shot these labs.</div>
-    <p class="lead" style="margin-top:18px;max-width:720px">We'd challenge you to do this class <b style="color:#fff">as much as possible without it</b>, so you actually get the fundamentals.</p>
+    <div class="title" style="max-width:18ch">Do the labs without AI to learn the fundamentals</div>
+    <p class="lead" style="margin-top:18px;max-width:720px">AI can probably do these labs for you. We'd challenge you to do this class <b style="color:#fff">as much as possible without it</b>, so you actually get the fundamentals.</p>
     <p class="lead" style="margin-top:14px;max-width:720px">Once you own the fundamentals, you'll steer AI <b style="color:#fff">far better</b> when you build this out for yourself.</p>
   </div>
 
