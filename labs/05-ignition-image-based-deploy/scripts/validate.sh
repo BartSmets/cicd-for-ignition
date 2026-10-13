@@ -1,17 +1,21 @@
 #!/bin/bash
-# validate.sh — local mirror of .github/workflows/lab05-ci.yml (repo root).
+# validate.sh: the checks .github/workflows/lab05-ci.yml (repo root) runs.
 #
 # Run this before opening a PR to catch the cheap stuff the CI workflow checks,
 # without waiting for a runner:
 #   1. Every *.json under projects/ and services/ parses.
 #   2. .dockerignore excludes the lab/secret paths it should.
-#   3. hadolint passes on the Dockerfile (only if hadolint is installed).
+#   3. hadolint passes on the Dockerfile.
 #   4. security-properties doesn't name a throwaway temp_N identity.
 #   5. actionlint passes on this lab's workflows, .github/workflows/lab05-*.yml
-#      at the repo root (only if actionlint is installed).
+#      at the repo root.
+#   6. yamllint, shellcheck and ign-lint pass, and `docker compose config`
+#      accepts the compose file.
+# Linters that aren't installed are skipped with a note (CI always runs them
+# all), so a green run here means "everything you have installed passed".
 #
-# Exits non-zero if any check fails. No Ignition needed; Docker only if you want
-# the optional build smoke test (CI always does it — see lab05-ci.yml).
+# Exits non-zero if any check fails. No Ignition needed. The image build smoke
+# test is scripts/build-image.sh (CI always does it; see lab05-ci.yml).
 
 set -uo pipefail
 
@@ -104,8 +108,7 @@ fi
 # 5. actionlint (optional) -----------------------------------------------------
 echo "→ actionlint (.github/workflows/lab05-*.yml)"
 if command -v actionlint > /dev/null 2>&1; then
-  repo_root="$(git -C "$PROJECT_ROOT" rev-parse --show-toplevel)"
-  if actionlint -color "$repo_root"/.github/workflows/lab05-*.yml; then
+  if actionlint -color "$(git -C "$PROJECT_ROOT" rev-parse --show-toplevel)"/.github/workflows/lab05-*.yml; then
     echo -e "  ${GREEN}ok${NC}"
   else
     rc=1
@@ -113,6 +116,32 @@ if command -v actionlint > /dev/null 2>&1; then
 else
   echo -e "  ${YELLOW}skipped${NC} — actionlint not installed (CI runs it; install from https://github.com/rhysd/actionlint to check locally)"
 fi
+
+# 6. yamllint, shellcheck, ign-lint, compose config (each optional) -----------
+# Same invocations as lab05-ci.yml's lint job.
+run_optional() {
+  local label="$1" tool="$2" hint="$3"; shift 3
+  echo "→ $label"
+  if command -v "$tool" > /dev/null 2>&1; then
+    if "$@"; then
+      echo -e "  ${GREEN}ok${NC}"
+    else
+      rc=1
+    fi
+  else
+    echo -e "  ${YELLOW}skipped${NC}: $tool not installed (CI runs it; $hint)"
+  fi
+}
+
+repo_root="$(git -C "$PROJECT_ROOT" rev-parse --show-toplevel 2>/dev/null || echo "$PROJECT_ROOT/../..")"
+run_optional "yamllint" yamllint "pip install yamllint" \
+  yamllint -c .yamllint.yml . "$repo_root"/.github/workflows/lab05-*.yml
+run_optional "shellcheck (scripts/*.sh)" shellcheck "install shellcheck from your package manager" \
+  shellcheck -x scripts/*.sh
+run_optional "ign-lint (Perspective views)" ign-lint "pip install ign-lint" \
+  ign-lint --config rule_config.json --files "projects/**/view.json"
+run_optional "docker compose config" docker "install Docker with Compose v2" \
+  docker compose config -q
 
 echo ""
 if [ "$rc" -eq 0 ]; then

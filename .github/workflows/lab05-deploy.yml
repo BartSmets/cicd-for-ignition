@@ -1,9 +1,10 @@
-# Build a gateway image and deploy it to the test gateway on push to main.
+# Build the gateway image and push it to GHCR on push to main.
 #
 # GitHub flow: `main` is the only long-lived branch. Feature branches merge into
-# it via PR, and every push here builds an image and ships it to the TEST
-# gateway. Releases to production happen separately (tag lab05-vX.Y.Z →
-# release.yml).
+# it via PR, and every push here builds an image and publishes it as the next
+# candidate for the TEST gateway (:sha-<short> + :test). It does not touch any
+# gateway: you deploy the printed tag by hand. Releases to production happen
+# separately (tag lab05-vX.Y.Z → release.yml).
 #
 # Monorepo: this file lives at the repo root and only fires for changes under
 # labs/05-ignition-image-based-deploy/. The build context is that folder, so
@@ -62,12 +63,12 @@ jobs:
   # main skips validation, which is why main only moves via PRs.
   build:
     name: Build and push image
-    # Fork-only: this job deploys to your own gateways (or your own GHCR), so it
+    # Fork-only: this job pushes to the fork owner's GHCR namespace, so it
     # skips on the course repo Mustry-Academy/cicd-for-ignition itself.
     if: github.repository != 'Mustry-Academy/cicd-for-ignition'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Compute image name + tags
         id: meta
@@ -86,7 +87,7 @@ jobs:
           echo "Image: ${base}:sha-${short} (+ :test)"
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -97,13 +98,13 @@ jobs:
       # no compile step, so emulating arm64 costs seconds — building both
       # platforms is cheap.
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: labs/05-ignition-image-based-deploy
           push: true
@@ -118,8 +119,12 @@ jobs:
           build-args: |
             GIT_SHA=${{ steps.meta.outputs.short }}
             IMAGE_SOURCE=${{ github.server_url }}/${{ github.repository }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # No build cache on purpose. A GitHub Actions cache would mostly hold
+          # the ~2 GB Ignition base layers (per platform), which the runner
+          # pulls from Docker Hub faster than it restores them, and it would
+          # eat most of the repository's 10 GB cache that every lab shares.
+          # Our own layers are COPYs that take seconds to rebuild, and GHCR
+          # skips uploading layers it already has.
 
       - name: Tell me how to deploy this image
         # There is no deploy job in this lab: the last mile is manual, by hand,

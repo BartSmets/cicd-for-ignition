@@ -9,11 +9,19 @@
 # rebuild could pull a newer base layer and ship bytes the test gateway never tested.
 #
 # The image-based payoff: we do NOT rebuild. The `:test` image is RE-TAGGED to
-# :vX.Y.Z (the tag minus its `lab05-` prefix) + :production with a server-side manifest copy (`docker buildx imagetools
-# create`) — same bytes, same digest test ran. Then production is recreated from it.
+# :vX.Y.Z (the tag minus its `lab05-` prefix) + :production with a server-side
+# manifest copy (`docker buildx imagetools create`): same bytes, same digest
+# test ran. Recreating the production gateway from it is up to you.
+#
+# Before it re-tags, the job checks that `:test` really is the tagged commit:
+# the image's org.opencontainers.image.revision label must name a commit whose
+# image inputs (projects/, services/, third-party-modules/, Dockerfile,
+# .dockerignore) are identical to the tagged commit's. Tagging an older
+# commit, or tagging before lab05-deploy.yml has finished building the latest
+# merge, fails the release instead of shipping a different image.
 #
 # One job, on a free GitHub-hosted runner:
-#   promote (ubuntu-latest)  re-tag :test → :vX.Y.Z + :production  (no rebuild)
+#   promote (ubuntu-latest)  check :test, re-tag :test → :vX.Y.Z + :production  (no rebuild)
 #
 # There is deliberately NO deploy job. Pointing the production gateway at the promoted
 # tag is done by hand (IGNITION_PRODUCTION_IMAGE + `docker compose up -d
@@ -56,12 +64,17 @@ jobs:
   # tag commits that came through a PR.
   promote:
     name: Promote tested image to production tag
-    # Fork-only: this job deploys to your own gateways (or your own GHCR), so it
+    # Fork-only: this job pushes tags to the fork owner's GHCR namespace, so it
     # skips on the course repo Mustry-Academy/cicd-for-ignition itself.
     if: github.repository != 'Mustry-Academy/cicd-for-ignition'
     runs-on: ubuntu-latest
     steps:
-      # No checkout needed — the promote job only re-tags images in the registry.
+      # Full history, so the revision check below can compare the tagged
+      # commit with the commit :test was built from. Only a tag push needs it.
+      - uses: actions/checkout@v7
+        if: github.event_name == 'push'
+        with:
+          fetch-depth: 0
 
       - name: Compute source + target tags
         id: meta
@@ -91,11 +104,47 @@ jobs:
           echo "Promote ${source}  →  ${base}:${version} + ${base}:production"
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check that :test was built from the tagged commit
+        # A tag push promotes whatever :test is right now. Make sure that is the
+        # tagged commit's image, not an older or newer build.
+        if: github.event_name == 'push'
+        env:
+          SOURCE: ${{ steps.meta.outputs.source }}
+          TAGGED: ${{ github.sha }}
+          LAB: labs/05-ignition-image-based-deploy
+        run: |
+          set -euo pipefail
+          revs="$(docker buildx imagetools inspect "$SOURCE" --format '{{ json .Image }}' \
+            | python3 -c 'import json,sys
+          d = json.load(sys.stdin)
+          imgs = [d] if "config" in d else list(d.values())
+          print(" ".join(sorted({(i.get("config") or {}).get("Labels", {}).get("org.opencontainers.image.revision", "") for i in imgs})))')"
+          case "$revs" in
+            ""|*" "*|unknown)
+              echo "::error::$SOURCE carries no single revision label (got '${revs}'). Rebuild it with lab05-deploy.yml."
+              exit 1 ;;
+          esac
+          rev="$revs"
+          echo "$SOURCE was built from $rev; the tag points at $TAGGED."
+          if ! git cat-file -e "${rev}^{commit}" 2>/dev/null; then
+            echo "::error::$SOURCE was built from $rev, which is not a commit in this repository."
+            exit 1
+          fi
+          if ! git diff --quiet "$rev" "$TAGGED" -- \
+              "$LAB/projects" "$LAB/services" "$LAB/third-party-modules" \
+              "$LAB/Dockerfile" "$LAB/.dockerignore"; then
+            echo "::error::$SOURCE was built from $rev, but the tagged commit ${TAGGED:0:7} has different image inputs. Wait for lab05-deploy.yml to finish building the tagged commit (or tag the commit :test was built from), then push the tag again."
+            git diff --stat "$rev" "$TAGGED" -- "$LAB/projects" "$LAB/services" \
+              "$LAB/third-party-modules" "$LAB/Dockerfile" "$LAB/.dockerignore" || true
+            exit 1
+          fi
+          echo ":test holds the tagged commit's image inputs: promoting it."
 
       - name: Re-tag the tested image (no rebuild)
         # imagetools copies the manifest server-side: the production tags point at the

@@ -48,7 +48,16 @@ if [ "$SHA" != nogit ] && [ -n "$(git status --porcelain -- . 2>/dev/null)" ]; t
   echo "  Commit (or undo) them and rebuild for a clean :sha tag."
   echo ""
 fi
+# org.opencontainers.image.source must be a browsable URL. A clone over SSH
+# reports git@github.com:<owner>/<repo>.git, so normalise it (and drop any
+# credentials or .git suffix) to https://github.com/<owner>/<repo>, the same
+# shape CI stamps.
 SOURCE_URL="$(git remote get-url origin 2>/dev/null || echo 'local')"
+SOURCE_URL="$(printf '%s' "$SOURCE_URL" | sed -E \
+  -e 's#^git@([^:]+):#https://\1/#' \
+  -e 's#^ssh://(git@)?([^/]+)/#https://\2/#' \
+  -e 's#^https://[^@/]+@#https://#' \
+  -e 's#\.git$##')"
 
 TAGS=(-t "${REPO}:sha-${SHA}" -t "${REPO}:local")
 [ -n "$EXTRA_TAG" ] && TAGS+=(-t "${REPO}:${EXTRA_TAG}")
@@ -69,12 +78,14 @@ echo ""
 echo -e "${GREEN}Built.${NC} Inspect the baked layers with:"
 echo "  docker history ${REPO}:sha-${SHA}"
 echo ""
-echo "Run it stand-alone (no bind mounts — proves the image is self-contained):"
-echo "  docker run --rm -p 9088:8088 \\"
+echo "Run it stand-alone (no bind mounts: proves the image is self-contained):"
+echo "  docker run -d --rm --name demo -p 9088:8088 \\"
 echo "    -e ACCEPT_IGNITION_EULA=Y -e IGNITION_EDITION=standard \\"
 echo "    -e GATEWAY_ADMIN_USERNAME=admin -e GATEWAY_ADMIN_PASSWORD=password \\"
-echo "    ${REPO}:sha-${SHA} -n demo -- -Dignition.allowunsignedmodules=true"
-echo "  # then open http://localhost:9088"
+echo "    ${REPO}:sha-${SHA} \\"
+echo "    -n demo -- -Dignition.allowunsignedmodules=true \\"
+echo "    -Dignition.gateway.externalModulesFolder=/third-party-modules"
+echo "  docker logs -f demo     # then open http://localhost:9088"
 echo ""
 echo "Or deploy it to the test gateway (compose recreates the container):"
 echo "  IGNITION_TEST_IMAGE=${REPO}:sha-${SHA} docker compose up -d ignition-test"

@@ -11,8 +11,12 @@
 # Contrast with Lab 04 (file-based): there, the same files were `docker cp`-ed
 # into a *running* gateway and picked up by a hot scan. Here the files become
 # layers in an image. You deploy by pulling the image and recreating the
-# container — no scan, no live mutation. The image you validate on the test gateway is the exact
-# image you promote to production (same digest).
+# container: no scan, no live mutation. The image you validate on the test
+# gateway is the exact image you promote to production (same digest).
+#
+# Which modules run is decided HERE, by the baked modules.json: the test and
+# production services in docker-compose.yaml deliberately do not set
+# GATEWAY_MODULES_ENABLED, because that env var overrides modules.json at boot.
 #
 # Why modules belong in the image: a project scan can hot-reload views, scripts,
 # and config, but it CANNOT enable/disable modules — that needs a gateway
@@ -38,7 +42,8 @@ ARG GATEWAY_DATA_PATH=/usr/local/bin/ignition/data
 # Project content changes most often → keep it last so a project edit doesn't
 # bust the (larger, slower) module layer above it.
 
-# 1. Third-party .modl binaries — large, rarely change. Mounted at runtime via
+# 1. Third-party .modl binaries: large, rarely change. The gateway loads them
+#    from here because it runs with
 #    -Dignition.gateway.externalModulesFolder=/third-party-modules (see compose).
 COPY --chown=2003:0 third-party-modules/  /third-party-modules/
 
@@ -66,6 +71,18 @@ COPY --chown=2003:0 services/modules.json ${GATEWAY_DATA_PATH}/modules.json
 #    gateway, reinstalled into the container after each deploy; a published
 #    image must never carry credentials).
 COPY --chown=2003:0 services/config/      ${GATEWAY_DATA_PATH}/config/
+
+# 3b. Let the OPC UA module recreate its own login on every image boot.
+#     The OPC UA server's loopback connection (every tag reads through it)
+#     logs in against the `opcua-module` user source. That user source holds a
+#     password hash, so .dockerignore keeps it out of the image, but the
+#     tracked one-time/config.json still says defaultAuthProfileCreated=true,
+#     so the module would never create it: the gateway logs
+#     'User Source "opcua-module" not found' and every OPC tag reads bad.
+#     Flipping the flag in the image makes the module create the user source
+#     (with its own fresh password) at first boot, exactly like a new gateway.
+RUN sed -i 's/"defaultAuthProfileCreated": true/"defaultAuthProfileCreated": false/' \
+      ${GATEWAY_DATA_PATH}/config/resources/core/com.inductiveautomation.opcua/one-time/config.json
 
 # 4. Project content (Perspective views, scripts, tags) — changes most often.
 COPY --chown=2003:0 projects/             ${GATEWAY_DATA_PATH}/projects/

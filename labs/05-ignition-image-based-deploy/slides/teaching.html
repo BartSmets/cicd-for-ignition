@@ -403,21 +403,24 @@ COPY projects/        <span class="cm">…</span></pre>
     <div class="sechead">
       <span class="num">02</span>
       <div>
-        <div class="title">Read the lab's Dockerfile: a base image plus four <span class="mono" style="font-size:34px">COPY</span> lines</div>
-        <div class="lead">This is the actual <span class="mono">Dockerfile</span> in this repo. Minimal on purpose: it bakes exactly what Lab 04's pipeline copied at deploy time.</div>
+        <div class="title">Read the lab's Dockerfile: a base image, four <span class="mono" style="font-size:34px">COPY</span> lines and two small <span class="mono" style="font-size:34px">RUN</span> steps</div>
+        <div class="lead">This is the actual <span class="mono">Dockerfile</span> in this repo, with the comments trimmed and <span class="mono">…</span> for <span class="mono">/usr/local/bin/ignition</span>. Minimal on purpose: it bakes exactly what Lab 04's pipeline copied at deploy time.</div>
       </div>
     </div>
 
     <div class="split">
-      <div class="code"><pre><span class="cm"># pin the base: bump deliberately, never float :latest</span>
+      <div class="code"><pre style="font-size:12.5px;line-height:1.6"><span class="cm"># pin the base: bump deliberately, never float :latest</span>
 ARG IGNITION_VERSION=<span class="hl">8.3.8</span>
 FROM inductiveautomation/ignition:${IGNITION_VERSION}
 
 <span class="cm"># bake the deployable state: least to most volatile</span>
-COPY third-party-modules/  <span class="cmd2">/third-party-modules/</span>
-COPY services/modules.json <span class="cmd2">…/data/modules.json</span>
-COPY services/config/      <span class="cmd2">…/data/config/</span>
-COPY projects/             <span class="cmd2">…/data/projects/</span>
+COPY <span class="hl">--chown=2003:0</span> third-party-modules/  <span class="cmd2">/third-party-modules/</span>
+RUN sha256sum /third-party-modules/*.modl &amp;&amp; sleep 5
+COPY <span class="hl">--chown=2003:0</span> services/modules.json <span class="cmd2">…/data/modules.json</span>
+COPY <span class="hl">--chown=2003:0</span> services/config/      <span class="cmd2">…/data/config/</span>
+RUN sed -i 's/"defaultAuthProfileCreated": true/…false/' \
+      <span class="cmd2">…/data/config/…/com.inductiveautomation.opcua/one-time/config.json</span>
+COPY <span class="hl">--chown=2003:0</span> projects/             <span class="cmd2">…/data/projects/</span>
 
 <span class="cm"># provenance: trace any container back to a commit</span>
 ARG GIT_SHA=unknown
@@ -426,8 +429,9 @@ LABEL org.opencontainers.image.revision=<span class="hl">"${GIT_SHA}"</span></pr
         <div class="hd">What to notice</div>
         <ul>
           <li><span class="d"></span><span><b>Same paths as Lab 04's <span class="mono">docker cp</span>.</b> <span class="mono">data/projects</span> and <span class="mono">data/config</span>: Ignition scans them at startup. Only <i>when</i> they arrive changed: build time instead of deploy time.</span></li>
-          <li><span class="d"></span><span><b>FROM = start from the stock gateway.</b> We inherit the whole Ignition install, its entrypoint, <span class="mono">EXPOSE 8088</span> and healthcheck. We only add our files on top.</span></li>
-          <li><span class="d"></span><span><b>Pinned base version.</b> A floating <span class="mono">:latest</span> means two builds a week apart could silently differ. Pin it, bump it on purpose.</span></li>
+          <li><span class="d"></span><span><b>FROM = start from the stock gateway, pinned.</b> We inherit the whole Ignition install, its entrypoint and healthcheck, and only add our files on top. A floating <span class="mono">:latest</span> means two builds a week apart could silently differ.</span></li>
+          <li><span class="d"></span><span><b><span class="mono">--chown=2003:0</span> = the gateway's own user.</b> The gateway does not run as root; root-owned baked files make it FAULT at boot.</span></li>
+          <li><span class="d"></span><span><b>Two RUN steps.</b> A 5-second stand-in for a module signature scan, and a <span class="mono">sed</span> that re-arms the OPC UA module's one-time flag, so every gateway creates its own <span class="mono">opcua-module</span> login at first boot (that login holds a password hash, so it is never baked). Without it, every OPC tag reads bad.</span></li>
           <li><span class="d"></span><span><b>Per-environment values stay out.</b> Admin password, EULA acceptance, config mode: those are <b>env vars in compose</b>. Config that varies per environment does not belong in a shared artifact.</span></li>
         </ul>
       </div>
@@ -459,8 +463,10 @@ LABEL org.opencontainers.image.revision=<span class="hl">"${GIT_SHA}"</span></pr
       <!-- column-reverse: first child renders at the BOTTOM of the stack -->
       <div class="layer base" data-l="base"><span class="lname">FROM inductiveautomation/ignition:8.3.8</span><span class="badge">CACHED</span><span class="ldesc">the base, biggest layer by far</span></div>
       <div class="layer" data-l="modl"><span class="lname">COPY third-party-modules/</span><span class="badge">CACHED</span><span class="ldesc">big .modl binaries · rarely change</span></div>
+      <div class="layer" data-l="scan"><span class="lname">RUN sha256sum … &amp;&amp; sleep 5</span><span class="badge">CACHED</span><span class="ldesc">the slow module check</span></div>
       <div class="layer" data-l="mjson"><span class="lname">COPY services/modules.json</span><span class="badge">CACHED</span><span class="ldesc">module enablement manifest</span></div>
       <div class="layer" data-l="cfg"><span class="lname">COPY services/config/</span><span class="badge">CACHED</span><span class="ldesc">gateway config</span></div>
+      <div class="layer" data-l="opc"><span class="lname">RUN sed … one-time/config.json</span><span class="badge">CACHED</span><span class="ldesc">OPC UA login flag</span></div>
       <div class="layer" data-l="proj"><span class="lname">COPY projects/</span><span class="badge">CACHED</span><span class="ldesc">project content · changes daily → last</span></div>
     </div>
     <div class="lstack-side">
@@ -470,13 +476,13 @@ LABEL org.opencontainers.image.revision=<span class="hl">"${GIT_SHA}"</span></pr
       </div>
       <div class="rule">
         <div class="rh">See it yourself</div>
-        <p>Rebuild after <code>touch projects/example-project/project.json</code> — everything still prints <code>CACHED</code>: the cache checksums <b>content</b>, not timestamps. Now append a newline to that file and rebuild: only the <code>projects/</code> layer rebuilds.</p>
+        <p>Rebuild after <code>touch projects/example-project/project.json</code>: everything still prints <code>CACHED</code>: the cache checksums <b>content</b>, not timestamps. Now append a newline to that file and rebuild: only the <code>projects/</code> layer rebuilds.</p>
       </div>
     </div>
   </div>
 
   <div class="controls">
-    <span class="lead-step" id="lstack-step">Five layers, bottom-up. Docker reuses any layer whose inputs didn't change.</span>
+    <span class="lead-step" id="lstack-step">Seven layers, bottom-up. Docker reuses any layer whose inputs didn't change.</span>
     <button class="btn" data-act="back">◀ Back</button>
     <button class="btn primary" data-act="next">Next ▶</button>
   </div>
@@ -508,7 +514,7 @@ USER root
 COPY --chown=2003:2003 docker_db_migrations/   <span class="cmd2">/docker_db_migrations/</span>
 COPY --chown=2003:2003 docker_startup_scripts/ <span class="cmd2">/docker_startup_scripts/</span>
 COPY --chown=2003:2003 modules/ignition/ <span class="cmd2">…/data/var/ignition/modl/</span>
-COPY --chown=2003:2003 modules/jar/      <span class="cmd2">…/lib/core/gateway/</span>
+COPY --chown=2003:2003 modules/jar/      <span class="cmd2">/usr/local/bin/ignition/lib/core/gateway/</span>
 COPY --chown=2003:2003 pylib/plant       <span class="cmd2">…/user-lib/pylib/plant</span>
 COPY --chown=2003:2003 config/           <span class="cmd2">…/data/config</span>
 COPY --chown=2003:2003 projects/  <span class="cmd2">/usr/local/share/ignition-seed/projects/</span>
@@ -522,7 +528,7 @@ ENTRYPOINT ["/usr/local/bin/<span class="hl">entrypoint.sh</span>"]  <span class
       <div class="does">
         <div class="hd">What grew, and why</div>
         <ul>
-          <li><span class="d"></span><span><b>More kinds of cargo.</b> Third-party <span class="mono">.modl</span> files, plain <b>JAR libraries</b> on the gateway classpath, a Jython library, and a <b>db-migrations folder</b>. All of it versioned, all of it baked. Lab 06 teaches each of these properly.</span></li>
+          <li><span class="d"></span><span><b>More kinds of cargo.</b> Third-party <span class="mono">.modl</span> files, plain <b>JAR libraries</b> (copied into <span class="mono">lib/core/gateway/</span>, which is on the gateway's classpath), a Jython library, and a <b>db-migrations folder</b>. All of it versioned, all of it baked. Lab 06 teaches each of these properly.</span></li>
           <li><span class="d"></span><span><b>Multi-stage build.</b> Stage 1 exists only to compile one clean binary; the tooling never reaches the shipped image.</span></li>
           <li><span class="d"></span><span><b>Non-root runtime.</b> Builds as root, runs as the Ignition UID (<span class="mono">2003</span>), hence every <span class="mono">COPY --chown</span>.</span></li>
           <li><span class="d"></span><span><b>The seed trick.</b> <span class="mono">data/</span> is snapshotted to a <b>seed tree</b>; startup scripts re-seed projects and config from it on <b>every boot</b>. Gateway-UI edits on production are deliberately erased: the image stays the single source of truth.</span></li>
@@ -583,7 +589,53 @@ scripts/
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>.dockerignore: speed · cleanliness · secrets</span></div>
 </section>
 
-<!-- 9 · DIVIDER · PART 2 -->
+<!-- 9 · INSPECT A BUILT IMAGE -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Part 1 · inspecting an image</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">05</span>
+      <div>
+        <div class="title">Inspect a built image: its layers, its files and the commit it came from</div>
+        <div class="lead">Three commands you use all through the assignment, and the one tag suffix that warns you. None of them needs a running gateway.</div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="code"><pre style="font-size:12.5px;line-height:1.6"><span class="cm"># the layers, newest on top, with their sizes</span>
+docker history cicd-lab-05-ignition:local
+
+<span class="cm"># which commit was this image built from?</span>
+docker inspect -f <span class="cmd2">'{{ index .Config.Labels
+  "org.opencontainers.image.revision" }}'</span> \
+  cicd-lab-05-ignition:local
+
+<span class="cm"># read files out of the image: swap the entrypoint</span>
+docker run --rm <span class="hl">--entrypoint find</span> cicd-lab-05-ignition:local \
+  /usr/local/bin/ignition/data/projects -maxdepth 2
+
+<span class="cm"># build-image.sh with uncommitted changes in the lab:</span>
+<span class="cm">#   tags  cicd-lab-05-ignition:sha-1a2b3c4</span><span class="hl">-dirty</span></pre></div>
+      <div class="does">
+        <div class="hd">What each one tells you</div>
+        <ul>
+          <li><span class="d"></span><span><b><span class="mono">docker history</span>:</b> one line per Dockerfile instruction, the base at the bottom. A <span class="mono">COPY</span> line shows the size of what you baked, a <span class="mono">RUN</span> line what the command changed.</span></li>
+          <li><span class="d"></span><span><b>The revision label:</b> <span class="mono">build-image.sh</span> and CI pass the commit as <span class="mono">GIT_SHA</span>. Ask an image or a running container, and you know which commit it holds.</span></li>
+          <li><span class="d"></span><span><b><span class="mono">--entrypoint</span>:</b> the Ignition image's entrypoint treats every trailing argument as a gateway argument. Replace it with <span class="mono">find</span>, <span class="mono">cat</span> or <span class="mono">ls</span> for one throwaway container to read the image itself.</span></li>
+          <li><span class="d"></span><span><b><span class="mono">-dirty</span>:</b> the image holds bytes no commit has, so the tag and the label say so. Commit (or undo) and rebuild before you deploy it anywhere.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Read the image, not the repo</span></div>
+</section>
+
+<!-- 10 · DIVIDER · PART 2 -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -597,7 +649,7 @@ scripts/
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>trade-offs → the five steps → a real pipeline → rollback</span></div>
 </section>
 
-<!-- 10 · ADVANTAGES AND DISADVANTAGES (reveal) -->
+<!-- 11 · ADVANTAGES AND DISADVANTAGES (reveal) -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -606,7 +658,7 @@ scripts/
 
   <div class="body">
     <div class="sechead">
-      <span class="num">05</span>
+      <span class="num">06</span>
       <div>
         <div class="title">File-based vs image-based: advantages and disadvantages</div>
         <div class="lead">Same files, same target paths, same end result. Each side pays a different price. Know both lists before you pick one for a customer.</div>
@@ -647,7 +699,7 @@ scripts/
   </div>
 </section>
 
-<!-- 11 · THE FIVE STEPS (reveal) -->
+<!-- 12 · THE FIVE STEPS (reveal) -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -656,7 +708,7 @@ scripts/
 
   <div class="body">
     <div class="sechead">
-      <span class="num">06</span>
+      <span class="num">07</span>
       <div>
         <div class="title">The five steps of an image-based deploy</div>
         <div class="lead">Build, tag, push, pull, run. The image already contains the state, so the deploy itself is just "recreate the container from the new image".</div>
@@ -688,7 +740,7 @@ scripts/
   </div>
 </section>
 
-<!-- 12 · THE NORMAL WORKFLOW, END TO END (interactive map) -->
+<!-- 13 · THE NORMAL WORKFLOW, END TO END (interactive map) -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -733,7 +785,52 @@ scripts/
   </div>
 </section>
 
-<!-- 13 · A PRODUCTION PIPELINE -->
+<!-- 14 · RUN STEP 5 YOURSELF -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Part 2 · the deploy command</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">08</span>
+      <div>
+        <div class="title">Deploy with one command, then prove which build and which bytes run</div>
+        <div class="lead">Step 5 is a compose variable and <span class="mono">docker compose up</span>. Two <span class="mono">docker inspect</span> lines tell you what you actually deployed.</div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="code"><pre style="font-size:12.5px;line-height:1.6"><span class="cm"># docker-compose.yaml, the test service</span>
+image: <span class="hl">"${IGNITION_TEST_IMAGE:-inductiveautomation/ignition:8.3.8}"</span>
+
+<span class="cm"># the deploy: set the variable, compose recreates the container</span>
+IGNITION_TEST_IMAGE=cicd-lab-05-ignition:sha-1a2b3c4 \
+  docker compose up -d ignition-test
+
+<span class="cm"># which build runs? the commit, from the label</span>
+docker inspect -f <span class="cmd2">'{{ index .Config.Labels
+  "org.opencontainers.image.revision" }}'</span> lab05-ignition-test
+
+<span class="cm"># which bytes run? the sha256 of the image</span>
+docker inspect -f <span class="cmd2">'{{.Image}}'</span> lab05-ignition-test</pre></div>
+      <div class="does">
+        <div class="hd">What to notice</div>
+        <ul>
+          <li><span class="d"></span><span><b><span class="mono">${VAR:-default}</span>:</b> compose fills in the variable, or the default when it is unset. A new value means a new image, so compose recreates the container. That is the whole deploy.</span></li>
+          <li><span class="d"></span><span><b>The trap:</b> a later bare <span class="mono">docker compose up -d</span> without the variable recreates test on the <b>base image</b>: an empty gateway. Put the image in <span class="mono">.env</span> to make a deploy stick.</span></li>
+          <li><span class="d"></span><span><b>Label vs digest:</b> the label names the commit; <span class="mono">{{.Image}}</span> names the exact bytes. Same digest on test and production means production runs what test ran.</span></li>
+          <li><span class="d"></span><span><b>Pulling from GHCR yourself</b> (the stretch): if the package is private, Docker logs in with a token that has <span class="mono">read:packages</span>: <span class="mono">gh auth refresh -h github.com -s read:packages</span>, then <span class="mono">gh auth token | docker login ghcr.io -u &lt;you&gt; --password-stdin</span>.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Deploy = a variable + compose up</span></div>
+</section>
+
+<!-- 15 · A PRODUCTION PIPELINE -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -742,7 +839,7 @@ scripts/
 
   <div class="body">
     <div class="sechead">
-      <span class="num">07</span>
+      <span class="num">09</span>
       <div>
         <div class="title">How a production pipeline builds and deploys the image</div>
         <div class="lead">The same five steps, as they run in production today in the repo whose Dockerfile you just saw. We walk the real pipeline file on screen; here is the shape to hold on to.</div>
@@ -766,7 +863,7 @@ scripts/
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Shown on screen: a production pipeline + GitVersion</span></div>
 </section>
 
-<!-- 13 · WHAT DIES, WHAT SURVIVES -->
+<!-- 16 · WHAT DIES, WHAT SURVIVES -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -775,7 +872,7 @@ scripts/
 
   <div class="body">
     <div class="sechead">
-      <span class="num">08</span>
+      <span class="num">10</span>
       <div>
         <div class="title">What dies with the container, and what must live outside it</div>
         <div class="lead">Replacing the container on every deploy is only safe when the data that matters <b>is not in the container</b>. This is the design work the "fresh gateway" disadvantage demands.</div>
@@ -808,7 +905,7 @@ CREATE DATABASE <span class="hl">ignition_production</span>;
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Externalize state first, then containers become disposable</span></div>
 </section>
 
-<!-- 14 · CLOSING / HANDOFF -->
+<!-- 17 · CLOSING / HANDOFF -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -819,9 +916,9 @@ CREATE DATABASE <span class="hl">ignition_production</span>;
     <div class="eyebrow">Now we make it real</div>
     <div class="title" style="max-width:26ch;color:#fff">Next: build the gateway image locally and deploy it by replacing a container</div>
     <ul class="checks" style="max-width:960px;margin-top:22px">
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>We-do.</b> We walk the real <span class="mono">Dockerfile</span> and <span class="mono">.dockerignore</span>, build with <span class="mono">scripts/build-image.sh</span>, read the layers with <span class="mono">docker history</span>, and run the image <b>with no bind mounts</b>: the proof it's self-contained.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You-do, Part 1.</b> Build and tag the image, bake a config change into it, and extend <span class="mono">.dockerignore</span>.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You-do, Part 2.</b> Deploy your local image to the test gateway by <b>typing the deploy commands yourself</b> (no script: the one-liner IS the lesson), ship a second change end-to-end, then roll back by running the previous tag. All local: no registry, no uploads.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>We-do.</b> We walk the real <span class="mono">Dockerfile</span> and <span class="mono">.dockerignore</span>, build with <span class="mono">scripts/build-image.sh</span>, read the layers with <span class="mono">docker history</span>, prove the cache, and run the image <b>with no bind mounts</b>: the proof it's self-contained.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You-do, Part 1.</b> Bake a config change (a gateway home page note) into the image, keep a stray gateway backup out of it with <span class="mono">.dockerignore</span>, rebuild, and prove both from the image itself.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You-do, Part 2.</b> Deploy your clean <span class="mono">:sha</span> image to the test gateway by <b>typing the deploy command yourself</b> (no script: the one-liner IS the lesson), ship a second change end-to-end, then roll back by running the previous tag. All local: no registry, no uploads.</span></li>
     </ul>
     <div class="callout" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.14)">
       <div class="lab" style="color:var(--peri2)">Everything is in the repo</div>
@@ -835,7 +932,7 @@ CREATE DATABASE <span class="hl">ignition_production</span>;
 </div>
 
 <div class="hud"><div class="bar" id="bar"></div></div>
-<div class="pager" id="pager">01 / 15</div>
+<div class="pager" id="pager">01 / 17</div>
 <div class="hint" id="hint">↑ ↓ slides · ← → step the animation</div>
 
 <script>
@@ -917,15 +1014,15 @@ function bindControls(slideEl,ctrl){
   const slide=slides[5];
   const layers={};
   slide.querySelectorAll('#lstack .layer').forEach(l=>layers[l.dataset.l]=l);
-  const order=['base','modl','mjson','cfg','proj']; // bottom → top
+  const order=['base','modl','scan','mjson','cfg','opc','proj']; // bottom → top
   const lead=slide.querySelector('#lstack-step');
   // steps: 0 = plain stack · 1 = all cached (rebuild, nothing changed)
   // 2 = edit a project file → only proj busts · 3 = change a .modl → modl + everything after busts
   const steps=[
-    {bustFrom:null, cached:false, t:'Five layers, bottom-up. Docker reuses any layer whose inputs didn\'t change.'},
+    {bustFrom:null, cached:false, t:'Seven layers, bottom-up. Docker reuses any layer whose inputs didn\'t change.'},
     {bustFrom:null, cached:true,  t:'Rebuild with <b>nothing changed</b> → every layer is <b>CACHED</b>. The rebuild is near-instant.'},
-    {bustFrom:'proj', cached:true, t:'Edit a Perspective view → only the <b>projects/ layer rebuilds</b>. The big modules layer stays cached. Cheap.'},
-    {bustFrom:'modl', cached:true, t:'Change a <b>.modl</b> file → that layer <b>and everything after it</b> rebuilds. That\'s why the volatile stuff goes last.'}
+    {bustFrom:'proj', cached:true, t:'Edit a Perspective view → only the <b>projects/ layer rebuilds</b>. The modules layer and the slow check stay cached. Cheap.'},
+    {bustFrom:'modl', cached:true, t:'Change a <b>.modl</b> file → that layer <b>and everything after it</b> rebuilds, the 5-second check included. That\'s why the volatile stuff goes last.'}
   ];
   controllers.lstack={max:steps.length-1,render(s){
     const st=steps[s];
@@ -944,9 +1041,9 @@ function bindControls(slideEl,ctrl){
   }};
 })();
 
-/* ---------- slide 10 (index 9): advantages/disadvantages (HTML reveal) ---------- */
+/* ---------- slide 11 (index 10): advantages/disadvantages (HTML reveal) ---------- */
 (function(){
-  const slide=slides[9];
+  const slide=slides[10];
   const items=[...slide.querySelectorAll('.reveal')];
   const lead=slide.querySelector('#mvr-step');
   const texts=['Two ways to deliver the same files. Step through each side\'s trade-offs.',
@@ -956,22 +1053,22 @@ function bindControls(slideEl,ctrl){
   controllers.mvr={max:3,render(s){ items.forEach(it=>it.classList.toggle('show',+it.dataset.step<=s)); lead.innerHTML=texts[s]; }};
 })();
 
-/* ---------- slide 12 (index 11): the normal workflow map (HTML reveal) ---------- */
+/* ---------- slide 13 (index 12): the normal workflow map (HTML reveal) ---------- */
 (function(){
-  const slide=slides[11];
+  const slide=slides[12];
   const items=[...slide.querySelectorAll('.reveal')];
   const lead=slide.querySelector('#wmap-step');
   const texts=['Follow one change from your keyboard to a running gateway.',
     '<b>Your laptop.</b> You edit, commit, PR, merge: exactly the GitHub flow from every lab. Only kilobytes of code ever leave your machine.',
     '<b>GitHub.</b> The merge to main triggers the deploy workflow, and a hosted runner builds the image from the Dockerfile: same trigger as Lab 04, different job contents.',
     '<b>The registry.</b> The built image is pushed and <b>stored</b> here, under an immutable tag. This is the artifact shelf: every version stays, ready to deploy or roll back to.',
-    '<b>The plant.</b> The deploy job on the gateway\'s own machine pulls the tag and recreates the container. In the assignment you will type exactly these last commands yourself.'];
+    '<b>The plant.</b> The deploy job on the gateway\'s own machine pulls the tag and recreates the container. In the assignment you type exactly these last commands yourself: next slide.'];
   controllers.wmap={max:4,render(s){ items.forEach(it=>it.classList.toggle('show',+it.dataset.step<=s)); lead.innerHTML=texts[s]; }};
 })();
 
-/* ---------- slide 11 (index 10): five-step pipeline (HTML reveal) ---------- */
+/* ---------- slide 12 (index 11): five-step pipeline (HTML reveal) ---------- */
 (function(){
-  const slide=slides[10];
+  const slide=slides[11];
   const items=[...slide.querySelectorAll('.reveal')];
   const lead=slide.querySelector('#pipe5-step');
   const texts=['Step through the five moves of an image-based deploy.',
@@ -985,7 +1082,7 @@ function bindControls(slideEl,ctrl){
 })();
 
 /* ============ wire controllers to their slides + reset on entry ============ */
-const ctrlBySlide={3:'tri',5:'lstack',9:'mvr',10:'pipe5',11:'wmap'};
+const ctrlBySlide={3:'tri',5:'lstack',10:'mvr',11:'pipe5',12:'wmap'};
 const bound={};
 for(const idx in ctrlBySlide){const name=ctrlBySlide[idx];bound[idx]=bindControls(slides[idx],controllers[name]);}
 // reset a slide's animation when you scroll onto it

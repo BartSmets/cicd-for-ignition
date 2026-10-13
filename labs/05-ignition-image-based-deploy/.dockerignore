@@ -34,6 +34,8 @@ tests/
 # CI / compose / test-only files
 .github/
 docker-compose.yaml
+docker-compose.override.yml
+docker-compose.override.yaml
 Dockerfile
 .dockerignore
 
@@ -49,6 +51,9 @@ db-init/
 #     the image — instant lockout. Identity resources you add yourself
 #     (database/AD user sources, SAML/OIDC providers) hold no password data
 #     and ARE baked like any other config.
+#   - user-source/opcua-module is the OPC UA module's own login (it holds a
+#     password hash too). The Dockerfile re-arms the module's one-time flag so
+#     every image gateway creates a fresh one at first boot.
 # These dirs are gitignored too; the patterns here protect local builds
 # (scripts/build-image.sh) run from a working tree where the local gateway
 # has written them.

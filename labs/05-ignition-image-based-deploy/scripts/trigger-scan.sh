@@ -15,10 +15,11 @@
 #   scripts/trigger-scan.sh test          # test gateway
 #   scripts/trigger-scan.sh production    # production gateway
 #
-# Gateways:
-#   local        http://localhost:8088   (default — student's bind-mounted gateway)
-#   test         http://localhost:8089   (lab05-deploy.yml target)
-#   production   http://localhost:8090   (lab05-release.yml target)
+# Gateways (default host ports; GATEWAY_PORT / TEST_GATEWAY_PORT /
+# PRODUCTION_GATEWAY_PORT in .env move them, and this script follows):
+#   local        http://localhost:8088   (default: student's bind-mounted gateway)
+#   test         http://localhost:8089   (runs the image you deploy to it)
+#   production   http://localhost:8090   (runs the image you promote to it)
 #
 # Env (override the gateway defaults when needed):
 #   IGNITION_URL          full URL; if set, wins over the gateway preset
@@ -44,7 +45,7 @@ gateway="local"
 while [ $# -gt 0 ]; do
   case "$1" in
     -h|--help)
-      sed -n '2,29p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     local|test|production)

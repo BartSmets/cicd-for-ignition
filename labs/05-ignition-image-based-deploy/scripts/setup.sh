@@ -68,10 +68,10 @@ echo "================================"
 echo ""
 echo "This script initializes the development environment:"
 echo "  - three Ignition 8.3 gateways:"
-echo "      local  http://localhost:8088   (your authoring gateway, bind-mounted from the repo)"
-echo "      test    http://localhost:8089   (runs the image lab05-deploy.yml builds on push to main)"
-echo "      production   http://localhost:8090   (runs the image lab05-release.yml promotes on tag push)"
-echo "  - one TimescaleDB on localhost:5432 hosting ignition_local_development / ignition_test / ignition_production"
+echo "      local       $(gateway_url local)   (your authoring gateway, bind-mounted from the repo)"
+echo "      test        $(gateway_url test)   (runs the image you deploy to it)"
+echo "      production  $(gateway_url production)   (runs the image you promote to it)"
+echo "  - one TimescaleDB on localhost:$(lab_port POSTGRES_PORT 5432) hosting ignition_local_development / ignition_test / ignition_production"
 echo ""
 
 
@@ -320,6 +320,35 @@ finish_opcua_auth_profile() {
 stash_secprops_for_commissioning
 rearm_opcua_auth_profile
 
+# ---- Keep test/production on the image they run ---------------------------
+# docker-compose.yaml falls back to the BASE image for test/production when
+# IGNITION_TEST_IMAGE / IGNITION_PRODUCTION_IMAGE are unset, so the
+# `docker compose up -d` below would silently swap a deployed gateway back to
+# an empty one. Re-running setup.sh must not undo a deploy: pin each gateway
+# to the image it runs right now, unless the environment or .env already
+# names one. (A bare `docker compose up -d` has no such guard; see
+# docs/TROUBLESHOOTING.md.)
+keep_deployed_images() {
+    local gw var current
+    for gw in test production; do
+        case "$gw" in
+            test)       var=IGNITION_TEST_IMAGE ;;
+            production) var=IGNITION_PRODUCTION_IMAGE ;;
+        esac
+        [ -n "${!var:-}" ] && continue
+        [ -n "$(env_value "$var")" ] && continue
+        current="$(docker inspect -f '{{.Config.Image}}' "$(gateway_container "$gw")" 2>/dev/null || true)"
+        case "$current" in
+            ''|inductiveautomation/ignition:*) continue ;;
+        esac
+        export "$var=$current"
+        echo -e "${YELLOW}$gw keeps the image it runs: $current${NC}"
+        echo "  (set $var in .env to choose a different one)"
+    done
+}
+
+keep_deployed_images
+
 # ---- Start the stack ------------------------------------------------------
 existing_id="$(docker compose ps -q ignition-local 2>/dev/null || true)"
 if [ -n "$existing_id" ]; then
@@ -463,12 +492,12 @@ echo ""
 echo -e "${GREEN}Setup complete!${NC}"
 echo ""
 printf "Gateways:\n"
-printf "  %-8s  %-23s  user=%s  pass=%s\n" "local"  "http://localhost:8088"  "${ACTUAL_LOCAL_USER:-admin}"  "${ACTUAL_LOCAL_PASS:-(see .env)}"
-printf "  %-8s  %-23s  user=%s  pass=%s\n" "test"    "http://localhost:8089"  "${ACTUAL_TEST_USER:-admin}"    "${ACTUAL_TEST_PASS:-(see .env)}"
-printf "  %-8s  %-23s  user=%s  pass=%s\n" "production"   "http://localhost:8090"  "${ACTUAL_PRODUCTION_USER:-admin}"   "${ACTUAL_PRODUCTION_PASS:-(see .env)}"
+printf "  %-10s  %-23s  user=%s  pass=%s\n" "local"       "$(gateway_url local)"       "${ACTUAL_LOCAL_USER:-admin}"       "${ACTUAL_LOCAL_PASS:-(see .env)}"
+printf "  %-10s  %-23s  user=%s  pass=%s\n" "test"        "$(gateway_url test)"        "${ACTUAL_TEST_USER:-admin}"        "${ACTUAL_TEST_PASS:-(see .env)}"
+printf "  %-10s  %-23s  user=%s  pass=%s\n" "production"  "$(gateway_url production)"  "${ACTUAL_PRODUCTION_USER:-admin}"  "${ACTUAL_PRODUCTION_PASS:-(see .env)}"
 echo ""
 echo "TimescaleDB:"
-echo "  Host: localhost  Port: 5432"
+echo "  Host: localhost  Port: $(lab_port POSTGRES_PORT 5432)"
 echo "  Databases: ignition_local_development, ignition_test, ignition_production"
 echo "  Username: ${ACTUAL_PG_USER:-ignition}  Password: ${ACTUAL_PG_PASS:-(see .env)}"
 echo ""
