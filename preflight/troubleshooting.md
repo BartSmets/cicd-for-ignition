@@ -337,7 +337,9 @@ container before it registers.
 
 Create a file called `docker-compose.corp-ca.yaml` next to the lab's `docker-compose.yaml`
 (same content for both labs — it's generic and safe to commit; the certificate itself stays
-in your home directory):
+in your home directory). For Lab 07 that is the root of your `demo-oatmakers` clone, and the
+service to override is its `test` profile runner instead of `github-runner`: list the names with
+`docker compose --profile test config --services`.
 
 ```yaml
 # Opt-in override for laptops behind a TLS-intercepting corporate proxy.

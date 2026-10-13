@@ -8,18 +8,18 @@ If you are on macOS or Linux, you can skip this page.
 ## The one rule that matters
 
 **Clone the course repos inside the WSL filesystem, not on your Windows drive.**
-For lab 07 that is your cohort's repo, next to the course repo:
+For lab 07 that is your clone of `demo-oatmakers`, next to the course repo:
 
 ```bash
-# Good — the Linux side, fast and permission-clean
+# Good: the Linux side, fast and permission-clean
 cd ~/mustry-academy
-git clone git@github.com:Mustry-Academy/cicd-lab-07-<cohort>.git
-cd cicd-lab-07-<cohort>
+git clone git@github.com:Mustry-Solutions/demo-oatmakers.git
+cd demo-oatmakers
 code .            # opens VS Code connected to WSL
 
-# Bad — the Windows side, causes permission errors
+# Bad: the Windows side, causes permission errors
 cd /mnt/c/Users/<you>/Documents
-git clone git@github.com:Mustry-Academy/cicd-lab-07-<cohort>.git
+git clone git@github.com:Mustry-Solutions/demo-oatmakers.git
 ```
 
 Anything under `/mnt/c`, `/mnt/d` and friends is your Windows disk seen through
@@ -38,16 +38,16 @@ You can tell where you are at any time:
 
 ```bash
 pwd
-# /home/you/mustry-academy/cicd-lab-07-<cohort>   -> good
-# /mnt/c/Users/you/...                             -> move it
+# /home/you/mustry-academy/demo-oatmakers   -> good
+# /mnt/c/Users/you/...                      -> move it
 ```
 
 To move an existing clone:
 
 ```bash
 mkdir -p ~/mustry-academy
-mv /mnt/c/Users/<you>/cicd-lab-07-<cohort> ~/mustry-academy/
-cd ~/mustry-academy/cicd-lab-07-<cohort>
+mv /mnt/c/Users/<you>/demo-oatmakers ~/mustry-academy/
+cd ~/mustry-academy/demo-oatmakers
 scripts/setup.sh
 ```
 
@@ -63,7 +63,7 @@ The two legitimate uses of `sudo` in this course are installing packages
 Nothing else.
 
 If you already ran something with `sudo` and now have root-owned files, just
-re-run `scripts/setup.sh` — it detects them and offers to hand them back to you.
+re-run `scripts/setup.sh`: it detects them and offers to hand them back to you.
 
 ## Docker Desktop
 
@@ -105,17 +105,12 @@ Reopen your terminal. `scripts/setup.sh` offers to write this for you.
 
 ## Checking your setup
 
-From the repo root:
-
-```bash
-scripts/test-preflight.sh
-```
-
-That verifies the checks themselves. To confirm your actual machine is sane:
+From the root of your demo-oatmakers clone:
 
 ```bash
 pwd                                    # must NOT start with /mnt/
 docker run --rm hello-world            # must work without sudo
+scripts/preflight.sh                   # environment checks
 scripts/setup.sh                       # must run without sudo
 git status                             # must be clean, no permission errors
 ```
@@ -130,11 +125,9 @@ The container now runs as the image's own user (uid 2003) with your group added,
 and `setup.sh` makes the bind-mounted directories group-writable. Files the
 gateway writes stay editable by you.
 
-`setup.sh` also records your group id as `LAB_GID=...` in `.env`. Compose reads
-`.env` on every invocation, so running `docker compose up -d` yourself later —
-from a fresh terminal, without `setup.sh` — keeps the gateway in your group.
-Leave that line alone; if it ever goes missing, re-running `scripts/setup.sh`
-puts it back.
+If a plain `docker compose up -d` from a fresh terminal ever leaves you with
+files you cannot edit, re-run `scripts/setup.sh`: it puts the permissions
+back.
 
 If you have gateway data volumes from an earlier run, they still contain
 root-owned files and the gateway will fail to start with:

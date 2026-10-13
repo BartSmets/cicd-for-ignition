@@ -5,7 +5,7 @@ This document is the Lab 07 teaching hour written out in full. The slides
 is the version you can re-read.
 
 **The framing for everything below: every situation is different.** Gateway
-count, site count, team boundaries, vendors, IT constraints — no two plants
+count, site count, team boundaries, vendors, IT constraints: no two plants
 match. This lab does not hand you one right answer; it gives you the options
 and the questions, so you can pick what is right for your situation and defend
 the pick. We deliberately do not go deep into any single option. You already
@@ -21,14 +21,14 @@ change to that picture.
 
 ---
 
-## Part 1 — Three reference architectures
+## Part 1: Three reference architectures
 
 The diagrams are in [`architectures/`](../architectures/) (Inductive
 Automation's reference architectures). We stay at the map level: the goal is
 to recognize the shape of your own plant, because the repository layout
 follows the shape.
 
-### Architecture 1 — standalone: one gateway does everything
+### Architecture 1: standalone: one gateway does everything
 
 Devices, tags, history, Perspective sessions: all on one gateway
 (`architectures/one-gateway.png`). Most plants start here, and at the right
@@ -38,10 +38,10 @@ size it is a perfectly good place to stay.
   session share the same CPU and the same restart.
 - It strains when heavy Perspective load competes with device polling, and
   every deploy touches the box that also runs production.
-- **CI/CD view:** one repo, one pipeline, one deploy target. Labs 04–06
+- **CI/CD view:** one repo, one pipeline, one deploy target. Labs 04-06
   already built everything this architecture needs.
 
-### Architecture 2 — frontend and backend gateways
+### Architecture 2: frontend and backend gateways
 
 Backend gateways own device connections, tag providers and history; a
 frontend gateway owns the Perspective sessions; they talk over the gateway
@@ -52,11 +52,11 @@ network (`architectures/backend-frontend.png`).
 - It scales: more frontends behind a load balancer, more backends per device
   group, without redesigning anything.
 - **CI/CD view:** one plant, but **several deploy targets with different
-  content** — projects mostly go to the frontend, device and tag config to
+  content**: projects mostly go to the frontend, device and tag config to
   the backends. The pipeline has to route. That routing is the new skill of
   this lab.
 
-### Architecture 3 — multi-site with an enterprise level (hub and spoke)
+### Architecture 3: multi-site with an enterprise level (hub and spoke)
 
 Each site collects and runs locally; a central level aggregates history,
 reporting and corporate clients
@@ -73,9 +73,9 @@ reporting and corporate clients
 
 ---
 
-## Part 2 — How repositories and pipelines map onto each architecture
+## Part 2: How repositories and pipelines map onto each architecture
 
-### The baseline (labs 04–06)
+### The baseline (labs 04-06)
 
 ```
 oatmakers-repo/
@@ -113,12 +113,12 @@ oatmakers-repo/
   (`oatmakers-shared`, `oatmakers-packaging-shared`); a parent deploys to
   every gateway that runs its child.
 - Each gateway has its **own config folder** under `gateways/`.
-- The payoff of one repo: a screen change and its tag change are **one PR** —
+- The payoff of one repo: a screen change and its tag change are **one PR**:
   reviewed together, deployed together, to two different gateways.
 
 ---
 
-## Part 3 — The deploy mechanism: releases, promotion and the multi-site options
+## Part 3: The deploy mechanism: releases, promotion and the multi-site options
 
 The architecture shows the shape; this is how anything actually moves. The
 bookkeeping is a **releases folder**, usually its own small repository: one
@@ -158,7 +158,7 @@ projects:
 This file **is** the record of what runs on `gw-site4-frontend`. Change the
 file, and the pipeline makes it true.
 
-And test is the deliberate exception — no pins:
+And test is the deliberate exception: no pins:
 
 ```yaml
 # releases/test/gw-test.yaml
@@ -182,7 +182,7 @@ Pinning starts where humans need control: staging and production.
    `gw-central` last. A failed check at any point stops everything after it.
 5. **Rollback is `git revert`** of the release PR: the file goes back, the
    pipeline makes the old pins true again. No snowflake knowledge, no 02:00
-   archaeology — the file is the state.
+   archaeology: the file is the state.
 
 Test never appears in this flow: it tracked main automatically since the merge
 that started it all.
@@ -192,11 +192,11 @@ that started it all.
 ### Scaling to multi-site
 
 You now hold every piece: the routing from Part 2, and the releases and
-promotions from earlier in this part. Multi-site is those pieces multiplied —
+promotions from earlier in this part. Multi-site is those pieces multiplied:
 the only new decisions are where the repository boundaries go, where the
 runners live, and how versions are made inside a bigger repository.
 
-### Option A — one repository deploying to every site
+### Option A: one repository deploying to every site
 
 The same idea scaled out. One repo holds every project (each HMI with its
 own parent project), a config folder per gateway across all sites, and the
@@ -221,20 +221,20 @@ oatmakers-repo/
   (`runs-on: [self-hosted, site-4]`), *inside* that site's network. Nothing
   needs inbound access.
 - **db-migrations ship the same way:** each site's runner migrates that
-  site's database before shipping the projects — exactly the lab 06 order.
-- **Payoff:** a parent project is one folder in one repo — change it once
+  site's database before shipping the projects, exactly the lab 06 order.
+- **Payoff:** a parent project is one folder in one repo: change it once
   and every site's next deploy carries it.
 - **The release files from earlier in this part do the bookkeeping.** The
   repo says what exists; one file per gateway says which version runs where.
 
 **A version tag per project.** One repo does not mean one version number. A
-tag carries its project's name as a prefix, and CI treats the tag as a build
-instruction, not a repo-wide stamp:
+tag carries its project's name as a prefix, and the deploy treats the tag as a
+selector, not a repo-wide stamp:
 
 ```
 commit a41 ── oatmakers@v2.0.0
 commit b52 ── oatmakers-packaging@v1.4.0
-commit c63 ── (merge — no tag, nothing releases)
+commit c63 ── (merge: no tag, nothing releases)
 commit d74 ── oatmakers-shared@v1.9.2      ← the parent project
 commit e85 ── oatmakers@v2.0.1             ← the hotfix
 ```
@@ -242,8 +242,8 @@ commit e85 ── oatmakers@v2.0.1             ← the hotfix
 ```
 tag: oatmakers@v2.0.1
   → parse the prefix: "oatmakers"
-  → build ONLY projects/oatmakers/
-  → publish one artifact
+  → ship ONLY projects/oatmakers/, as it was at that tag
+  → nothing is compiled: the files are the release
 ```
 
 The other folders are present in the checkout and completely ignored; their
@@ -252,7 +252,7 @@ sequences in one repository.
 
 **A parent project is versioned like any other project.** `oatmakers-shared`
 is tagged on its own stream, and every gateway that runs `oatmakers` runs the
-parent **next to** it — the HMI inherits from it. That is why each parent is
+parent **next to** it: the HMI inherits from it. That is why each parent is
 pinned explicitly in every gateway's release file:
 
 ```yaml
@@ -270,21 +270,21 @@ Delivery is unchanged: release files, promotion by PR, each site's runner
 delivering its own.
 
 **One discipline: ship tested combinations only.** `oatmakers@v2.0.1` was
-built and tested against whatever `oatmakers-shared` state commit `e85`
-contained. Pair that artifact on a gateway with a *different* parent version
+tested against whatever `oatmakers-shared` state commit `e85`
+contained. Pair that release on a gateway with a *different* parent version
 and you ship a combination that has never run together. Two mitigations:
 
 1. **One version of each parent per environment.** Everything in staging
    runs the same parent; everything in production runs the same parent. What you
    tested together is what ships together, by construction. Start here.
-2. **Record the dependency in the artifact.** At build time
+2. **Record the dependency with the release.** When you cut the tag,
    `git describe --tags --match 'oatmakers-shared@*'` names the parent state
-   the build saw; write it into a manifest inside the artifact, and let the
-   deploy refuse a gateway file that pairs the artifact with an untested
-   parent (compatible-major matching, not exact-match). More machinery — add
+   it was tested against; write it into a manifest in the project, and let the
+   deploy refuse a gateway file that pairs the project with an untested
+   parent (compatible-major matching, not exact-match). More machinery: add
    it the first time a site is pinned behind on the library.
 
-### Option B — splitting into multiple repositories
+### Option B: splitting into multiple repositories
 
 Four splits, each answering a different question. Mix them freely.
 
@@ -317,14 +317,14 @@ Four splits, each answering a different question. Mix them freely.
 | Config repos + one projects repo | Infra and application are different teams; projects stay together for the shared library | One feature can need two PRs in two repos |
 
 **Rule of thumb:** pick the *fewest* repositories that answer your actual
-questions — who may see what, who owns what, how shared code travels.
+questions: who may see what, who owns what, how shared code travels.
 Whatever you pick, more repos and more gateways raise the same question:
 **which version runs where?** The releases folder from earlier in this part is what
 answers it.
 
 ---
 
-## Part 4 — Tag management: who is the master of tags?
+## Part 4: Tag management: who is the master of tags?
 
 Tags are the one data stream that also flows **against** the deploy
 direction: they change on production, while everything else changes in Git.
@@ -349,10 +349,109 @@ overwritten setpoint.
 |---|---|---|
 | **Development is master** | Every tag change travels through the repo and the pipeline. Editing tags on production is forbidden (or exported back the same day). The deploy may overwrite the tag provider. | Tags change rarely and the development team owns the process |
 | **Production is master** | Tags are exported from production into the repo on a schedule; the deploy never touches the tag provider; the test gateway refreshes itself from those exports. | Engineers and operators live in the tag browser |
-| **Split ownership** | Test owns **structure** (UDT definitions, folders, new tags); production owns **values** (setpoints, alarm limits). The deploy ships definitions and never writes values — or you split by provider or folder. | Most plants — but only if the split is written down and enforced |
+| **Split ownership** | Test owns **structure** (UDT definitions, folders, new tags); production owns **values** (setpoints, alarm limits). The deploy ships definitions and never writes values, or you split by provider or folder. | Most plants, but only if the split is written down and enforced |
 
 ### The rule
 
 There is no universal answer, but there must be **an** answer: written down,
-agreed with operations, and enforced by the pipeline — what a deploy may
-overwrite, what it must merge, and what it must never touch.
+agreed with operations, and enforced by the pipeline (what a deploy may
+overwrite, what it must merge, and what it must never touch).
+
+---
+
+## Part 5: How this afternoon's repo deploys
+
+The assignment runs on one real repository,
+[`Mustry-Solutions/demo-oatmakers`](https://github.com/Mustry-Solutions/demo-oatmakers):
+the repo behind Mustry's live Oatmakers demo at
+<https://cloud.mustrysolutions.com>. It is option A at its smallest: one repo,
+one production gateway (`oatmakers-site-7`), one release file, and a test
+gateway on every student laptop.
+
+### Two deploy channels
+
+| Channel | Trigger | Workflow | Runner label | Target |
+|---|---|---|---|---|
+| Test | every push to `main` (every merged PR) | your own `test-<yourname>.yml` | `[self-hosted, <yourname>-local]` | your test gateway, `localhost:8090` |
+| Production | a merged change to `release.yaml` | `Deploy` (`deploy.yml`) | `[self-hosted, demo-oatmakers]` | `oatmakers-site-7`, cloud.mustrysolutions.com |
+
+- **Test tracks `main`**, exactly like `gw-test.yaml` in the releases folder:
+  no pins, every merge lands. One workflow file per person, because `runs-on`
+  is resolved before any per-user context exists: the file **is** the
+  routing. Each runner registers with a one-hour registration token the
+  instructor posts in the chat (registering a runner is a repo-admin act).
+- **Production is pinned.** The production deploy is wide: every pinned
+  project ships from its own tag, and the gateway payload (gateway config,
+  module manifest, third-party modules, JARs, migrations) ships from the
+  `oatmakers` pin. Migrations run first; a module or JAR change restarts the
+  gateway briefly. Per-gateway identity, users and API keys are never shipped.
+- **`main` is protected**: a pull request, one approval from someone else and
+  a green `CI OK` check. Nobody pushes to `main`.
+
+### A release is a prefixed tag, and the tag comes before the pin
+
+```bash
+git switch main && git pull
+git tag <yourname>@v1.0.0
+git push origin <yourname>@v1.0.0
+```
+
+```diff
+ # release.yaml
+ gateway: oatmakers-site-7
+ projects:
+   oatmakers: v5.0.0
++  <yourname>: v1.0.0
+```
+
+Merging a feature PR deploys nothing to production. The tag makes the release
+exist; the `release.yaml` PR (stage it with `git add release.yaml`, never
+`git commit -am`) points production at it. CI checks every pin against the
+existing tags and turns `CI OK` red for a pin whose tag was never pushed.
+Rollback is `git revert` of the release PR. A revert re-ships old files; it
+does not undo a migration that already ran, which is why migrations are
+written so the previous screens still work with them.
+
+### One version stream, many people
+
+Everyone who changes the shared project cuts the **next free** `oatmakers@`
+number:
+
+```bash
+git fetch --tags
+git tag -l 'oatmakers@*' --sort=-v:refname | head -3
+```
+
+- **Tag races happen.** Two people pick `v5.1.0`; the second `git push` of the
+  tag is rejected. Fetch the tags and take the next number.
+- **A tag contains everything merged before it.** If someone pins `v5.2.0`
+  while your `v5.1.0` waits, check whether yours is inside theirs before you
+  pin anything:
+
+  ```bash
+  git merge-base --is-ancestor oatmakers@v5.1.0 oatmakers@v5.2.0 && echo "already included"
+  ```
+
+  Already included: you are live, done. Never pin a lower version over a
+  higher one.
+
+### Release-file etiquette on a shared live demo
+
+1. Small PRs: one view, one migration pair, one module.
+2. Stage only what you changed; the gateway rewrites files on its own.
+3. One release PR in flight at a time; announce it in the chat.
+4. A conflict in `release.yaml` is normal: `git rebase origin/main`, keep
+   every pin from `main`, re-apply only your own line,
+   `git push --force-with-lease`.
+5. Never lower a pin; a pushed tag is permanent.
+6. Announce a release that adds a module or a JAR: it restarts the gateway.
+
+### The challenges reuse moves you already made
+
+| Challenge | Where it lives in the repo | Taught in | How it reaches production |
+|---|---|---|---|
+| Third-party module | `third-party-modules/` + `services/modules.json` | lab 06 | `oatmakers@` pin, gateway restart |
+| Library JAR | `jar-files/jar/` | lab 06 | `oatmakers@` pin, gateway restart |
+| Migration + referenced secret | `db-migration/migrate/` pair, a connection whose password references `POSTGRES_PASSWORD` | lab 06 | `oatmakers@` pin, migrations run before anything ships |
+| Simulator device + tags | `services/config/` (device, tag definitions) | lab 04 (config is files) | `oatmakers@` pin, hot scan |
+| History | a historian from the TimescaleDB-Historian module (already in the repo) + history on the tags | lab 06 (modules as data) | `oatmakers@` pin, hot scan |

@@ -169,6 +169,8 @@ body{
 .filecard pre .cm{color:var(--txt-faint)}
 .filecard pre .grn{color:var(--good);font-weight:600}
 .filecard pre .wrn{color:var(--warn);font-weight:600}
+.code pre .row{display:block}
+.code pre .row.reveal{transform:none}
 
 /* gateway chips (from the lab 06 portability visual) */
 .gwrow{display:flex;flex-direction:column;gap:12px}
@@ -364,7 +366,7 @@ body{
   <div class="cover">
     <div class="eyebrow">Teaching · 60 min · Day 4</div>
     <div class="big">Deployments in a <em>multi-gateway</em> architecture</div>
-    <div class="sub">Everything so far deployed one repository to one gateway. Real plants have backend and frontend gateways, eight sites, an enterprise level, vendors, and one question nobody can answer from memory: <em style="color:#fff;font-style:normal">which version runs where?</em> This session lays out the architectures, the repository layouts that map onto them, the releases folder that does the bookkeeping, and the tag-ownership decision you must make before any of it goes live.</div>
+    <div class="sub">Everything so far deployed one repository to one gateway. Real plants have backend and frontend gateways, eight sites, an enterprise level, vendors, and one question nobody can answer from memory: <em style="color:#fff;font-style:normal">which version runs where?</em> This session lays out the architectures, the repository layouts that map onto them, the releases folder that does the bookkeeping, the tag-ownership decision you must make before any of it goes live, and how this afternoon's repo puts all of it on a live gateway.</div>
   </div>
 
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Lab 07: Multi-gateway deployments</span></div>
@@ -396,7 +398,7 @@ body{
     </div>
   </div>
 
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>architectures → repos &amp; pipelines → releases → multi-site → tags</span></div>
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>architectures → repos &amp; pipelines → releases → multi-site → tags → this afternoon's repo</span></div>
 </section>
 
 <!-- 3 · DIVIDER: PART 1 ARCHITECTURES -->
@@ -827,7 +829,7 @@ projects:
       <div>
         <div class="filecard reveal" data-step="1">
           <div class="fh">🏷 one projects folder · a tag next to each commit</div>
-          <pre><span class="row">oatmakers-repo/projects/</span><span class="row">├─ <span class="hl">oatmakers/</span>              <span class="cm">HMI</span></span><span class="row">├─ <span class="grn">oatmakers-shared/</span>       <span class="cm">its parent project</span></span><span class="row">├─ <span class="hl">oatmakers-packaging/</span>    <span class="cm">HMI</span></span><span class="row">└─ <span class="grn">oatmakers-packaging-shared/</span> <span class="cm">its parent project</span></span><span class="row"> </span><span class="row">commit a41 ─ <span class="hl">oatmakers@v2.0.0</span></span><span class="row">commit b52 ─ <span class="hl">oatmakers-packaging@v1.4.0</span></span><span class="row">commit d74 ─ <span class="grn">oatmakers-shared@v1.9.2</span></span><span class="row">commit e85 ─ <span class="hl">oatmakers@v2.0.1</span>        <span class="cm">← the hotfix</span></span><span class="row"><span class="cm"># CI: the tag prefix decides which folder builds</span></span></pre>
+          <pre><span class="row">oatmakers-repo/projects/</span><span class="row">├─ <span class="hl">oatmakers/</span>              <span class="cm">HMI</span></span><span class="row">├─ <span class="grn">oatmakers-shared/</span>       <span class="cm">its parent project</span></span><span class="row">├─ <span class="hl">oatmakers-packaging/</span>    <span class="cm">HMI</span></span><span class="row">└─ <span class="grn">oatmakers-packaging-shared/</span> <span class="cm">its parent project</span></span><span class="row"> </span><span class="row">commit a41 ─ <span class="hl">oatmakers@v2.0.0</span></span><span class="row">commit b52 ─ <span class="hl">oatmakers-packaging@v1.4.0</span></span><span class="row">commit d74 ─ <span class="grn">oatmakers-shared@v1.9.2</span></span><span class="row">commit e85 ─ <span class="hl">oatmakers@v2.0.1</span>        <span class="cm">← the hotfix</span></span><span class="row"><span class="cm"># the tag prefix decides which folder ships</span></span></pre>
         </div>
         <div class="code reveal" data-step="2" style="margin-top:12px"><pre><span class="cm"># releases/production/gw-site4-frontend.yaml</span>
 gateway: <span class="cmd2">gw-site4-frontend</span>
@@ -1060,7 +1062,261 @@ projects:
   </div>
 </section>
 
-<!-- 18 · IN THE LAB (closing) -->
+<!-- 18 · DIVIDER: PART 5 THIS AFTERNOON'S REPO -->
+<section class="slide dark">
+  <div class="topbar">
+    <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
+    <div class="stage on-dark">Part 5 · This afternoon's repo</div>
+  </div>
+  <div class="divider">
+    <div class="eyebrow">Part 5 · From the menu to a live gateway</div>
+    <div class="q">How <em>demo-oatmakers</em> deploys: two channels, one release file.</div>
+    <div class="sub2">The assignment runs on one real, public repo: the repo behind Mustry's live Oatmakers demo at cloud.mustrysolutions.com. It is option A at its smallest: one repo, one production gateway, one release file, and a test gateway on every laptop. These slides cover every move the assignment asks of you.</div>
+  </div>
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>two channels · tag before pin · one version stream · etiquette · the challenges</span></div>
+</section>
+
+<!-- 19 · TWO DEPLOY CHANNELS (interactive) -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Part 5 · Two deploy channels</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">13</span>
+      <div>
+        <div class="title">demo-oatmakers: one public repo with two deploy channels</div>
+        <div class="lead">Every merge to <span class="mono">main</span> lands on every student's test gateway. Only a change to <span class="mono">release.yaml</span> reaches production. The runner label decides where each job runs.</div>
+      </div>
+    </div>
+
+    <div class="map2" style="grid-template-columns:.78fr 1.45fr;gap:22px">
+      <div class="filecard reveal" data-step="1">
+        <div class="fh">📦 Mustry-Solutions/demo-oatmakers</div>
+        <pre><span class="row"><span class="hl">release.yaml</span>          <span class="cm">what runs on production</span></span><span class="row">projects/oatmakers/   <span class="cm">the shared project</span></span><span class="row">projects/&lt;you&gt;/       <span class="cm">yours, from Part 1</span></span><span class="row">services/config/      <span class="cm">gateway config</span></span><span class="row">services/modules.json</span><span class="row">third-party-modules/</span><span class="row">jar-files/jar/</span><span class="row">db-migration/migrate/</span><span class="row">.github/workflows/</span><span class="row">  ci.yml              <span class="cm">PR checks → CI OK</span></span><span class="row">  <span class="hl">deploy.yml</span>          <span class="cm">Deploy → production</span></span><span class="row">  <span class="grn">test-&lt;you&gt;.yml</span>      <span class="cm">yours, from Part 0</span></span></pre>
+      </div>
+      <div>
+        <div class="routes">
+          <div class="route reveal" data-step="2">
+            <div class="parcels"><span class="pkt">merge to main</span></div>
+            <div class="wirewrap"><span class="wlab">test-&lt;you&gt;.yml</span><div class="wire"></div></div>
+            <div class="node fe">
+              <div class="nh"><span class="nt">your test gateway</span><span class="nd">localhost:8090 · one per student</span></div>
+              <div class="np"><span class="mono">runs-on: [self-hosted, &lt;you&gt;-local]</span>: a runner on your laptop, registered with a one-hour token we post in the chat.</div>
+            </div>
+          </div>
+          <div class="route reveal" data-step="3">
+            <div class="parcels"><span class="pkt cfg">release.yaml changed</span></div>
+            <div class="wirewrap"><span class="wlab">Deploy</span><div class="wire"></div></div>
+            <div class="node">
+              <div class="nh"><span class="nt">oatmakers-site-7</span><span class="nd">cloud.mustrysolutions.com</span></div>
+              <div class="np"><span class="mono">runs-on: [self-hosted, demo-oatmakers]</span>: the runner next to the production gateway, inside its network.</div>
+            </div>
+          </div>
+        </div>
+        <div class="cols2" style="gap:14px;margin-top:14px">
+          <div class="does reveal" data-step="4">
+            <div class="hd">What the production deploy ships</div>
+            <ul>
+              <li><span class="d"></span><span>Every pinned project, from <b>its own tag</b></span></li>
+              <li><span class="d"></span><span>Config, <code>modules.json</code>, modules, JARs, migrations from the <code>oatmakers</code> pin</span></li>
+              <li><span class="d"></span><span>Migrations first; a module or JAR <b>restarts</b> the gateway</span></li>
+              <li><span class="d"></span><span>Never: identity, users, API keys</span></li>
+            </ul>
+          </div>
+          <div class="does reveal" data-step="5">
+            <div class="hd">main is protected</div>
+            <ul>
+              <li><span class="d"></span><span>Every change through a <b>pull request</b></span></li>
+              <li><span class="d"></span><span>A green <code>CI OK</code> and <b>one approval</b> from someone else</span></li>
+              <li><span class="d"></span><span>Nobody pushes to <code>main</code>; the Mustry team can bypass</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <span class="lead-step" id="chan-step">One repo, two ways out of it. Step through the channels.</span>
+    <button class="btn" data-act="back">◀ Back</button>
+    <button class="btn primary" data-act="next">Next ▶</button>
+  </div>
+</section>
+
+<!-- 20 · TAG BEFORE PIN (interactive) -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Part 5 · Tag before pin</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">14</span>
+      <div>
+        <div class="title">A release is a prefixed tag, and the tag must exist before release.yaml points at it</div>
+        <div class="lead">The releases folder from Part 3, shrunk to one file for one gateway. Each line pins a project to a tag <span class="mono">&lt;project&gt;@vX.Y.Z</span>. Merging code deploys nothing; tagging and pinning do.</div>
+      </div>
+    </div>
+
+    <div class="cols2" style="grid-template-columns:1fr 1fr;gap:22px;align-items:start">
+      <div class="code" style="margin-top:0"><pre><span class="row reveal" data-step="1"><span class="cm"># 1 · your feature PR merged: main moved, production did not</span></span><span class="row reveal" data-step="2"><span class="cm"># 2 · make the release exist</span></span><span class="row reveal" data-step="2">git switch main &amp;&amp; git pull</span><span class="row reveal" data-step="2">git tag <span class="cmd2">&lt;yourname&gt;@v1.0.0</span></span><span class="row reveal" data-step="2">git push origin <span class="cmd2">&lt;yourname&gt;@v1.0.0</span></span><span class="row reveal" data-step="3"> </span><span class="row reveal" data-step="3"><span class="cm"># 3 · point production at it, by PR</span></span><span class="row reveal" data-step="3">git switch -c pin/&lt;yourname&gt;-v1.0.0</span><span class="row reveal" data-step="3"><span class="cm"># edit release.yaml, then stage ONLY that file</span></span><span class="row reveal" data-step="3">git add release.yaml          <span class="cm"># never git commit -am</span></span><span class="row reveal" data-step="3">git commit -m <span class="grn">"release: pin &lt;yourname&gt; v1.0.0"</span></span><span class="row reveal" data-step="3">git push -u origin pin/&lt;yourname&gt;-v1.0.0</span></pre></div>
+      <div>
+        <div class="code reveal" data-step="3" style="margin-top:0"><pre><span class="cm"># release.yaml</span>
+ gateway: <span class="cmd2">oatmakers-site-7</span>
+ projects:
+   oatmakers:  <span class="cmd2">v5.0.0</span>
+<span class="grn">+  &lt;yourname&gt;: v1.0.0</span></pre></div>
+        <div class="callout reveal" data-step="4" style="margin-top:12px">
+          <div class="lab" style="color:var(--bad)">CI checks every pin</div>
+          <p>Pin <code>v1.0.1</code> when only <code>v1.0.0</code> was pushed, and the release check fails: <b><code>CI OK</code> goes red</b> and the PR cannot merge. A tag that was never pushed is a release that does not exist.</p>
+        </div>
+        <div class="callout reveal" data-step="5" style="margin-top:12px">
+          <div class="lab" style="color:var(--good)">Merge is the trigger</div>
+          <p>One approval, merge, and <b>Deploy</b> runs on the <code>demo-oatmakers</code> runner: it checks out the pinned tags and copies the files in. Nothing is compiled.</p>
+        </div>
+        <div class="callout reveal" data-step="6" style="margin-top:12px">
+          <div class="lab" style="color:var(--blue)">Rollback is git revert</div>
+          <p>The <b>Revert</b> button on the merged release PR opens a PR that puts the old pins back. A revert re-ships old files; it does <b>not</b> undo a migration that already ran.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <span class="lead-step" id="pin-step">From a merged PR to a live release. Step through the order.</span>
+    <button class="btn" data-act="back">◀ Back</button>
+    <button class="btn primary" data-act="next">Next ▶</button>
+  </div>
+</section>
+
+<!-- 21 · ONE VERSION STREAM (interactive) -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Part 5 · One version stream</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">15</span>
+      <div>
+        <div class="title">Sharing one version stream: the next free tag, tag races and checking what a tag contains</div>
+        <div class="lead">Everyone who changes the shared project cuts an <span class="mono">oatmakers@</span> tag. Two people will pick the same number, and someone else's tag will ship your work before yours does.</div>
+      </div>
+    </div>
+
+    <div class="cols2" style="grid-template-columns:.95fr 1.05fr;gap:22px;align-items:start">
+      <div class="filecard">
+        <div class="fh">🏷 main, with two people shipping</div>
+        <pre><span class="row">c1 ─ <span class="hl">oatmakers@v5.0.0</span>        <span class="cm">pinned in release.yaml</span></span><span class="row reveal" data-step="1">c2 ─ A: chart screen      <span class="cm">merged</span></span><span class="row reveal" data-step="2">c3 ─ B: migration + view  <span class="cm">merged</span></span><span class="row reveal" data-step="2"> </span><span class="row reveal" data-step="2">on c2: <span class="hl">oatmakers@v5.1.0</span>   <span class="cm">← A tags first</span></span><span class="row reveal" data-step="2">on c3: <span class="wrn">v5.1.0 rejected</span>     <span class="cm">← B, same number</span></span><span class="row reveal" data-step="3">on c3: <span class="grn">oatmakers@v5.2.0</span>   <span class="cm">← B: contains c2 AND c3</span></span><span class="row reveal" data-step="4"> </span><span class="row reveal" data-step="4"><span class="cm">release.yaml: oatmakers v5.2.0 (B pinned first)</span></span></pre>
+      </div>
+      <div>
+        <div class="code reveal" data-step="1" style="margin-top:0"><pre><span class="cm"># the next free number: look at the tags, not only at release.yaml</span>
+git fetch --tags
+git tag -l <span class="grn">'oatmakers@*'</span> --sort=-v:refname | head -3</pre></div>
+        <div class="code reveal" data-step="2" style="margin-top:10px"><pre>git push origin oatmakers@v5.1.0
+<span class="red"> ! [rejected]  oatmakers@v5.1.0 (already exists)</span>
+<span class="cm"># fetch, delete your local tag, take the next number</span></pre></div>
+        <div class="code reveal" data-step="4" style="margin-top:10px"><pre><span class="cm"># A, before pinning v5.1.0: is my tag inside the pinned one?</span>
+git merge-base --is-ancestor \
+  oatmakers@v5.1.0 oatmakers@v5.2.0 &amp;&amp; echo <span class="grn">"already included"</span></pre></div>
+        <div class="callout reveal" data-step="5" style="margin-top:10px">
+          <div class="lab">Never lower a pin</div>
+          <p>Pinning <code>v5.1.0</code> over <code>v5.2.0</code> would quietly <b>remove B's work</b> from production. If your tag is already included, you are live: done.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <span class="lead-step" id="stream-step">Two people, one shared project, one version stream. Step through what happens.</span>
+    <button class="btn" data-act="back">◀ Back</button>
+    <button class="btn primary" data-act="next">Next ▶</button>
+  </div>
+</section>
+
+<!-- 22 · RELEASE-FILE ETIQUETTE -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Part 5 · Etiquette</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">16</span>
+      <div>
+        <div class="title">Release-file etiquette when everyone ships to one live gateway</div>
+        <div class="lead">The whole group and the Mustry team deploy through the same file to the same live demo. Six rules keep that civil.</div>
+      </div>
+    </div>
+
+    <div class="cols2" style="grid-template-columns:1.1fr .9fr;gap:24px">
+      <ul class="checks">
+        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Small PRs.</b> One view, one migration pair, one module. Small PRs get reviewed first and conflict least.</span></li>
+        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Stage only what you changed.</b> The gateway rewrites files on its own; that churn never belongs in your PR. <span class="mono">git add &lt;your paths&gt;</span>, never <span class="mono">git commit -am</span>.</span></li>
+        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>One release PR in flight at a time.</b> Check the open PRs, say in the chat when you start, wait for the <b>Deploy</b> run to go green before the next one merges.</span></li>
+        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Never lower a pin; a pushed tag is permanent.</b> Made a mistake? Fix it on main and cut the next number.</span></li>
+        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Announce restarts.</b> A release that adds a module or a JAR restarts the production gateway for a minute or two.</span></li>
+        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Leave the existing demo alone.</b> Your screens, tags and tables carry your name or <span class="mono">Course</span>.</span></li>
+      </ul>
+      <div>
+        <div class="code" style="margin-top:0"><pre><span class="cm"># release.yaml conflicts with main? normal.</span>
+git fetch origin
+git rebase origin/main
+<span class="cm"># keep EVERY pin main has,</span>
+<span class="cm"># re-apply only your own line</span>
+git add release.yaml
+git rebase --continue
+git push --force-with-lease</pre></div>
+        <div class="callout" style="margin-top:12px">
+          <div class="lab" style="color:var(--blue)">Why a rebase and not a merge</div>
+          <p>Your release PR should stay <b>one readable diff</b>: the one line you changed. <span class="mono">--force-with-lease</span> refuses to overwrite a branch someone else pushed to in the meantime.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>small PRs · one release PR at a time · keep every pin</span></div>
+</section>
+
+<!-- 23 · THE CHALLENGES REUSE MOVES YOU KNOW -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Part 5 · The challenges</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">17</span>
+      <div>
+        <div class="title">The five challenges reuse moves from labs 04 to 06, now on one shared project</div>
+        <div class="lead">Every challenge is something you already shipped in your fork. What is new is where it lives in this repo, and that it only reaches production through a new <span class="mono">oatmakers@</span> tag: the gateway payload rides that pin.</div>
+      </div>
+    </div>
+    <table class="tbl">
+      <tr><th style="width:20%">Challenge</th><th style="width:34%">Where it lives in demo-oatmakers</th><th style="width:16%">Taught in</th><th>How it reaches production</th></tr>
+      <tr><td><b>Third-party module</b></td><td><code>third-party-modules/</code> + an entry in <code>services/modules.json</code></td><td>lab 06</td><td><code>oatmakers@</code> pin; the gateway <b>restarts</b> to load it</td></tr>
+      <tr><td><b>Library JAR</b></td><td><code>jar-files/jar/</code></td><td>lab 06</td><td><code>oatmakers@</code> pin; copied to <code>lib/core/gateway</code>, gateway <b>restarts</b></td></tr>
+      <tr><td><b>Migration + referenced secret</b></td><td>an up/down pair in <code>db-migration/migrate/</code>; a connection whose password references <code>POSTGRES_PASSWORD</code></td><td>lab 06</td><td><code>oatmakers@</code> pin; migrations run <b>before</b> anything ships</td></tr>
+      <tr><td><b>Simulator device + tags</b></td><td>the device and tag definitions in <code>services/config/</code></td><td>lab 04: config is files</td><td><code>oatmakers@</code> pin; hot scan, no restart</td></tr>
+      <tr><td><b>History</b></td><td>a historian from the <b>TimescaleDB-Historian</b> module (already in the repo) + history enabled on the tags</td><td>lab 06: modules as data</td><td><code>oatmakers@</code> pin; hot scan, no restart</td></tr>
+    </table>
+    <div class="callout">
+      <div class="lab" style="color:var(--blue)">Your test gateway first</div>
+      <p>Every merge lands on <b>your test gateway</b> before anyone tags it. If it does not work on <code>localhost:8090</code>, it will not work on production: fix it with a follow-up PR, then tag.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>same moves · one shared project · one new tag</span></div>
+</section>
+
+<!-- 24 · IN THE LAB (closing) -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -1069,10 +1325,10 @@ projects:
 
   <div class="body">
     <div class="eyebrow">Now we make it real</div>
-    <div class="title" style="max-width:30ch;color:#fff">Next: contribute to one shared repo and deploy to a real production gateway</div>
+    <div class="title" style="max-width:30ch;color:#fff">Next: contribute to demo-oatmakers and deploy to a live production gateway</div>
     <ul class="checks" style="max-width:940px;margin-top:22px">
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>We-do.</b> We map Oatmakers' eight sites onto the reference architectures together on screen, sketch the repo layouts live, and walk one release PR end to end: bump a pin in <span class="mono" style="color:#dbe4f0">release.yaml</span>, review it, merge it, and watch the deploy run on the site 7 runner.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You-do (breakout rooms), from <span class="mono" style="color:#dbe4f0">exercises/lab.md</span>.</b> No fork this time: everyone is a <b>contributor</b> on one locked-down repo. First you wire <span class="mono" style="color:#dbe4f0">main</span> to auto-deploy onto your <b>own test gateway</b>, then you bring a project with your own name <b>live on a real production gateway</b> through a tag and a <span class="mono" style="color:#dbe4f0">release.yaml</span> PR, then five challenges land on the shared oatmakers project: a module, a JAR, a database with migrations and a secret, live tags, and a dashboard on top.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>We-do.</b> We map Oatmakers' eight sites onto the reference architectures together on screen, sketch the repo layouts live, and walk one release PR on demo-oatmakers end to end: bump a pin in <span class="mono" style="color:#dbe4f0">release.yaml</span>, review it, merge it, and watch <b>Deploy</b> run on the <span class="mono" style="color:#dbe4f0">demo-oatmakers</span> runner.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You-do (breakout rooms), from <span class="mono" style="color:#dbe4f0">exercises/lab.md</span>.</b> Accept the collaborator invite on <span class="mono" style="color:#dbe4f0">Mustry-Solutions/demo-oatmakers</span>. Part 0: your test gateway and runner. Part 1: a project with your own name <b>live on production</b> through a tag and a <span class="mono" style="color:#dbe4f0">release.yaml</span> PR. Part 2: five challenges on the shared oatmakers project. Part 3: build on each other's work.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>This is the last lab of the course.</b> The debrief afterwards closes out all four days: bring the pipeline you would actually build at your own plant.</span></li>
     </ul>
   </div>
@@ -1083,7 +1339,7 @@ projects:
 </div>
 
 <div class="hud"><div class="bar" id="bar"></div></div>
-<div class="pager" id="pager">01 / 18</div>
+<div class="pager" id="pager">01 / 24</div>
 <div class="hint" id="hint">↑ ↓ slides · ← → step the animation</div>
 
 <script>
@@ -1180,11 +1436,11 @@ controllers.fb=revealCtrl(8,'#fb-step',[
 /* ---------- slide 13 (idx 12): option A, a tag per project ---------- */
 controllers.mono=revealCtrl(12,'#mono-step',[
   'One repository, tagged per project, deploying to one specific site. Step through it.',
-  '<b>The repo: one projects folder, a tag next to each commit.</b> A tag names its project: <span class="mono">oatmakers@v2.0.1</span> releases the HMI, <span class="mono">oatmakers-shared@v1.9.2</span> releases its parent project, and CI builds only the folder the prefix names.',
+  '<b>The repo: one projects folder, a tag next to each commit.</b> A tag names its project: <span class="mono">oatmakers@v2.0.1</span> releases the HMI, <span class="mono">oatmakers-shared@v1.9.2</span> releases its parent project, and the deploy ships only the folder the prefix names.',
   '<b>Site 4\'s release file</b> pins what that one gateway runs: the project at its own tag, and <b>its parent project alongside</b>: the HMI inherits from it, so the parent must be on every gateway that runs it.',
-  '<b>The deploy reads that one file and ships to that one site.</b> Watch the project and its parent travel together into site 4\'s gateway: two artifacts, one destination.',
+  '<b>The deploy reads that one file and ships to that one site.</b> Watch the project and its parent travel together into site 4\'s gateway: two projects, one destination.',
   '<b>And nothing else moves.</b> Site 2 and central keep running their pinned versions: promoting them is a separate line in a separate file, through the same PR machinery.',
-  '<b>One discipline:</b> keep <b>one version of each parent per environment</b>, so the pair you tested together is the pair that ships together. (Stricter: the build records the parent version in the artifact\'s manifest, and the deploy refuses untested pairs.)'
+  '<b>One discipline:</b> keep <b>one version of each parent per environment</b>, so the pair you tested together is the pair that ships together. (Stricter: record the tested parent version in a manifest next to the project, and let the deploy refuse untested pairs.)'
 ]);
 
 /* ---------- slide 14 (idx 13): multi-repo options ---------- */
@@ -1228,8 +1484,39 @@ controllers.tags=revealCtrl(16,'#tags-step',[
   '<b>The rule:</b> there is no universal answer, but there must be <b>an</b> answer: written down, agreed with operations, and enforced by the pipeline.'
 ]);
 
+/* ---------- slide 19 (idx 18): demo-oatmakers, two deploy channels ---------- */
+controllers.chan=revealCtrl(18,'#chan-step',[
+  'One repo, two ways out of it. Step through the channels.',
+  '<b>The repo:</b> the projects, the gateway payload, <span class="mono">release.yaml</span> and three kinds of workflow. You copy one template into <span class="mono">test-&lt;you&gt;.yml</span> in Part 0.',
+  '<b>Channel 1, test tracks main.</b> Every merge runs every student\'s <span class="mono">test-&lt;you&gt;.yml</span>; each one asks for its owner\'s label, so it lands on that laptop only. One file per person, because <span class="mono">runs-on</span> is resolved before any per-user context exists. The runner registers with a one-hour token we post in the chat: registering a runner is a repo-admin act.',
+  '<b>Channel 2, production is pinned.</b> Only a merged change to <span class="mono">release.yaml</span> starts <b>Deploy</b>, on the runner labelled <span class="mono">demo-oatmakers</span> next to the gateway. Same label routing as site 4 in Part 3.',
+  '<b>The production deploy is wide:</b> every pinned project from its own tag, and the whole gateway payload from the <span class="mono">oatmakers</span> pin. Migrations first; modules and JARs restart the gateway. Identity, users and API keys never ship.',
+  '<b>And main is protected:</b> a PR, a green <span class="mono">CI OK</span>, and one approval from someone else. You cannot approve your own PR; the instructor or a fellow student does.'
+]);
+
+/* ---------- slide 20 (idx 19): tag before pin ---------- */
+controllers.pin=revealCtrl(19,'#pin-step',[
+  'From a merged PR to a live release. Step through the order.',
+  '<b>Your feature PR merged.</b> Every test gateway has it; production does not. <b>Deploy</b> did not even run: <span class="mono">release.yaml</span> did not change.',
+  '<b>Tag the merged main:</b> <span class="mono">&lt;yourname&gt;@v1.0.0</span>. The prefix names the project, the version names the point in history. Now the release exists.',
+  '<b>Pin it on a branch, by PR.</b> One line in <span class="mono">release.yaml</span>, and you stage only that file: whatever else the gateway rewrote on your laptop stays out.',
+  '<b>CI checks every pin against the pushed tags.</b> Point at a version nobody pushed and <span class="mono">CI OK</span> goes red. That is the tag-before-pin rule, enforced.',
+  '<b>One approval, merge: Deploy runs</b> on the <span class="mono">demo-oatmakers</span> runner, checks out the pinned tags and copies the files in.',
+  '<b>Rollback is a revert of the release PR</b>, through the same review. It re-ships the old files; a migration that already ran stays, so migrations must keep the previous screens working.'
+]);
+
+/* ---------- slide 21 (idx 20): one version stream ---------- */
+controllers.stream=revealCtrl(20,'#stream-step',[
+  'Two people, one shared project, one version stream. Step through what happens.',
+  '<b>A merges a chart screen</b> and looks for the next free number. Look at the <b>tags</b>, not only at <span class="mono">release.yaml</span>: someone may have tagged without pinning yet.',
+  '<b>A tag race.</b> B merges a migration right after. A tags <span class="mono">v5.1.0</span> on c2; B also picks <span class="mono">v5.1.0</span> for c3 and the push is rejected. No harm done, as long as nobody moves a pushed tag.',
+  '<b>B fetches the tags and takes <span class="mono">v5.2.0</span></b> for c3. That tag contains B\'s work <b>and</b> A\'s chart: a tag carries everything merged before it.',
+  '<b>B pins <span class="mono">v5.2.0</span> first.</b> Before A pins <span class="mono">v5.1.0</span>, A checks whether it is already inside the pinned tag. It is: A\'s chart is live.',
+  '<b>Never lower a pin.</b> Pinning <span class="mono">v5.1.0</span> now would remove B\'s work from production. Already included means done.'
+]);
+
 /* ============ wire controllers to their slides + reset on entry ============ */
-const ctrlBySlide={7:'now',8:'fb',10:'rel',11:'promo',12:'mono',13:'multi',16:'tags'};
+const ctrlBySlide={7:'now',8:'fb',10:'rel',11:'promo',12:'mono',13:'multi',16:'tags',18:'chan',19:'pin',20:'stream'};
 const bound={};
 for(const idx in ctrlBySlide){const name=ctrlBySlide[idx];bound[idx]=bindControls(slides[idx],controllers[name]);}
 // reset a slide's animation when you scroll onto it

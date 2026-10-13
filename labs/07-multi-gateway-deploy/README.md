@@ -1,36 +1,40 @@
-# Lab 07 — Deployments in a multi-gateway architecture
-
-<!-- template-only:start (scripts/instructor/new-lab07-cohort.sh strips this block) -->
-> **Browsing this inside the course repo?** This folder is the **template** for lab 07,
-> not the place you work. Every cohort gets its own shared repo generated from it,
-> `Mustry-Academy/cicd-lab-07-<cohort>`, and your instructor sends you the link.
-> You work in that repo. In it, this folder is the repo root, and every
-> `cicd-lab-07-<cohort>` in these docs carries your cohort's real name.
-<!-- template-only:end -->
+# Lab 07: Deployments in a multi-gateway architecture
 
 Day 4 (afternoon) of the [CI/CD for Ignition Masterclass](https://github.com/Mustry-Academy/cicd-for-ignition).
 
-> The capstone. For once you do **not** fork: everyone works as a **contributor on this one shared, locked-down repo**. Every push to `main` auto-deploys to your **own test gateway**; only a change to `release.yaml` reaches the **real production gateway on the internet**. Feature branch → PR → review → tag → release pin → live, again and again, with four other people in the same version stream.
+> The capstone. For once you do **not** work in your fork. Everyone works as a
+> **contributor on one real, public repo**,
+> [`Mustry-Solutions/demo-oatmakers`](https://github.com/Mustry-Solutions/demo-oatmakers):
+> the repo behind Mustry's live Oatmakers demo at
+> <https://cloud.mustrysolutions.com>. Every merge to `main` lands on your
+> **own test gateway**; only a change to `release.yaml` reaches the **live
+> production gateway**. Feature branch → PR → review → tag → release pin →
+> live, again and again, with the rest of the group in the same version
+> stream.
 
-Two deploy channels, one rule: `release.yaml` is the **only** production trigger. Each pin is a git tag `<project>@vX.Y.Z` that must exist before the file may point at it — CI enforces that on the PR. Rollback is `git revert` of the release PR.
+This folder holds the **material** for the lab: the slides, the exercise and
+the reference docs. The code you work on lives in demo-oatmakers; nothing in
+this folder runs.
 
-
-> **How resource.json stays clean:** Ignition restamps these manifests constantly. [`docs/resource-json-hygiene.html`](./docs/resource-json-hygiene.html) explains what the junk is, the two tools that deal with it, and why an empty `git diff` does not mean a clean file.
+Two deploy channels, one rule: `release.yaml` is the **only** production
+trigger. Each pin is a git tag `<project>@vX.Y.Z` that must exist before the
+file may point at it; CI enforces that on the PR. Rollback is `git revert`
+of the release PR.
 
 ## Prerequisites
 
-- Your instructor sends you the link to **your cohort's lab 07 repo**, `Mustry-Academy/cicd-lab-07-<cohort>`. Accept the **contributor invite** (check your GitHub notifications) — no fork
+- The instructor adds you as a **collaborator** on demo-oatmakers at the start
+  of the session. Accept the invite from your GitHub notifications. No fork.
 - Docker with the Compose V2 plugin, `git`, `curl`, `python3`
-- **≥ 4 GB free RAM for Docker** — one Ignition gateway (1 GB cap) plus TimescaleDB
-- _Background:_ [labs 03–06](https://github.com/Mustry-Academy/cicd-for-ignition/tree/main/labs) — the runner, tags, secrets ladder, migrations and module moves all return here, wired into one pipeline
+- **≥ 6 GB free RAM for Docker**: two Ignition gateways (your local one and
+  your test gateway), PostgreSQL and a runner
+- Ports **8088, 8090 and 5432** free: stop the lab 06 stack first
+  (`docker compose down` in `labs/06-secrets-db-and-modules/`)
+- _Background:_ [labs 03-06](../): the runner, tags, secrets, migrations and
+  module moves all return here, wired into one pipeline
 
-
-> **WSL2 (Windows): keep the clone in your Linux home (`~/…`), never `/mnt/c/…`.**
-> On the Windows filesystem your Windows user, your WSL user and the gateway's
-> container user are three different identities, so file ownership breaks in ways
-> `chown` cannot fix and you end up reaching for `sudo` (which makes it worse).
-> `scripts/setup.sh` refuses to run from there, and never needs `sudo`.
-> See [`docs/wsl-setup.md`](./docs/wsl-setup.md).
+> **WSL2 (Windows): keep the clone in your Linux home (`~/...`), never
+> `/mnt/c/...`.** See [`docs/wsl-setup.md`](./docs/wsl-setup.md).
 
 ## Quick start
 
@@ -38,60 +42,44 @@ Clone it **next to** the course repo, not inside it:
 
 ```bash
 cd ~/mustry-academy    # the folder that already holds cicd-for-ignition/
-git clone git@github.com:Mustry-Academy/cicd-lab-07-<cohort>.git
-cd cicd-lab-07-<cohort>
-scripts/setup.sh       # compose up + one-time first-boot fix, idempotent
-scripts/validate.sh    # local mirror of CI — green before you PR
+git clone git@github.com:Mustry-Solutions/demo-oatmakers.git
+cd demo-oatmakers
+cp .env.example .env   # Part 0: LAB_USER + the runner token from the Zoom chat
+./scripts/setup.sh     # local stack + your test gateway and runner, idempotent
 ```
 
-| Service | URL | Login |
+| Service | URL | Login / fed by |
 |---|---|---|
-| local gateway | http://localhost:8088 | `admin` / `password` — bind-mounted from `./projects/` + `./services/config/` |
-| local database | localhost:5432 | `ignition` / `lab07-postgres-pw`, database `ignition` |
-| **production** | https://cloud.mustrysolutions.com | shared team gateway — deploys land here via `release.yaml` only |
-
-The local gateway bind-mounts the repo: a save in the Designer lands in your
-working tree, so `git status` is your export step. Tear down with
-`scripts/teardown.sh` (add `--volumes` for a factory reset, then re-run
-`scripts/setup.sh`).
-
-> **Trial mode:** the gateways run in 2-hour trial mode. When it lapses, licensed
-> functionality stops serving and the failures look like application bugs. Reset it
-> with `scripts/reset-trial.sh` (both gateways; safe to re-run) or via
-> *Gateway → Config → Licensing → Reset Trial* — unlimited and entirely legal for
-> development. Never `teardown.sh --volumes` for this: the trial clock lives in the
-> gateway volume, so wiping it costs you your gateway state to solve what one API
-> call solves.
+| local gateway | http://localhost:8088 | `admin` / `password`, bind-mounted from your working tree |
+| local database | localhost:5432 | see `local-development/secrets/` |
+| your test gateway | http://localhost:8090 | your `test-<yourname>.yml` workflow, on every merge to `main` |
+| **production** | https://cloud.mustrysolutions.com | the `Deploy` workflow, only when `release.yaml` changes |
 
 ## Lab structure
 
-[`exercises/lab.md`](./exercises/lab.md) is the source of truth; [`slides/assignment.html`](./slides/assignment.html) mirrors it:
+[`exercises/lab.md`](./exercises/lab.md) is the source of truth;
+[`slides/assignment.html`](./slides/assignment.html) mirrors it 1:1:
 
 | Part | Topic | Gate |
 |---|---|---|
-| 0 (±15 min) | Stand up your personal test gateway: second clone, provided runner + gateway pair, your own `test-<yourname>.yml` on your runner label | a dashboard change lands on your test gateway on its own after a merge to `main` |
-| 1 (±20 min) | Your own project through the full loop: PR → review → `<yourname>@v1.0.0` tag → `release.yaml` pin | your view live on production |
-| 2 (±35 min) | Five challenges on the shared oatmakers project — module, JAR, migration + referenced secret, simulator tags, history | your challenge live via the next free `oatmakers@` tag you cut (the cohort starts at the `v4.4.4` pin) |
-| 3 (extra) | Build on each other's work; small PRs, rebases, real merge conflicts | a merged PR that uses someone else's Part 2 work |
+| 0 (±15 min) | Your test gateway and runner from the provided `test` profile, plus your own `test-<yourname>.yml` workflow on your runner label | a green `test-<yourname>` run that put `main` on `localhost:8090` |
+| 1 (±20 min) | Your own project through the full loop: PR → approval → `<yourname>@v1.0.0` tag → `release.yaml` pin | your view live on production |
+| 2 (±35 min) | Five challenges on the shared oatmakers project: module, JAR, migration + referenced secret, simulator tags, history in the TimescaleDB-Historian | your challenge live via an `oatmakers@` tag (the group starts at the `v5.0.0` pin) |
+| 3 (extra) | Build on each other's work: a showcase view, a shared library at its own tag, small PRs, real merge conflicts | a merged PR that uses someone else's Part 2 work |
 
-Reference reading: [`docs/multi-gateway-deployments.md`](./docs/multi-gateway-deployments.md) — the full teaching content (architectures, release files, promotion as a PR, repo layouts).
+## Material
 
-## Repo layout
-
-```
-cicd-lab-07-<cohort>/
-├── release.yaml               ← what runs on production, right now (the ONLY deploy trigger)
-├── projects/                  ← oatmakers (shared) + one project per contributor
-├── services/                  ← gateway config export + modules.json manifest
-├── third-party-modules/       ← .modl files the pipeline installs
-├── jar-files/jar/             ← library JARs → lib/core/gateway at deploy time
-├── db-migration/migrate/      ← golang-migrate up/down pairs, run before anything ships
-├── local-development/         ← local-only stand-ins (secrets) for the local stack
-├── scripts/                   ← setup / teardown / validate / migrate / reset-trial / generate-api-key / mint-api-key
-├── exercises/ · slides/ · docs/ · architectures/
-└── .github/workflows/         ← ci.yml (PR checks) · deploy.yml (release.yaml → production) · test-<yourname>.yml (yours, Part 0)
-```
+| File | What |
+|---|---|
+| [`slides/teaching.html`](./slides/teaching.html) | The teaching hour: architectures, repo layouts, release files, promotion as a PR, tag ownership, and how demo-oatmakers deploys |
+| [`slides/assignment.html`](./slides/assignment.html) | The you-do, slide by slide |
+| [`exercises/lab.md`](./exercises/lab.md) | The exercise, including the rules for a shared live demo and troubleshooting |
+| [`docs/multi-gateway-deployments.md`](./docs/multi-gateway-deployments.md) | The teaching content written out in full |
+| [`docs/capstone-gateway.md`](./docs/capstone-gateway.md) | The production gateway: what it is, how deploys reach it, the ground rules |
+| [`docs/resource-json-hygiene.html`](./docs/resource-json-hygiene.html) | Why `resource.json` churns and the two tools in demo-oatmakers that deal with it |
+| [`docs/wsl-setup.md`](./docs/wsl-setup.md) | Windows / WSL setup |
+| [`architectures/`](./architectures/) | The three reference architecture diagrams |
 
 ## License
 
-[Apache 2.0](./LICENSE) — © 2026 Mustry Solutions BV.
+[Apache 2.0](./LICENSE): © 2026 Mustry Solutions BV.
