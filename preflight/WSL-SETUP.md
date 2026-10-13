@@ -59,8 +59,8 @@ Installing packages is one of the few legitimate uses of `sudo` in this course.
 ## 4. The rule that decides whether the labs work
 
 **Keep every course repo in your Linux home (`~/…`), never on your Windows drive
-(`/mnt/c/…`).** That is your fork of `cicd-for-ignition` and, for Lab 07, your
-cohort's shared repo, cloned next to it.
+(`/mnt/c/…`).** That is your fork of `cicd-for-ignition` and, for Lab 07, your clone of
+`demo-oatmakers`, next to it.
 
 ```bash
 mkdir -p ~/mustry-academy && cd ~/mustry-academy

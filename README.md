@@ -39,7 +39,7 @@ Work in **WSL2 (Windows), Linux or macOS**. On Windows, keep the clone in your L
 
 Each day runs **09:00–17:15 CET**. Start every lab from its README.
 
-**Lab 07 is the exception.** You don't work in your fork: the whole cohort contributes to one shared repo that deploys to a real production gateway. Your instructor sends you the link on Day 4; clone it next to this repo in `~/mustry-academy/`. The folder here is the template that repo is built from.
+**Lab 07 is the exception.** You don't work in your fork: the whole group contributes to the public [`Mustry-Solutions/demo-oatmakers`](https://github.com/Mustry-Solutions/demo-oatmakers) repo, which deploys to Mustry's live demo gateway. Your instructor adds you as a collaborator on Day 4; clone it next to this repo in `~/mustry-academy/`. The lab folder here holds the slides, the exercise and the docs; the code lives in demo-oatmakers.
 
 ## Working in this repo
 
