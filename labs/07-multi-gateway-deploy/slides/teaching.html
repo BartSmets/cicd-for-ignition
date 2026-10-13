@@ -408,7 +408,7 @@ body{
     <div class="stage on-dark">Part 1 · Reference architectures</div>
   </div>
   <div class="divider">
-    <div class="eyebrow">Part 1 · The shapes</div>
+    <div class="eyebrow">Part 1 · Architectures</div>
     <div class="q">Three reference <em>architectures</em> for Ignition.</div>
     <div class="sub2">We will not go deep into sizing or licensing. The goal is that you recognize the shape of your own plant in one of these three pictures, because the repository layout follows the shape.</div>
   </div>
@@ -506,7 +506,7 @@ body{
     <div class="stage on-dark">Part 2 · Repositories &amp; pipelines</div>
   </div>
   <div class="divider">
-    <div class="eyebrow">Part 2 · The mapping</div>
+    <div class="eyebrow">Part 2 · Repositories and pipelines</div>
     <div class="q">How repositories and pipelines map onto <em>each architecture</em>.</div>
     <div class="sub2">The first two shapes through CI/CD glasses: what is a repository, and what does the pipeline deploy where. Once the deploy mechanism is on the table, we scale it out to multi-site.</div>
   </div>
@@ -698,7 +698,7 @@ body{
     <div class="stage on-dark">Part 3 · The deploy mechanism</div>
   </div>
   <div class="divider">
-    <div class="eyebrow">Part 3 · From shape to movement</div>
+    <div class="eyebrow">Part 3 · The deploy mechanism</div>
     <div class="q">The deploy mechanism: how a version <em>actually moves</em>.</div>
     <div class="sub2">The architecture slides show the shape. This part shows the bookkeeping and the trigger: a releases folder that records what runs where, and a pull request as the promotion.</div>
   </div>
@@ -994,7 +994,7 @@ projects:
     <div class="stage on-dark">Part 4 · Tag management</div>
   </div>
   <div class="divider">
-    <div class="eyebrow">Part 4 · The counter-current</div>
+    <div class="eyebrow">Part 4 · Tag management</div>
     <div class="q">Tag management: who is the <em>master</em> of tags?</div>
     <div class="sub2">Tags are the one data stream that also flows against the deploy direction: they change on production, while everything else changes in Git. Decide ownership before your first multi-gateway deploy, not after the first overwritten setpoint.</div>
   </div>
@@ -1069,7 +1069,7 @@ projects:
     <div class="stage on-dark">Part 5 · This afternoon's repo</div>
   </div>
   <div class="divider">
-    <div class="eyebrow">Part 5 · From the menu to a live gateway</div>
+    <div class="eyebrow">Part 5 · This afternoon's repo</div>
     <div class="q">How <em>demo-oatmakers</em> deploys: two channels, one release file.</div>
     <div class="sub2">The assignment runs on one real, public repo: the repo behind Mustry's live Oatmakers demo at cloud.mustrysolutions.com. It is option A at its smallest: one repo, one production gateway, one release file, and a test gateway on every laptop. These slides cover every move the assignment asks of you.</div>
   </div>
@@ -1163,7 +1163,7 @@ projects:
     </div>
 
     <div class="cols2" style="grid-template-columns:1fr 1fr;gap:22px;align-items:start">
-      <div class="code" style="margin-top:0"><pre><span class="row reveal" data-step="1"><span class="cm"># 1 · your feature PR merged: main moved, production did not</span></span><span class="row reveal" data-step="2"><span class="cm"># 2 · make the release exist</span></span><span class="row reveal" data-step="2">git switch main &amp;&amp; git pull</span><span class="row reveal" data-step="2">git tag <span class="cmd2">&lt;yourname&gt;@v1.0.0</span></span><span class="row reveal" data-step="2">git push origin <span class="cmd2">&lt;yourname&gt;@v1.0.0</span></span><span class="row reveal" data-step="3"> </span><span class="row reveal" data-step="3"><span class="cm"># 3 · point production at it, by PR</span></span><span class="row reveal" data-step="3">git switch -c pin/&lt;yourname&gt;-v1.0.0</span><span class="row reveal" data-step="3"><span class="cm"># edit release.yaml, then stage ONLY that file</span></span><span class="row reveal" data-step="3">git add release.yaml          <span class="cm"># never git commit -am</span></span><span class="row reveal" data-step="3">git commit -m <span class="grn">"release: pin &lt;yourname&gt; v1.0.0"</span></span><span class="row reveal" data-step="3">git push -u origin pin/&lt;yourname&gt;-v1.0.0</span></pre></div>
+      <div class="code" style="margin-top:0"><pre><span class="row reveal" data-step="1"><span class="cm"># 1 · your feature PR merged: main moved, production did not</span></span><span class="row reveal" data-step="2"><span class="cm"># 2 · make the release exist, on the merged main</span></span><span class="row reveal" data-step="2">git switch main &amp;&amp; git pull</span><span class="row reveal" data-step="2">git tag <span class="cmd2">&lt;yourname&gt;@v1.0.0</span></span><span class="row reveal" data-step="2">git push origin <span class="cmd2">&lt;yourname&gt;@v1.0.0</span></span><span class="row reveal" data-step="3"> </span><span class="row reveal" data-step="3"><span class="cm"># 3 · point production at it, by PR</span></span><span class="row reveal" data-step="3">git switch -c pin/&lt;yourname&gt;-v1.0.0</span><span class="row reveal" data-step="3"><span class="cm"># edit release.yaml, then stage ONLY that file</span></span><span class="row reveal" data-step="3">git add release.yaml          <span class="cm"># never git commit -am</span></span><span class="row reveal" data-step="3">git commit -m <span class="grn">"release: pin &lt;yourname&gt; v1.0.0"</span></span><span class="row reveal" data-step="3">git push -u origin pin/&lt;yourname&gt;-v1.0.0</span></pre></div>
       <div>
         <div class="code reveal" data-step="3" style="margin-top:0"><pre><span class="cm"># release.yaml</span>
  gateway: <span class="cmd2">oatmakers-site-7</span>
@@ -1172,7 +1172,7 @@ projects:
 <span class="grn">+  &lt;yourname&gt;: v1.0.0</span></pre></div>
         <div class="callout reveal" data-step="4" style="margin-top:12px">
           <div class="lab" style="color:var(--bad)">CI checks every pin</div>
-          <p>Pin <code>v1.0.1</code> when only <code>v1.0.0</code> was pushed, and the release check fails: <b><code>CI OK</code> goes red</b> and the PR cannot merge. A tag that was never pushed is a release that does not exist.</p>
+          <p>Pin a tag nobody pushed, or a tag on a branch that never merged, and <b><code>CI OK</code> goes red</b>. Pushed the tag afterwards? A tag push does not start CI: <b>Re-run failed jobs</b>.</p>
         </div>
         <div class="callout reveal" data-step="5" style="margin-top:12px">
           <div class="lab" style="color:var(--good)">Merge is the trigger</div>
@@ -1220,7 +1220,7 @@ git fetch --tags
 git tag -l <span class="grn">'oatmakers@*'</span> --sort=-v:refname | head -3</pre></div>
         <div class="code reveal" data-step="2" style="margin-top:10px"><pre>git push origin oatmakers@v5.1.0
 <span class="red"> ! [rejected]  oatmakers@v5.1.0 (already exists)</span>
-<span class="cm"># fetch, delete your local tag, take the next number</span></pre></div>
+git tag -d oatmakers@v5.1.0 &amp;&amp; git fetch --tags  <span class="cm"># next number</span></pre></div>
         <div class="code reveal" data-step="4" style="margin-top:10px"><pre><span class="cm"># A, before pinning v5.1.0: is my tag inside the pinned one?</span>
 git merge-base --is-ancestor \
   oatmakers@v5.1.0 oatmakers@v5.2.0 &amp;&amp; echo <span class="grn">"already included"</span></pre></div>
@@ -1309,14 +1309,111 @@ git push --force-with-lease</pre></div>
     </table>
     <div class="callout">
       <div class="lab" style="color:var(--blue)">Your test gateway first</div>
-      <p>Every merge lands on <b>your test gateway</b> before anyone tags it. If it does not work on <code>localhost:8090</code>, it will not work on production: fix it with a follow-up PR, then tag.</p>
+      <p>Every merge lands on <b>your test gateway</b> before anyone tags it; a branch gets there first with <code>gh workflow run</code> (next slides). Not working on <code>localhost:8090</code>? Then not on production either.</p>
     </div>
   </div>
 
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>same moves · one shared project · one new tag</span></div>
 </section>
 
-<!-- 24 · IN THE LAB (closing) -->
+<!-- 24 · GATEWAY DETAILS FOR THE CHALLENGES -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Part 5 · Gateway details</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">18</span>
+      <div>
+        <div class="title">Three gateway details the challenges rely on: module trust, store-and-forward engines and simulator programs</div>
+        <div class="lead">Each one is a file the gateway writes for you. Know which files appear, and which of them belong in your PR.</div>
+      </div>
+    </div>
+
+    <div class="cols2" style="grid-template-columns:repeat(3,1fr);gap:16px;align-items:start">
+      <div class="does">
+        <div class="hd">A new module: who trusts it</div>
+        <ul>
+          <li><span class="d"></span><span>Your <b>local</b> gateway accepts it headless through the lab 06 env vars in <code>docker-compose.yaml</code>: <code>ACCEPT_MODULE_LICENSES</code> and <code>ACCEPT_MODULE_CERTS</code> (one line, comma-separated, no spaces).</span></li>
+          <li><span class="d"></span><span>Env vars reach a container when it is <b>created</b>: <code>docker compose up -d --force-recreate gateway</code>, not a restart.</span></li>
+          <li><span class="d"></span><span>The gateway writes <code>certFingerprint</code> and <code>licenseAgreementHash</code> into your <code>modules.json</code> entry. <b>Test and production trust the module through those two values</b>, without any env var.</span></li>
+        </ul>
+      </div>
+      <div class="does">
+        <div class="hd">Store-and-forward engines</div>
+        <ul>
+          <li><span class="d"></span><span>Every <b>database connection</b> and every <b>historian</b> comes with a store-and-forward engine <b>of the same name</b>: <code>store-and-forward-engine/&lt;name&gt;/</code>.</span></li>
+          <li><span class="d"></span><span>Plus status tags under <code>tag-definition/System/Gateway/</code> <code>Database/</code>, <code>StoreAndForward/</code> (and <code>Devices/</code> for a device).</span></li>
+          <li><span class="d"></span><span>Stage them with what you added. Never give a connection and a historian <b>the same name</b>: they share one engine, and removing either deletes it.</span></li>
+        </ul>
+      </div>
+      <div class="does">
+        <div class="hd">A simulator program</div>
+        <ul>
+          <li><span class="d"></span><span>A Programmable Device Simulator runs a <b>program</b>: device menu → <b>Edit Program</b>, one row per value.</span></li>
+          <li><span class="d"></span><span>Each row: time interval, browse path, value source, data type. An OPC tag reads it at <code>ns=1;s=[CourseSim]Ramp</code>.</span></li>
+        </ul>
+        <div class="code" style="margin-top:10px"><pre style="font-size:11.5px"><span class="cm"># the program as CSV</span>
+0,"Ramp","ramp(0,100,60,1)","Double"
+0,"Sine","sine(-50,50,30,1)","Double"</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>module trust · engines · simulator programs</span></div>
+</section>
+
+<!-- 25 · WORKFLOW DETAILS FOR THE CHALLENGES -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Part 5 · Workflow details</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">19</span>
+      <div>
+        <div class="title">Four workflow details: test a branch, re-run CI after a tag, keep migrations in step, inherit from a parent project</div>
+        <div class="lead">Small things that cost a breakout room twenty minutes when nobody mentioned them.</div>
+      </div>
+    </div>
+
+    <div class="cols2" style="gap:18px">
+      <div>
+        <div class="code" style="margin-top:0"><pre><span class="cm"># 1 · your branch on your test gateway, before the merge</span>
+gh workflow run test-<span class="cmd2">&lt;you&gt;</span>.yml --ref <span class="cmd2">&lt;your-branch&gt;</span>
+<span class="cm">#     the next push to main puts main back</span>
+
+<span class="cm"># 2 · pushed the tag after opening the release PR?</span>
+<span class="cm">#     a tag push does not start CI again</span>
+gh run rerun <span class="cmd2">&lt;run-id&gt;</span> --failed   <span class="cm"># or Checks → Re-run</span>
+
+<span class="cm"># 3 · your test workflow migrates the same local DB</span>
+scripts/migrate.sh down 1   <span class="cm"># before you switch branches</span>
+scripts/migrate.sh up       <span class="cm"># after your PR merged</span></pre></div>
+      </div>
+      <div>
+        <div class="code" style="margin-top:0"><pre><span class="cm"># 4 · inheritance is two fields in project.json</span>
+<span class="cm"># projects/course-lib/project.json</span>
+"inheritable": <span class="grn">true</span>
+<span class="cm"># projects/&lt;you&gt;/project.json</span>
+"parent": <span class="grn">"course-lib"</span>
+scripts/scan.sh</pre></div>
+        <div class="callout" style="margin-top:12px">
+          <div class="lab" style="color:var(--blue)">Migration numbers</div>
+          <p>Without step 3, every test run on <code>main</code> fails with <code>no migration found for version N</code>. And pick a number <b>higher than any on main at merge time</b>: a lower number merged after a higher one already ran is silently skipped.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>test a branch · re-run CI · migrations · parent projects</span></div>
+</section>
+
+<!-- 26 · IN THE LAB (closing) -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -1339,7 +1436,7 @@ git push --force-with-lease</pre></div>
 </div>
 
 <div class="hud"><div class="bar" id="bar"></div></div>
-<div class="pager" id="pager">01 / 24</div>
+<div class="pager" id="pager">01 / 26</div>
 <div class="hint" id="hint">↑ ↓ slides · ← → step the animation</div>
 
 <script>
@@ -1489,7 +1586,7 @@ controllers.chan=revealCtrl(18,'#chan-step',[
   'One repo, two ways out of it. Step through the channels.',
   '<b>The repo:</b> the projects, the gateway payload, <span class="mono">release.yaml</span> and three kinds of workflow. You copy one template into <span class="mono">test-&lt;you&gt;.yml</span> in Part 0.',
   '<b>Channel 1, test tracks main.</b> Every merge runs every student\'s <span class="mono">test-&lt;you&gt;.yml</span>; each one asks for its owner\'s label, so it lands on that laptop only. One file per person, because <span class="mono">runs-on</span> is resolved before any per-user context exists. The runner registers with a one-hour token we post in the chat: registering a runner is a repo-admin act.',
-  '<b>Channel 2, production is pinned.</b> Only a merged change to <span class="mono">release.yaml</span> starts <b>Deploy</b>, on the runner labelled <span class="mono">demo-oatmakers</span> next to the gateway. Same label routing as site 4 in Part 3.',
+  '<b>Channel 2, production is pinned.</b> Only a merged change to <span class="mono">release.yaml</span> starts <b>Deploy</b>, on the runner labelled <span class="mono">demo-oatmakers</span> next to the gateway; started by hand from any branch but <span class="mono">main</span>, it refuses. Same label routing as site 4 in Part 3.',
   '<b>The production deploy is wide:</b> every pinned project from its own tag, and the whole gateway payload from the <span class="mono">oatmakers</span> pin. Migrations first; modules and JARs restart the gateway. Identity, users and API keys never ship.',
   '<b>And main is protected:</b> a PR, a green <span class="mono">CI OK</span>, and one approval from someone else. You cannot approve your own PR; the instructor or a fellow student does.'
 ]);
@@ -1500,7 +1597,7 @@ controllers.pin=revealCtrl(19,'#pin-step',[
   '<b>Your feature PR merged.</b> Every test gateway has it; production does not. <b>Deploy</b> did not even run: <span class="mono">release.yaml</span> did not change.',
   '<b>Tag the merged main:</b> <span class="mono">&lt;yourname&gt;@v1.0.0</span>. The prefix names the project, the version names the point in history. Now the release exists.',
   '<b>Pin it on a branch, by PR.</b> One line in <span class="mono">release.yaml</span>, and you stage only that file: whatever else the gateway rewrote on your laptop stays out.',
-  '<b>CI checks every pin against the pushed tags.</b> Point at a version nobody pushed and <span class="mono">CI OK</span> goes red. That is the tag-before-pin rule, enforced.',
+  '<b>CI checks every pin against the pushed tags.</b> Point at a version nobody pushed, or at a tag on an unmerged branch, and <span class="mono">CI OK</span> goes red: tag before pin, and tag only <span class="mono">main</span>, enforced. After pushing a missing tag, re-run the failed check: pushing a tag does not start CI again.',
   '<b>One approval, merge: Deploy runs</b> on the <span class="mono">demo-oatmakers</span> runner, checks out the pinned tags and copies the files in.',
   '<b>Rollback is a revert of the release PR</b>, through the same review. It re-ships the old files; a migration that already ran stays, so migrations must keep the previous screens working.'
 ]);

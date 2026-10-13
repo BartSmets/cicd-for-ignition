@@ -372,8 +372,8 @@ gateway on every student laptop.
 
 | Channel | Trigger | Workflow | Runner label | Target |
 |---|---|---|---|---|
-| Test | every push to `main` (every merged PR) | your own `test-<yourname>.yml` | `[self-hosted, <yourname>-local]` | your test gateway, `localhost:8090` |
-| Production | a merged change to `release.yaml` | `Deploy` (`deploy.yml`) | `[self-hosted, demo-oatmakers]` | `oatmakers-site-7`, cloud.mustrysolutions.com |
+| Test | every push to `main` (every merged PR), or by hand for a branch: `gh workflow run test-<yourname>.yml --ref <branch>` | your own `test-<yourname>.yml` | `[self-hosted, <yourname>-local]` | your test gateway, `localhost:8090` |
+| Production | a merged change to `release.yaml` (a manual run only from `main`) | `Deploy` (`deploy.yml`) | `[self-hosted, demo-oatmakers]` | `oatmakers-site-7`, cloud.mustrysolutions.com |
 
 - **Test tracks `main`**, exactly like `gw-test.yaml` in the releases folder:
   no pins, every merge lands. One workflow file per person, because `runs-on`
@@ -407,7 +407,10 @@ git push origin <yourname>@v1.0.0
 Merging a feature PR deploys nothing to production. The tag makes the release
 exist; the `release.yaml` PR (stage it with `git add release.yaml`, never
 `git commit -am`) points production at it. CI checks every pin against the
-existing tags and turns `CI OK` red for a pin whose tag was never pushed.
+existing tags and turns `CI OK` red for a pin whose tag was never pushed, or
+whose tag points at a commit that is not on `main`: tag the merged `main`,
+never a feature branch. Pushing a missing tag does not re-run CI; re-run the
+failed check from the PR's **Checks** tab.
 Rollback is `git revert` of the release PR. A revert re-ships old files; it
 does not undo a migration that already ran, which is why migrations are
 written so the previous screens still work with them.
@@ -423,7 +426,9 @@ git tag -l 'oatmakers@*' --sort=-v:refname | head -3
 ```
 
 - **Tag races happen.** Two people pick `v5.1.0`; the second `git push` of the
-  tag is rejected. Fetch the tags and take the next number.
+  tag is rejected. Delete your local tag (`git tag -d oatmakers@v5.1.0`; a
+  plain `git fetch --tags` will not overwrite it), fetch the tags and take
+  the next number.
 - **A tag contains everything merged before it.** If someone pins `v5.2.0`
   while your `v5.1.0` waits, check whether yours is inside theirs before you
   pin anything:
