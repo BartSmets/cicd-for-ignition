@@ -12,9 +12,9 @@
 #           and a lab05-vX.Y.Z tag ships to production via release.yml)
 #
 # Purpose: catch the cheap stuff before a build/deploy gets near it. Everything
-# here runs on ubuntu-latest (free, no self-hosted runner). The expensive,
-# environment-specific half (pushing the image, recreating the gateway) lives in
-# deploy.yml / release.yml. The linters mirror the ones Lab 03 introduced
+# here runs on ubuntu-latest (free, no self-hosted runner). Pushing and
+# promoting the image lives in deploy.yml / release.yml; recreating a gateway
+# from it is done by hand in this lab. The linters mirror the ones Lab 03 introduced
 # (yamllint, actionlint, shellcheck, ign-lint) plus this lab's own JSON /
 # .dockerignore checks.
 #
