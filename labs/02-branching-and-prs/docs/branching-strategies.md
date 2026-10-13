@@ -127,15 +127,15 @@ Pick the row that matches your team most closely:
 | Your situation | Best fit |
 |---|---|
 | Single SaaS product, continuous deploy, 2–10 engineers | **GitHub Flow** |
-| Multiple supported versions in production at the same time | **Git Flow** (or GitHub Flow + tags) |
+| Multiple supported versions in production at the same time | **Git Flow** (release/hotfix branches give each version a place to live) |
 | Strict regulatory environment, lengthy validation per release | **Git Flow** (release branches make audit easy) |
 | Mature team with feature flags and full CI | **Trunk-based** |
 | Brand-new team, learning Git for the first time | **GitHub Flow** (lowest cognitive overhead) |
 | Embedded firmware, infrequent releases, long maintenance tails | **Git Flow** |
-| Ignition team shipping to multiple customer gateways | **GitHub Flow + tags per customer** (we cover this in Lab 05) |
+| Ignition team shipping to multiple customer gateways | **GitHub Flow** if every gateway moves to the latest release (tags record what each one runs); **Git Flow** if you still patch older versions on some of them |
 
 ## What this masterclass uses
 
-This masterclass uses **GitHub Flow** for the cohort playground repo, because it's simple to teach and aligns with the labs' single-environment dev stack. We discuss trunk-based development in Day 2 when we get into CI quality gates.
+This masterclass uses **GitHub Flow** in your fork, because it's simple to teach and aligns with the labs' single-environment dev stack. We discuss trunk-based development in Day 2 when we get into CI quality gates.
 
 For *your team*, pick the one that fits your reality — not the one that sounds most sophisticated.

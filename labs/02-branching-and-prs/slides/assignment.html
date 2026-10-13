@@ -142,7 +142,7 @@ body{
 /* two-column for parts */
 .cols2{display:grid;grid-template-columns:1fr 1fr;gap:28px}
 
-/* mini strategy graphs — static echoes of the teaching deck's vizzes */
+/* mini strategy graphs: static echoes of the teaching deck's vizzes */
 .vizcard{background:var(--navy);border-radius:14px;padding:10px 14px 9px;box-shadow:var(--shadow)}
 .vizcard .vc-head{margin-bottom:6px}
 .vizcard .vc-head b{color:#fff;font-size:13.5px;font-weight:700;white-space:nowrap}
@@ -191,7 +191,7 @@ body{
   </div>
   <div class="cover">
     <div class="eyebrow">The assignment · breakout rooms</div>
-    <div class="big">Live the <em>hotfix scenario</em> yourself.</div>
+    <div class="big">Run the <em>release-week scenario</em> on your fork.</div>
     <div class="sub">In your breakout room, on your own fork of a real Ignition project: pick a strategy for your team, then run the release-week scenario for real. Ship a v2.0 feature, get ambushed by a P1 bug in production, and thread both through GitHub Flow with PRs your peers review.</div>
     <div class="for">
       <span>Floating to help</span>
@@ -215,8 +215,8 @@ body{
     <div class="cols2">
       <ul class="checks">
         <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Share your screen</b> in your breakout room. This is a "look over your shoulder" class, so we'll drop in where it's useful.</span></li>
-        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Work in your own fork.</b> Two repos are in play (see the diagram): <b>upstream</b>, the course repo you forked — you can't push there — and <b>your fork</b>, your own copy on GitHub, where your merge rights live (your clone knows it as the <span class="inlinecode">origin</span> remote). A PR's <b>base</b> is the repo + branch it merges <i>into</i>: in this lab, always <b>your fork</b>, base branch <span class="inlinecode">main</span>. Careful: GitHub's "Compare &amp; pull request" banner defaults the base repo to <b>upstream</b> — switch it to your fork every time. <span class="inlinecode">gh pr create</span> refuses to guess and errors until you run <span class="inlinecode">gh repo set-default</span> and pick your fork — setup step 4 does exactly that.</span></li>
-        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Run <span class="inlinecode">scripts/validate.sh</span> before every PR.</b> It's this lab's green/red signal (every project file valid JSON, every script parseable) and the PR template's first checkbox. Tomorrow, <b>Lab 03</b> turns this exact script into a CI gate no one can merge past — today, <i>you</i> are the CI.</span></li>
+        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Work in your own fork.</b> Two repos are in play (see the diagram): <b>upstream</b>, the course repo you forked (you can't push there), and <b>your fork</b>, your own copy on GitHub, where your merge rights live (your clone knows it as the <span class="inlinecode">origin</span> remote). A PR's <b>base</b> is the repo + branch it merges <i>into</i>: in this lab, always <b>your fork</b>, base branch <span class="inlinecode">main</span>. Careful: GitHub's "Compare &amp; pull request" banner defaults the base repo to <b>upstream</b>: switch it to your fork every time. <span class="inlinecode">gh repo fork --clone</span> makes the course repo gh's default, so <span class="inlinecode">gh pr create</span> would silently open PRs there. Setup step 4 (or <span class="inlinecode">course-setup.sh</span>) points it at your fork.</span></li>
+        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Run <span class="inlinecode">scripts/validate.sh</span> before every PR.</b> It's this lab's green/red signal (every project file valid JSON, every script parseable) and the PR template's first checkbox. Tomorrow, <b>Lab 03</b> turns this exact script into a CI gate no one can merge past. Today, <i>you</i> are the CI.</span></li>
       </ul>
       <div>
         <div class="vizcard">
@@ -266,7 +266,7 @@ body{
     <div class="stage">The assignment · the plan</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num">THE PLAN</span><div><div class="title">One scenario: discuss → ship → get ambushed → review</div></div></div>
+    <div class="sechead"><span class="num">THE PLAN</span><div><div class="title">The plan: discuss, ship a feature and a fix, review, merge</div></div></div>
     <div class="pmap">
       <div class="pcard">
         <div class="pn">PART 1 · BREAKOUT ROOM</div>
@@ -302,14 +302,14 @@ body{
     <div class="stage">Before you start · setup</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num warm">SETUP · 1</span><div><div class="title">First: your fork, on your machine, in VS Code</div><div class="lead">The course fork you made this morning — one fork for every lab. Everyone works from their own fork — that's where your merge rights live.</div></div></div>
+    <div class="sechead"><span class="num warm">SETUP · 1</span><div><div class="title">Open your fork's Lab 02 folder in VS Code</div><div class="lead">The course fork you made this morning: one fork for every lab. Everyone works from their own fork, because that's where your merge rights live.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix t">1</div><div class="tx">Go back to the <b>parent folder from Lab 01</b>: <span class="inlinecode">~/mustry-academy/</span> — your clone of the course repo lives in here, one folder per lab under <span class="inlinecode">labs/</span>.</div></div>
-        <div class="step"><div class="ix t">2</div><div class="tx"><b>Fork &amp; clone — once per course.</b> Did it in Lab 01? Skip to the <span class="inlinecode">cd</span>. Otherwise <span class="inlinecode">gh repo fork … --clone</span> forks the course repo to <i>your</i> GitHub account and clones your fork, in one go. Prefer the website? Press <b>Fork</b> on github.com — but you still need to <span class="inlinecode">git clone</span> your fork afterwards.</div></div>
-        <div class="step"><div class="ix t">3</div><div class="tx"><b>Check the remotes:</b> <span class="inlinecode">git remote -v</span> — <span class="inlinecode">origin</span> must show <b>your username</b>: that's where every branch and PR in this lab goes. The <span class="inlinecode">gh repo fork --clone</span> route also adds <span class="inlinecode">upstream</span> → the course repo; the plain <span class="inlinecode">git clone</span> route doesn't, and you don't need it today.</div></div>
-        <div class="step"><div class="ix t">4</div><div class="tx"><b>Point <span class="inlinecode">gh</span> at your fork:</b> with two repos in play, <span class="inlinecode">gh</span> may default to the <b>course repo</b>, and then <span class="inlinecode">gh pr create</span> aims your PRs there. Check with <span class="inlinecode">gh repo set-default --view</span>: it must print <b>your fork</b> (<span class="inlinecode">course-setup.sh</span> sets this). If not, run <span class="inlinecode">gh repo set-default &lt;your-username&gt;/cicd-for-ignition</span>.</div></div>
-        <div class="step"><div class="ix t">5</div><div class="tx">From inside <span class="inlinecode">labs/02-branching-and-prs</span>, open VS Code with <span class="inlinecode">code .</span> — then work from its integrated terminal (<span class="inlinecode">Ctrl+`</span>), which already sits in the right folder.</div></div>
+        <div class="step"><div class="ix t">1</div><div class="tx">Go back to the <b>parent folder from Lab 01</b>: <span class="inlinecode">~/mustry-academy/</span>. Your clone of the course repo lives in here, one folder per lab under <span class="inlinecode">labs/</span>.</div></div>
+        <div class="step"><div class="ix t">2</div><div class="tx"><b>Fork &amp; clone, once per course.</b> Did it in Lab 01? Skip to the <span class="inlinecode">cd</span>. Otherwise <span class="inlinecode">gh repo fork … --clone</span> forks the course repo to <i>your</i> GitHub account and clones your fork, in one go. Prefer the website? Press <b>Fork</b> on github.com, but you still need to <span class="inlinecode">git clone</span> your fork afterwards.</div></div>
+        <div class="step"><div class="ix t">3</div><div class="tx"><b>Check the remotes:</b> <span class="inlinecode">git remote -v</span>: <span class="inlinecode">origin</span> must show <b>your username</b>: that's where every branch and PR in this lab goes. The <span class="inlinecode">gh repo fork --clone</span> route also adds <span class="inlinecode">upstream</span> → the course repo; the plain <span class="inlinecode">git clone</span> route doesn't, and you don't need it today.</div></div>
+        <div class="step"><div class="ix t">4</div><div class="tx"><b>Point <span class="inlinecode">gh</span> at your fork:</b> <span class="inlinecode">gh repo fork --clone</span> makes the <b>course repo</b> gh's default, and then <span class="inlinecode">gh pr create</span> aims your PRs there. Check with <span class="inlinecode">gh repo set-default --view</span>: it must print <b>your fork</b> (<span class="inlinecode">course-setup.sh</span> sets this). If not, run <span class="inlinecode">gh repo set-default &lt;your-username&gt;/cicd-for-ignition</span>.</div></div>
+        <div class="step"><div class="ix t">5</div><div class="tx">From inside <span class="inlinecode">labs/02-branching-and-prs</span>, open VS Code with <span class="inlinecode">code .</span>, then work from its integrated terminal (<span class="inlinecode">Ctrl+`</span>), which already sits in the right folder.</div></div>
       </div>
       <div>
         <div class="code"><pre><span class="cm"># 1: the parent folder from Lab 01</span>
@@ -333,7 +333,7 @@ cd labs/02-branching-and-prs
 code .</pre></div>
         <div class="goal warn-g" style="margin-top:18px">
           <span class="badge">WSL2</span>
-          <p>Clone into your <b>Linux home</b> (<span class="inlinecode">~/…</span>), never <span class="inlinecode">/mnt/c/…</span> — Git and the gateway's bind mount are far slower across the Windows boundary and line endings get messy. <span class="inlinecode">code .</span> from WSL opens a window <b>connected to WSL</b> automatically.</p>
+          <p>Clone into your <b>Linux home</b> (<span class="inlinecode">~/…</span>), never <span class="inlinecode">/mnt/c/…</span>: there your Windows user, your WSL user and the gateway's container user are three different owners, so file ownership breaks in ways <span class="inlinecode">chown</span> cannot fix. <span class="inlinecode">code .</span> from WSL opens a window <b>connected to WSL</b>.</p>
         </div>
       </div>
     </div>
@@ -348,20 +348,20 @@ code .</pre></div>
     <div class="stage">Before you start · setup</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num warm">SETUP · 2</span><div><div class="title">Boot the gateway (optionally) &amp; meet the validator</div><div class="lead">Five minutes now saves twenty later. The gateway is optional: every exercise works from the files alone — or from the <b>Ignition Designer</b>, if that's your preferred way of working: a Designer save writes the same project files.</div></div></div>
+    <div class="sechead"><span class="num warm">SETUP · 2</span><div><div class="title">Boot the gateway (optional) and run the validator</div><div class="lead">Five minutes now saves twenty later. The gateway is optional: every exercise works from the files alone, or from the <b>Ignition Designer</b> if that's your preferred way of working (a Designer save writes the same project files).</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix t">1</div><div class="tx"><b>Create your <span class="inlinecode">.env</span>.</b> A <span class="inlinecode">.env</span> file holds settings that belong to <i>your machine (or local setup)</i>, not the repo — here the gateway's admin login, which <span class="inlinecode">docker compose</span> reads at boot. The repo ships only the <span class="inlinecode">.env.example</span> template; <span class="inlinecode">cp .env.example .env</span> makes your own copy, and <span class="inlinecode">.env</span> is <b>gitignored</b> — settings and passwords stay out of Git. (The defaults are fine for this throwaway gateway.)</div></div>
-        <div class="step"><div class="ix t">2</div><div class="tx"><b>Boot the gateway.</b> <span class="inlinecode">scripts/setup.sh</span> is a small bash helper that lives in this repo (open it — it's readable): it checks Docker is there, runs <span class="inlinecode">docker compose up -d</span> to start the Ignition container, polls until the gateway reports <b>RUNNING</b> (cold start takes a few minutes), then prints the URL + the login from your <span class="inlinecode">.env</span>.</div></div>
-        <div class="step"><div class="ix t">3</div><div class="tx">A running gateway <b>doesn't auto-detect your edits</b>: reload with <span class="inlinecode">docker compose restart</span>, or <span class="inlinecode">scripts/scan.sh</span> — it calls the gateway's <b>scan API</b>, after a one-time API key (<span class="inlinecode">.env.example</span> explains). The third route from the teaching deck: the <b>ignition-project-scan-endpoint</b> module, one clean scan endpoint built for scripts and CI.</div></div>
-        <div class="step"><div class="ix t">4</div><div class="tx">Run <span class="inlinecode">scripts/validate.sh</span> once <b>now</b>, before you've changed anything, to know what green looks like. It's this lab's stand-in for a test suite: every <span class="inlinecode">.json</span> under <span class="inlinecode">projects/</span> must be valid JSON, every script must parse as Python — gateway-free, runs in a second, and it's the PR template's first checkbox.</div></div>
+        <div class="step"><div class="ix t">1</div><div class="tx"><b>Create your <span class="inlinecode">.env</span>.</b> A <span class="inlinecode">.env</span> file holds settings that belong to <i>your machine (or local setup)</i>, not the repo: here the gateway's admin login and host port, which <span class="inlinecode">docker compose</span> reads at boot. The repo ships only the <span class="inlinecode">.env.example</span> template; <span class="inlinecode">cp .env.example .env</span> makes your own copy, and <span class="inlinecode">.env</span> is <b>gitignored</b>, so settings and passwords stay out of Git. (The defaults are fine; port 8088 taken? set <span class="inlinecode">GATEWAY_PORT</span> there.)</div></div>
+        <div class="step"><div class="ix t">2</div><div class="tx"><b>Boot the gateway.</b> <span class="inlinecode">scripts/setup.sh</span> is a small bash helper that lives in this repo (open it: it's readable): it checks Docker is there, runs <span class="inlinecode">docker compose up -d</span> to start the Ignition container, polls until the gateway reports <b>RUNNING</b> (cold start takes a few minutes), then prints the URL + the login from your <span class="inlinecode">.env</span>.</div></div>
+        <div class="step"><div class="ix t">3</div><div class="tx">A running gateway <b>doesn't auto-detect your edits</b>: reload with <span class="inlinecode">docker compose restart</span>, or <span class="inlinecode">scripts/scan.sh</span>, which calls the gateway's <b>scan API</b> after a one-time API key setup (<span class="inlinecode">.env.example</span> explains). The scan-endpoint module from the teaching deck is not installed on this lab's gateway.</div></div>
+        <div class="step"><div class="ix t">4</div><div class="tx">Run <span class="inlinecode">scripts/validate.sh</span> once <b>now</b>, before you've changed anything, to know what green looks like. It's this lab's stand-in for a test suite: every <span class="inlinecode">.json</span> under <span class="inlinecode">projects/</span> must be valid JSON, every script must parse as Python. Gateway-free, runs in a second, and it's the PR template's first checkbox.</div></div>
       </div>
       <div>
         <div class="code"><pre>cp .env.example .env      <span class="cm"># template → your local settings (gitignored)</span>
 
 <span class="cm"># optional: see the project run</span>
 scripts/setup.sh          <span class="cm"># boots the gateway → RUNNING</span>
-<span class="cm"># open http://localhost:8088</span>
+<span class="cm"># open http://localhost:8088 (or your GATEWAY_PORT)</span>
 
 <span class="cm"># the PR gate: run before every PR</span>
 scripts/validate.sh       <span class="cm"># → ✓ all project files valid</span></pre></div>
@@ -382,7 +382,7 @@ scripts/validate.sh       <span class="cm"># → ✓ all project files valid</sp
     <div class="stage">Part 1 · breakout room · discuss</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num">PART 1</span><div><div class="title">Which strategy fits your team?</div><div class="lead">In your room, talk it through: no writing, just the argument. The three strategies from the teaching deck meet an actual team's reality.</div></div></div>
+    <div class="sechead"><span class="num">PART 1</span><div><div class="title">Discuss which branching strategy fits your team</div><div class="lead">In your room, talk it through: no writing, just the argument. The three strategies from the teaching deck meet an actual team's reality.</div></div></div>
     <div class="cols2">
       <div>
         <div class="steps">
@@ -414,7 +414,7 @@ scripts/validate.sh       <span class="cm"># → ✓ all project files valid</sp
             <circle class="node" cx="173" cy="112" r="6"/><circle class="node" cx="391" cy="112" r="6"/><circle class="node" cx="490" cy="112" r="6"/><circle class="node" cx="620" cy="112" r="6"/>
             <circle class="node" cx="217" cy="140" r="6"/><circle class="node" cx="260" cy="140" r="6"/><circle class="node" cx="434" cy="140" r="6"/>
           </svg>
-          <div class="vc-cap">Two long-lived branches (<b>main</b> + <b>develop</b>) with release and hotfix branches between them — every hotfix and release merges <i>twice</i>.</div>
+          <div class="vc-cap">Two long-lived branches (<b>main</b> + <b>develop</b>) with release and hotfix branches between them: every hotfix and release merges <i>twice</i>.</div>
         </div>
         <div class="vizcard">
           <div class="vc-head"><b>GitHub Flow</b></div>
@@ -430,7 +430,7 @@ scripts/validate.sh       <span class="cm"># → ✓ all project files valid</sp
             <circle class="node" cx="338" cy="64" r="6"/>
             <circle class="node" cx="202" cy="98" r="6"/><circle class="node" cx="266" cy="98" r="6"/><circle class="node" cx="498" cy="98" r="6"/>
           </svg>
-          <div class="vc-cap">One long-lived <b>main</b>; every branch is short-lived and returns through a PR — merging <i>is</i> releasing, tags mark what shipped.</div>
+          <div class="vc-cap">One long-lived <b>main</b>; every branch is short-lived and returns through a PR. Merging <i>is</i> releasing, tags mark what shipped.</div>
         </div>
         <div class="vizcard">
           <div class="vc-head"><b>Trunk-based</b></div>
@@ -442,7 +442,7 @@ scripts/validate.sh       <span class="cm"># → ✓ all project files valid</sp
             <circle class="node" cx="130" cy="34" r="6"/><circle class="node" cx="227" cy="34" r="6"/><circle class="node" cx="411" cy="34" r="6"/><circle class="node" cx="508" cy="34" r="6"/><circle class="node" cx="609" cy="34" r="6"/>
             <circle class="node" cx="319" cy="78" r="6"/>
           </svg>
-          <div class="vc-cap">Everyone commits to <b>main</b>; branches live <i>hours</i>. Feature flags ship unfinished work dark — releasing is a flag flip, and it needs serious CI discipline.</div>
+          <div class="vc-cap">Everyone commits to <b>main</b>; branches live <i>hours</i>. Feature flags ship unfinished work dark: releasing is a flag flip, and it needs serious CI discipline.</div>
         </div>
       </div>
     </div>
@@ -458,12 +458,12 @@ scripts/validate.sh       <span class="cm"># → ✓ all project files valid</sp
   </div>
   <div class="body">
     <div class="eyebrow">Part 2 · GitHub Flow · for real</div>
-    <div class="title" style="color:#fff;max-width:24ch">The release-week scenario, but this time it's you</div>
+    <div class="title" style="color:#fff;max-width:24ch">Run the release-week scenario in GitHub Flow</div>
     <p class="lead">The same story from the teaching deck. <b style="color:#fff">v1.2 is live in production.</b> You start shipping the v2.0 feature, and mid-work, a P1 bug in production ambushes you. You thread through GitHub Flow, exactly the way Chapter 1 drew it.</p>
     <ul class="checks" style="margin-top:22px;max-width:920px">
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Step 1</b>, set the stage: one <span class="mono" style="color:#dbe4f0">main</span>, <span class="mono" style="color:#dbe4f0">v1.2</span> tagged as what's live.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Step 2</b>, the v2.0 feature: add a new Perspective view on a <span class="mono" style="color:#dbe4f0">feature/*</span> branch → PR.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Step 3</b>, the ambush: a P1 bug in production. Fix it on a <span class="mono" style="color:#dbe4f0">fix/*</span> branch — <b style="color:#fff">one</b> PR into <span class="mono" style="color:#dbe4f0">main</span>, released with the <span class="mono" style="color:#dbe4f0">v1.2.1</span> tag.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Step 3</b>, the ambush: a P1 bug in production. Fix it on a <span class="mono" style="color:#dbe4f0">fix/*</span> branch: <b style="color:#fff">one</b> PR into <span class="mono" style="color:#dbe4f0">main</span>, released with the <span class="mono" style="color:#dbe4f0">v1.2.1</span> tag.</span></li>
     </ul>
   </div>
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 2 · steps 1 → 3</span></div>
@@ -476,12 +476,12 @@ scripts/validate.sh       <span class="cm"># → ✓ all project files valid</sp
     <div class="stage">Part 2 · step 1 · set the stage</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num">STEP 1</span><div><div class="title">Mark a tag for production</div><div class="lead">One long-lived branch and a tag marking what's in production. This is the graph the scenario runs on.</div></div></div>
+    <div class="sechead"><span class="num">STEP 1</span><div><div class="title">Tag what is live in production as lab02-v1.2.0</div><div class="lead">One long-lived branch and a tag marking what's in production. This is the graph the scenario runs on.</div></div></div>
     <div class="cols2">
       <div class="steps">
         <div class="step"><div class="ix p">1</div><div class="tx">GitHub Flow needs just <b>one long-lived branch: <span class="inlinecode">main</span></b>. Every branch you cut starts there and returns there through a PR. <b>Start it clean:</b> Lab 01's practice commits still sit on your local <span class="inlinecode">main</span>, unpushed, and would ride along in every PR today. Park them on a branch, then match your fork.</div></div>
         <div class="step"><div class="ix p">2</div><div class="tx"><b>Tag what's live: <span class="inlinecode">lab02-v1.2.0</span> on <span class="inlinecode">main</span>.</b> This is "production" (v1.2), the thing the P1 bug is running against. In GitHub Flow, <b>tags carry the release history</b>. The <span class="inlinecode">lab02-</span> prefix keeps this lab's tags apart from the other labs' in your fork. Make it <b>annotated</b> (<span class="inlinecode">-a</span>), as Lab 01 taught for releases.</div></div>
-        <div class="step"><div class="ix p">3</div><div class="tx"><b>Push the tag</b> to your fork — your first real <span class="inlinecode">git push</span> of the course, named this morning, used now. The world matches the teaching-deck diagram.</div></div>
+        <div class="step"><div class="ix p">3</div><div class="tx"><b>Push the tag</b> to your fork: your first real <span class="inlinecode">git push</span> of the course, named this morning, used now. The world matches the teaching-deck diagram.</div></div>
       </div>
       <div>
         <div class="code"><pre><span class="cm"># one long-lived branch: main is it, same as your fork's</span>
@@ -495,7 +495,7 @@ git tag -a lab02-v1.2.0 -m "Release 1.2.0"
 git push origin lab02-v1.2.0      <span class="cm"># → "production" is v1.2</span></pre></div>
         <div class="goal" style="margin-top:18px">
           <span class="badge">Refresher</span>
-          <p><b>Both named in Lab 01 — today they graduate to used.</b> <b><span class="inlinecode">git tag</span></b> pins a permanent name to one exact commit; unlike a branch, it <b>never moves</b> — that's what makes it a release marker. <b><span class="inlinecode">git push</span></b> uploads your local commits and refs to a remote (<span class="inlinecode">origin</span> = your fork). Tags don't ride along with a normal push — <span class="inlinecode">git push origin lab02-v1.2.0</span> sends one explicitly — and a <b>new branch</b> needs <span class="inlinecode">git push -u origin &lt;branch&gt;</span> once; the <span class="inlinecode">-u</span> links it to your fork, so later pushes are plain <span class="inlinecode">git push</span>.</p>
+          <p><b>Both named in Lab 01, used for real today.</b> <b><span class="inlinecode">git tag</span></b> pins a permanent name to one exact commit; unlike a branch, it <b>never moves</b>, which is what makes it a release marker. <b><span class="inlinecode">git push</span></b> uploads your local commits and refs to a remote (<span class="inlinecode">origin</span> = your fork). Tags don't ride along with a normal push (<span class="inlinecode">git push origin lab02-v1.2.0</span> sends one explicitly), and a <b>new branch</b> needs <span class="inlinecode">git push -u origin &lt;branch&gt;</span> once; the <span class="inlinecode">-u</span> links it to your fork, so later pushes are plain <span class="inlinecode">git push</span>.</p>
         </div>
         <div class="goal" style="margin-top:18px">
           <span class="badge">The mental model</span>
@@ -517,32 +517,32 @@ git push origin lab02-v1.2.0      <span class="cm"># → "production" is v1.2</s
     <div class="sechead"><span class="num">STEP 2</span><div><div class="title">Create a feature branch and push it</div><div class="lead">Oatmakers' v2.0 scope starts with a <b>silo detail view</b>. A small, real Ignition change: add it so it goes live in the project. Off <span class="inlinecode">main</span>, the GitHub Flow way.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix p">1</div><div class="tx"><b>Branch off <span class="inlinecode">main</span></b> — in GitHub Flow every branch starts at <span class="inlinecode">main</span> and returns to it through a PR: <span class="inlinecode">feature/v2-silo-detail</span>.</div></div>
-        <div class="step"><div class="ix p">2</div><div class="tx"><b>Add the view.</b> Easiest path: copy the <span class="inlinecode">overview</span> resource folder to <span class="inlinecode">silo-detail</span> under <span class="inlinecode">views/pages/</span>, edit the <span class="inlinecode">Subtitle</span> label's <span class="inlinecode">text</span> in its <span class="inlinecode">view.json</span>, and register the page in <span class="inlinecode">page-config/config.json</span> so it's reachable.</div></div>
-        <div class="step"><div class="ix p">3</div><div class="tx"><b>Validate → commit.</b> <span class="inlinecode">scripts/validate.sh</span> green, then commit in <a href="https://www.conventionalcommits.org/" style="color:var(--blue-d)"><b>Conventional Commits</b></a> style: <span class="inlinecode">type(scope): summary</span>, where the type names the kind of change — today you'll need <span class="inlinecode">feat</span> and <span class="inlinecode">fix</span>. Machines can parse it too, which pays off when releases get automated.</div></div>
-        <div class="step"><div class="ix p">4</div><div class="tx"><b>Open the PR — on your fork.</b> After the push, GitHub shows a <b>"Compare &amp; pull request"</b> banner on your fork's page (or use <span class="inlinecode">gh pr create</span> — it targets your fork thanks to the <span class="inlinecode">gh repo set-default</span> from setup). Set <b>base repo = your fork</b>, base <span class="inlinecode">main</span>, compare <span class="inlinecode">feature/v2-silo-detail</span> — the banner defaults the base to the upstream course repo. Then fill in the template: <b>What · Why · How to test</b>.</div></div>
-        <div class="step"><div class="ix p">5</div><div class="tx"><b>Invite your reviewer, leave the PR open.</b> On your fork: <b>Settings → Collaborators → Add people</b> — a peer from your room or one of the tutors. Once they accept the invite, pick them under <b>Reviewers</b> on the PR; they'll review it in Part 3. <b>Don't merge yet</b> — the ambush comes first. (A copied view makes a big diff; that's fine — the review focuses on the page registration and valid JSON, not the line count.)</div></div>
+        <div class="step"><div class="ix p">1</div><div class="tx"><b>Branch off <span class="inlinecode">main</span></b>: in GitHub Flow every branch starts at <span class="inlinecode">main</span> and returns to it through a PR: <span class="inlinecode">feature/v2-silo-detail</span>.</div></div>
+        <div class="step"><div class="ix p">2</div><div class="tx"><b>Add the view.</b> Easiest path: copy the <span class="inlinecode">overview</span> resource folder to <span class="inlinecode">silo-detail</span> under <span class="inlinecode">views/pages/</span>, edit the <span class="inlinecode">Subtitle</span> label's <span class="inlinecode">text</span> in its <span class="inlinecode">view.json</span>, and register <span class="inlinecode">/silo-detail</span> in <span class="inlinecode">page-config/config.json</span>, with its own <span class="inlinecode">title</span>, so it's reachable.</div></div>
+        <div class="step"><div class="ix p">3</div><div class="tx"><b>Validate → commit.</b> <span class="inlinecode">scripts/validate.sh</span> green, then commit in <a href="https://www.conventionalcommits.org/" style="color:var(--blue-d)"><b>Conventional Commits</b></a> style: <span class="inlinecode">type(scope): summary</span>, where the type names the kind of change; today you'll need <span class="inlinecode">feat</span> and <span class="inlinecode">fix</span>.</div></div>
+        <div class="step"><div class="ix p">4</div><div class="tx"><b>Open the PR on your fork.</b> After the push, GitHub shows a <b>"Compare &amp; pull request"</b> banner on your fork's page (or use <span class="inlinecode">gh pr create</span>, which targets your fork thanks to the <span class="inlinecode">gh repo set-default</span> from setup). Set <b>base repo = your fork</b>, base <span class="inlinecode">main</span>, compare <span class="inlinecode">feature/v2-silo-detail</span>: the banner defaults the base to the upstream course repo. Then fill in the template: <b>What · Why · How to test</b>.</div></div>
+        <div class="step"><div class="ix p">5</div><div class="tx"><b>Invite your reviewer, leave the PR open.</b> On your fork: <b>Settings → Collaborators → Add people</b>: a peer from your room or one of the tutors. Once they accept the invite, pick them under <b>Reviewers</b> on the PR; they'll review it in Part 3. <b>Don't merge yet</b>: the ambush comes first. (A copied view makes a big diff; that's fine. The review focuses on the page registration and valid JSON, not the line count.)</div></div>
       </div>
       <div>
         <div class="code"><pre>git switch main
 git switch -c feature/v2-silo-detail
 
-<span class="cm"># add the silo detail view (copy overview → rename)</span>
-<span class="cm">#   projects/lab-project/…/views/pages/silo-detail/</span>
-<span class="cm">#   register route /silo-detail in page-config/config.json</span>
+P=projects/lab-project/com.inductiveautomation.perspective
+cp -r "$P/views/pages/overview" "$P/views/pages/silo-detail"
+<span class="cm"># edit its Subtitle text, register /silo-detail</span>
 
 scripts/validate.sh          <span class="cm"># → green</span>
-git add -A
+git add projects/            <span class="cm"># new folder: commit -a would miss it</span>
 git commit -m <span class="cmd2">"feat(views): add v2.0 silo detail view"</span>
 git push -u origin feature/v2-silo-detail
 
-<span class="cm"># PR — from the banner on your fork, or:</span>
+<span class="cm"># PR: from the banner on your fork, or:</span>
 gh pr create              <span class="cm"># base repo = YOUR fork · base = main</span>
 <span class="cm"># fork Settings → Collaborators → add your reviewer</span>
 <span class="cm"># request their review on the PR · don't merge yet</span></pre></div>
         <div class="goal" style="margin-top:18px">
           <span class="badge">See it live?</span>
-          <p>Gateway up? <span class="inlinecode">scripts/scan.sh</span> (or <span class="inlinecode">docker compose restart</span>), then open the project: your new page is there. That's the "it goes live" moment.</p>
+          <p>Gateway up? <span class="inlinecode">scripts/scan.sh</span> (or <span class="inlinecode">docker compose restart</span>), then open <span class="inlinecode">localhost:8088/data/perspective/client/lab-project/silo-detail</span> (or your <span class="inlinecode">GATEWAY_PORT</span>): your page is live.</p>
         </div>
       </div>
     </div>
@@ -560,24 +560,26 @@ gh pr create              <span class="cm"># base repo = YOUR fork · base = mai
     <div class="sechead"><span class="num">STEP 3</span><div><div class="title">Create a fix branch and push it</div><div class="lead">Your feature is still open when a customer hits the null-reading crash <b>in v1.2, live</b>. It can't wait for v2.0. This is where merge order starts to matter.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix p">1</div><div class="tx"><b>Branch the fix off <span class="inlinecode">main</span></b>: <span class="inlinecode">fix/null-reading</span>. Because your feature PR is still <b>open</b>, <span class="inlinecode">main</span> <i>is</i> v1.2 — the fix carries no v2.0 work.</div></div>
-        <div class="step"><div class="ix p">!</div><div class="tx"><b>The bug:</b> <span class="inlinecode">lab.display.format_reading()</span> does <span class="inlinecode">"%.1f" % None</span> on a null reading (comms loss) and throws. <b>Fix:</b> a placeholder like <span class="inlinecode">"-- °C"</span> for <span class="inlinecode">None</span> / bad input, while keeping <span class="inlinecode">0</span> formatting as <span class="inlinecode">"0.0 °C"</span>.</div></div>
-        <div class="step"><div class="ix p">2</div><div class="tx"><b>One PR into <span class="inlinecode">main</span> — same moves as the feature:</b> the "Compare &amp; pull request" banner on your fork (or <span class="inlinecode">gh pr create</span>), base repo = <b>your fork</b>, template filled in, and <b>request your reviewer</b> — already a collaborator, no new invite needed. That's the whole GitHub Flow ceremony: no <span class="inlinecode">develop</span>, no double-merge. <b>Don't merge yet</b>: Part 3 merges in order and tags <span class="inlinecode">v1.2.1</span>.</div></div>
-        <div class="step"><div class="ix p">3</div><div class="tx"><b>That's two PRs open</b> (feature → <span class="inlinecode">main</span>, fix → <span class="inlinecode">main</span>): your reviewer requested on each. <b>Merge order is the lesson</b>: the fix lands (and <span class="inlinecode">v1.2.1</span> is tagged) <i>before</i> the feature merges — in GitHub Flow, <b>merging is releasing</b>.</div></div>
+        <div class="step"><div class="ix p">1</div><div class="tx"><b>Branch the fix off <span class="inlinecode">main</span></b>: <span class="inlinecode">fix/null-reading</span>. Because your feature PR is still <b>open</b>, <span class="inlinecode">main</span> <i>is</i> v1.2: the fix carries no v2.0 work. The gateway serves whatever branch is checked out: silo-detail drops off it until you switch back.</div></div>
+        <div class="step"><div class="ix p">!</div><div class="tx"><b>The bug:</b> <span class="inlinecode">lab.display.format_reading()</span> does <span class="inlinecode">"%.1f" % None</span> on a null reading (comms loss) and throws. <b>Fix:</b> a placeholder like <span class="inlinecode">"-- °C"</span> for <span class="inlinecode">None</span> / bad input, while keeping <span class="inlinecode">0</span> formatting as <span class="inlinecode">"0.0 °C"</span>. <b>Test it</b> with the <span class="inlinecode">python3</span> lines; paste the output into <b>How to test</b>.</div></div>
+        <div class="step"><div class="ix p">2</div><div class="tx"><b>One PR into <span class="inlinecode">main</span>, same moves as the feature:</b> the "Compare &amp; pull request" banner on your fork (or <span class="inlinecode">gh pr create</span>), base repo = <b>your fork</b>, template filled in, and <b>request your reviewer</b>, already a collaborator, no new invite needed. That's the whole GitHub Flow ceremony: no <span class="inlinecode">develop</span>, no double-merge. <b>Don't merge yet</b>: Part 3 merges in order and tags <span class="inlinecode">v1.2.1</span>.</div></div>
+        <div class="step"><div class="ix p">3</div><div class="tx"><b>That's two PRs open</b> (feature → <span class="inlinecode">main</span>, fix → <span class="inlinecode">main</span>): your reviewer requested on each. <b>Merge order is the lesson</b>: the fix lands (and <span class="inlinecode">v1.2.1</span> is tagged) <i>before</i> the feature merges: in GitHub Flow, <b>merging is releasing</b>.</div></div>
       </div>
       <div>
-        <div class="code"><pre><span class="cm"># the fix branches off main — which IS v1.2,</span>
-<span class="cm"># because the feature hasn't merged yet</span>
+        <div class="code"><pre><span class="cm"># off main, which IS v1.2 (feature not merged yet)</span>
 git switch main
 git switch -c fix/null-reading
 
 <span class="cm"># fix format_reading() in lab/display/code.py</span>
 scripts/validate.sh
+<span class="cm"># run it: expect 162.0 °C, 0.0 °C, -- °C</span>
+python3 -c "import runpy
+p = 'projects/lab-project/ignition/script-python/lab/display/code.py'
+f = runpy.run_path(p)['format_reading']
+for v in (162.0, 0, None): print(f(v, '°C'))"
 git commit -am <span class="cmd2">"fix(display): placeholder for null readings"</span>
 git push -u origin fix/null-reading
-
-<span class="cm"># ONE PR: fix → main</span>
-gh pr create              <span class="cm"># banner works too · base repo = YOUR fork</span>
+gh pr create              <span class="cm"># ONE PR: fix → main, base repo = YOUR fork</span>
 <span class="cm"># request your reviewer → merged FIRST → tagged v1.2.1  (Part 3)</span></pre></div>
         <div class="goal warn-g" style="margin-top:18px">
           <span class="badge">The whole lesson</span>
@@ -599,18 +601,18 @@ gh pr create              <span class="cm"># banner works too · base repo = YOU
     <div class="sechead"><span class="num">PART 3 · A</span><div><div class="title">Review a peer's PR</div><div class="lead">You each have a fix PR and a feature PR open. Pair up in your room so <b>each PR gets one reviewer</b>.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix p">1</div><div class="tx"><b>Open the PR you were asked to review</b> — it's in your GitHub notifications; the <b>fix</b> is the richest to review.</div></div>
-        <div class="step"><div class="ix p">2</div><div class="tx"><b>Read slowly (at least 5 minutes)</b> before writing anything. Fix PR: do valid readings still format (<span class="inlinecode">162.0</span> → <span class="inlinecode">"162.0 °C"</span>, and <span class="inlinecode">0</span> → <span class="inlinecode">"0.0 °C"</span>)? And, the GitHub Flow check: is the fix <b>just the fix</b> (no v2.0 work riding along), set to merge <b>before</b> the feature? Merging is releasing. Feature PR: JSON well-formed, page registered, change scoped?</div></div>
+        <div class="step"><div class="ix p">1</div><div class="tx"><b>Open the PR you were asked to review</b>: it's in your GitHub notifications; the <b>fix</b> is the richest to review.</div></div>
+        <div class="step"><div class="ix p">2</div><div class="tx"><b>Read slowly (at least 5 minutes)</b> before writing anything. Fix PR: do valid readings still format (<span class="inlinecode">162.0</span> → <span class="inlinecode">"162.0 °C"</span>, <span class="inlinecode">0</span> → <span class="inlinecode">"0.0 °C"</span>, <span class="inlinecode">None</span> → placeholder)? Run it: <span class="inlinecode">gh pr checkout &lt;n&gt; --repo &lt;author&gt;/cicd-for-ignition --detach</span>, the <span class="inlinecode">python3 -c</span> line, then <span class="inlinecode">git switch -</span>. And, the GitHub Flow check: is the fix <b>just the fix</b> (no v2.0 work riding along), set to merge <b>before</b> the feature? Merging is releasing. Feature PR: JSON well-formed, page registered, change scoped?</div></div>
         <div class="step"><div class="ix p">3</div><div class="tx"><b>Check their verification:</b> did they run <span class="inlinecode">validate.sh</span>? Could you actually follow their "How to test"? Read the description and commit message too.</div></div>
         <div class="step"><div class="ix p">4</div><div class="tx"><b>Comment:</b> at minimum a <span class="inlinecode">praise:</span> and a <span class="inlinecode">suggestion:</span>, with an <span class="inlinecode">issue:</span> only if something is actually wrong. No quota; quality over quantity.</div></div>
-        <div class="step"><div class="ix p">5</div><div class="tx"><b>Verdict:</b> <b>Request changes</b> if you left at least one <span class="inlinecode">issue:</span>, else <b>Approve</b>.</div></div>
+        <div class="step"><div class="ix p">5</div><div class="tx"><b>Verdict:</b> <b>Files changed → Review changes</b>, then <b>Request changes</b> if you left at least one <span class="inlinecode">issue:</span>, else <b>Approve</b> → <b>Submit review</b>.</div></div>
       </div>
       <div>
         <div class="code"><pre><span class="cm"># a review that helps: three real comments</span>
 praise: tight diff, one function, easy to review
 
 suggestion: lab.util.to_float(value, default=None)
-  swallows junk input for you — keep the None
+  swallows junk input for you; keep the None
   check, though, or nulls format as "0.0 °C".
 
 issue: format_reading(0, "°C") now returns
@@ -637,8 +639,8 @@ issue: format_reading(0, "°C") now returns
       <div class="steps">
         <div class="step"><div class="ix p">1</div><div class="tx">On <b>your PRs</b>, react to <b>every</b> comment: <span class="inlinecode">+1</span> the praise, answer questions, push a <b>fix-up commit</b> for what you accept, and <b>decline with reasoning</b> what you don't.</div></div>
         <div class="step"><div class="ix p">2</div><div class="tx"><b>Additive commits, no force-push</b> during review. Re-request review when you're ready.</div></div>
-        <div class="step"><div class="ix p">3</div><div class="tx"><b>Merge the fix PR first</b> (production's on fire), then <b>tag <span class="inlinecode">lab02-v1.2.1</span> on <span class="inlinecode">main</span></b> — in GitHub Flow, the tag <i>is</i> the release. Delete the fix branch once it's merged.</div></div>
-        <div class="step"><div class="ix p">4</div><div class="tx"><b>Now finish the feature:</b> pull the fix down (<span class="inlinecode">git merge main</span>), push, then merge its PR into <span class="inlinecode">main</span> and delete the feature branch.</div></div>
+        <div class="step"><div class="ix p">3</div><div class="tx"><b>Merge the fix PR first</b> (production's on fire) with <b>Create a merge commit</b>, so your graph matches the teaching diagram. Then <b>tag <span class="inlinecode">lab02-v1.2.1</span> on <span class="inlinecode">main</span></b>: in GitHub Flow, the tag <i>is</i> the release. Delete the fix branch once it's merged.</div></div>
+        <div class="step"><div class="ix p">4</div><div class="tx"><b>Now finish the feature:</b> pull the fix down (<span class="inlinecode">git merge main</span>), push, then merge its PR into <span class="inlinecode">main</span> (again <b>Create a merge commit</b>) and delete the feature branch.</div></div>
       </div>
       <div>
         <div class="code"><pre><span class="cm"># a fix-up during review: additive, never force-push</span>
@@ -658,7 +660,7 @@ git merge main -m <span class="cmd2">"merge main: pick up the v1.2.1 fix"</span>
 git push</pre></div>
         <div class="goal good-g" style="margin-top:18px">
           <span class="badge">The payoff</span>
-          <p>You didn't read about merge order; you <b>released</b> under a fake fire drill — fix, tag, then feature. That's GitHub Flow handling a release week.</p>
+          <p>You didn't read about merge order; you <b>released</b> under a fake fire drill: fix, tag, then feature. That's GitHub Flow handling a release week.</p>
         </div>
       </div>
     </div>
@@ -673,12 +675,12 @@ git push</pre></div>
     <div class="stage">Optional stretch</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num warm">OPTIONAL · 1</span><div><div class="title">Stretch 1: now do it in Git Flow</div><div class="lead">Same scenario, the heavyweight strategy. The point isn't the code; it's <b>feeling</b> what Git Flow's ceremony buys — support for more than one live version — and what it costs.</div></div></div>
+    <div class="sechead"><span class="num warm">OPTIONAL · 1</span><div><div class="title">Stretch 1: rerun the scenario in Git Flow</div><div class="lead">Same scenario, the heavyweight strategy. The point isn't the code; it's <b>feeling</b> what Git Flow's ceremony buys (support for more than one live version) and what it costs.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix t">1</div><div class="tx"><b>Rewind the repo first.</b> After Part 2, <span class="inlinecode">main</span> already has both changes: reset your fork's <span class="inlinecode">main</span> back to <span class="inlinecode">lab02-v1.2.0</span> and clear the local feature and fix branches (it's your own fork; force-push is fine <i>here</i>, but it rewinds <span class="inlinecode">main</span> for every lab, so do it before other labs' work lands there — and note it's exactly what Stretch 2's protection forbids on a shared repo).</div></div>
+        <div class="step"><div class="ix t">1</div><div class="tx"><b>Rewind the repo first.</b> After Part 2, <span class="inlinecode">main</span> already has both changes: reset your fork's <span class="inlinecode">main</span> back to <span class="inlinecode">lab02-v1.2.0</span> and clear the local feature and fix branches (it's your own fork; force-push is fine <i>here</i>, but it rewinds <span class="inlinecode">main</span> for every lab, so do it before other labs' work lands there. It's exactly what Stretch 2's ruleset forbids on a shared repo).</div></div>
         <div class="step"><div class="ix t">2</div><div class="tx"><b>Build the Git Flow world:</b> a long-lived <span class="inlinecode">develop</span> next to <span class="inlinecode">main</span>. Rerun the two changes Git Flow's way: the view on <span class="inlinecode">feature/*</span> <b>off <span class="inlinecode">develop</span></b> → PR into <span class="inlinecode">develop</span>; the fix on <span class="inlinecode">hotfix/*</span> <b>off <span class="inlinecode">main</span></b> → <b>two PRs</b>, into <span class="inlinecode">main</span> (tag <span class="inlinecode">lab02-v1.2.1</span>) <b>and</b> into <span class="inlinecode">develop</span>.</div></div>
-        <div class="step"><div class="ix t">3</div><div class="tx"><b>Feel the difference.</b> The hotfix merges <b>twice</b> — skip the <span class="inlinecode">develop</span> merge and v2.0 regresses the fix next release. In Part 2, <span class="inlinecode">v1.2</span> lived in a tag; here a whole branch structure guards it. That's the trade-off, in your hands.</div></div>
+        <div class="step"><div class="ix t">3</div><div class="tx"><b>Feel the difference.</b> The hotfix merges <b>twice</b>: skip the <span class="inlinecode">develop</span> merge and v2.0 regresses the fix next release. In Part 2, <span class="inlinecode">v1.2</span> lived in a tag; here a whole branch structure guards it. That's the trade-off, in your hands.</div></div>
       </div>
       <div>
         <div class="code"><pre><span class="cm"># rewind the fork to before the scenario</span>
@@ -699,7 +701,7 @@ git push -u origin develop
 <span class="cm">#   feature/v2-… off develop → PR into develop</span>
 <span class="cm">#   hotfix/null-… off main   → TWO PRs:</span>
 <span class="cm">#     → main (tag lab02-v1.2.1)  AND  → develop</span>
-<span class="cm"># the hotfix merges TWICE — that's the point</span></pre></div>
+<span class="cm"># the hotfix merges TWICE: that's the point</span></pre></div>
         <div class="goal" style="margin-top:18px">
           <span class="badge">The takeaway</span>
           <p>GitHub Flow answered release week with <b>one merge and a tag</b>. Git Flow's double-merge is what it costs to support <b>old versions</b> properly. <b>You now know both from the inside.</b></p>
@@ -720,21 +722,25 @@ git push -u origin develop
     <div class="sechead"><span class="num phase2">OPTIONAL · 2</span><div><div class="title">Stretch 2: protect <span class="mono" style="font-size:30px">main</span></div><div class="lead">Turn the strategy you argued for in Part 1 into settings a repo enforces, on a repo you own (your fork works).</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix p">1</div><div class="tx">Open <b>Settings → Branches</b> and add a protection rule for <span class="inlinecode">main</span>.</div></div>
-        <div class="step"><div class="ix p">2</div><div class="tx"><b>Require a pull request before merging</b> with 1 approval.</div></div>
-        <div class="step"><div class="ix p">3</div><div class="tx"><b>Dismiss stale approvals</b> when new commits are pushed; an approve shouldn't survive a rewrite.</div></div>
-        <div class="step"><div class="ix p">4</div><div class="tx"><b>Restrict direct pushes to <span class="inlinecode">main</span></b> for everyone, <b>including admins</b> ("do not allow bypassing").</div></div>
-        <div class="step"><div class="ix p">5</div><div class="tx"><b>Temporary: delete the rule when you're done</b> (Settings → Branches → Delete). On your own fork nobody can approve your PRs, so it would block Labs 03–07, and Lab 03 adds its own rule on <span class="inlinecode">main</span>.</div></div>
+        <div class="step"><div class="ix p">1</div><div class="tx">Open <b>Settings → Rules → Rulesets → New ruleset → New branch ruleset</b>. Name it, <b>Enforcement status: Active</b>, target <b>Include default branch</b> (<span class="inlinecode">main</span>).</div></div>
+        <div class="step"><div class="ix p">2</div><div class="tx"><b>Require a pull request before merging</b> with 1 required approval. This is what blocks direct pushes to <span class="inlinecode">main</span>.</div></div>
+        <div class="step"><div class="ix p">3</div><div class="tx"><b>Dismiss stale pull request approvals</b> when new commits are pushed; an approve shouldn't survive a rewrite.</div></div>
+        <div class="step"><div class="ix p">4</div><div class="tx">Leave the <b>Bypass list empty</b>, so the rules hold for everyone, <b>admins included</b>. Keep <b>Restrict deletions</b> and <b>Block force pushes</b> on.</div></div>
+        <div class="step"><div class="ix p">5</div><div class="tx"><b>Temporary: delete the ruleset when you're done</b> (Settings → Rules → Rulesets → your ruleset → Delete ruleset). Unless a collaborator approves every PR, this blocks Labs 03-07, and Lab 03 adds its own ruleset on <span class="inlinecode">main</span>.</div></div>
       </div>
       <div>
-        <div class="code"><pre><span class="cm"># Settings → Branches → Add branch protection rule</span>
+        <div class="code"><pre><span class="cm"># Settings → Rules → Rulesets → New branch ruleset</span>
+Enforcement status: Active
+Bypass list:        (empty)
+Target branches:    Include default branch
+[x] Restrict deletions
 [x] Require a pull request before merging
       Required approvals: 1
-[x] Dismiss stale pull request approvals
-      when new commits are pushed
-[x] Do not allow bypassing the above settings
+      [x] Dismiss stale pull request approvals
+          when new commits are pushed
+[x] Block force pushes
 
-<span class="cm"># done? delete the rule, or it blocks Labs 03–07</span></pre></div>
+<span class="cm"># done? delete the ruleset, or it blocks Labs 03-07</span></pre></div>
         <div class="goal" style="margin-top:18px;border-left-color:var(--peri)">
           <span class="badge" style="background:var(--peri);color:var(--navy)">No CI check, yet</span>
           <p>We don't require "passing CI" here because Lab 02 ships <b>no CI on purpose</b>: <span class="inlinecode">validate.sh</span> is something <i>you</i> run. <b>Lab 03 turns it into a required status check</b> no one can merge past.</p>
@@ -753,10 +759,10 @@ git push -u origin develop
   </div>
   <div class="body">
     <div class="eyebrow">Nicely done</div>
-    <div class="title" style="color:#fff;max-width:24ch">You didn't read GitHub Flow. You released with it.</div>
+    <div class="title" style="color:#fff;max-width:24ch">What you practised: a GitHub Flow release week</div>
     <ul class="checks" style="max-width:940px;margin-top:22px">
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>You ran the <b>release-week scenario</b> for real: a v2.0 feature and a P1 fix, both through PRs into <span class="mono" style="color:#dbe4f0">main</span> the GitHub Flow way.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>You felt that <b>merging is releasing</b>: the fix merged and <span class="mono" style="color:#dbe4f0">v1.2.1</span> was tagged <i>before</i> the feature landed — merge order as release order.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>You felt that <b>merging is releasing</b>: the fix merged and <span class="mono" style="color:#dbe4f0">v1.2.1</span> was tagged <i>before</i> the feature landed: merge order as release order.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>You reviewed a peer with <span class="mono" style="color:#dbe4f0">praise: / suggestion: / issue:</span>, and responded to a real review on your own PRs.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>Bring to the debrief: <b>where does v1.2 live in GitHub Flow, and when do tags stop being enough</b>; one thing you'll <b>steal</b> from someone's PR; one habit you'll <b>drop</b>; and when a request-changes does more harm than good.</span></li>
     </ul>

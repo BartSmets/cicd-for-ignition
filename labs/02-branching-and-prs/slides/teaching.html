@@ -313,6 +313,7 @@ body{
           <li><span class="d"></span>The PR lifecycle: branch → review → merge</li>
           <li><span class="d"></span>What makes a PR easy to review</li>
           <li><span class="d"></span>Leaving feedback that actually helps</li>
+          <li><span class="d"></span>A PR on a fork: where to click, what to type</li>
         </ul>
       </div>
       <div class="does">
@@ -337,7 +338,7 @@ body{
   </div>
   <div class="divider">
     <div class="eyebrow">Chapter 1</div>
-    <div class="q">How should a team <em>branch</em>?</div>
+    <div class="q">Branching strategies: how a team <em>branches</em> and releases</div>
     <div class="sub2">Branches are free; agreements are not. Three well-known strategies answer the same questions differently: where does work start, how long do branches live, and what does "release" mean?</div>
   </div>
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Git Flow → GitHub Flow → trunk-based</span></div>
@@ -454,7 +455,7 @@ body{
     </table>
     <div class="callout">
       <div class="lab" style="color:var(--blue)">The real question is just one</div>
-      <p>Five rows, but the split is binary: <b>is more than one version live at a time?</b> No → GitHub Flow (trunk-based is its high-discipline extreme). Yes → Git Flow. Everything else is a variation. This course uses <b>GitHub Flow</b> for the labs — you'll run it for real this afternoon (and can feel Git Flow's double-merge in the stretch). For <b>your team</b>, pick what fits your reality, <b>not the one that sounds most sophisticated</b>. You'll argue that choice out in the you-do.</p>
+      <p>Five rows, but the split is binary: <b>is more than one version live at a time?</b> No → GitHub Flow (trunk-based is its high-discipline extreme). Yes → Git Flow. Everything else is a variation. This course uses <b>GitHub Flow</b> for the labs: you'll run it for real this afternoon (and can feel Git Flow's double-merge in the stretch). For <b>your team</b>, pick what fits your reality, <b>not the one that sounds most sophisticated</b>. You'll argue that choice out in the you-do.</p>
     </div>
   </div>
 
@@ -469,7 +470,7 @@ body{
   </div>
   <div class="divider">
     <div class="eyebrow">Chapter 2</div>
-    <div class="q">Pull requests, <em>done right</em>.</div>
+    <div class="q">Pull requests: <em>scope, review and merge</em></div>
     <div class="sub2">A branching strategy only comes to life through pull requests. The PR is where your branch naming, your review habits, and your merge-style rules actually get used.</div>
   </div>
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>scope → review → merge</span></div>
@@ -506,7 +507,7 @@ body{
     <div class="sechead">
       <span class="num">04</span>
       <div>
-        <div class="title">Two PRs, side by side</div>
+        <div class="title">A bad PR and a good PR, side by side</div>
         <div class="lead">Same repo, same week, two very different review experiences. The good column is the whole lesson.</div>
       </div>
     </div>
@@ -586,7 +587,7 @@ body{
         <ul>
           <li><span class="d"></span>A test that would have caught the bug, or…</li>
           <li><span class="d"></span>…an explicit manual test plan in "How to test"</li>
-          <li><span class="d"></span>In this lab: <span class="mono">scripts/validate.sh</span> + the behavior you changed</li>
+          <li><span class="d"></span>In this lab: <span class="mono">scripts/validate.sh</span> + run the function you changed (<span class="mono">python3 -c</span>, slide 22)</li>
         </ul>
       </div>
     </div>
@@ -655,7 +656,7 @@ body{
     <div class="sechead">
       <span class="num">07</span>
       <div>
-        <div class="title">The verdict, and the merge button</div>
+        <div class="title">Review verdicts and the three merge methods</div>
         <div class="lead">A review ends in one of three verdicts; an approved PR ends in one of three merges. <b>Both are choices your team agreement should make for you.</b></div>
       </div>
     </div>
@@ -710,15 +711,15 @@ body{
               <circle cx="98" cy="28" r="4" fill="var(--panel2)" stroke="var(--blue)" stroke-width="2"/>
             </svg></li>
         </ul>
-        <div style="margin-top:auto;padding:9px 12px;background:var(--peri-soft);border-radius:9px;font-size:13.5px;line-height:1.4;color:var(--txt)"><b style="color:var(--blue)">Not a preference:</b> pick the one your team agreed on — deliberately, not whatever the dropdown remembers</div>
+        <div style="margin-top:auto;padding:9px 12px;background:var(--peri-soft);border-radius:9px;font-size:13.5px;line-height:1.4;color:var(--txt)"><b style="color:var(--blue)">Not a preference:</b> pick the one your team agreed on, deliberately, not whatever the dropdown remembers. In this course: <b>Create a merge commit</b></div>
       </div>
     </div>
     <div class="callout">
-      <div class="lab" style="color:var(--blue)">Authors have rights too &mdash; review is a negotiation</div>
+      <div class="lab" style="color:var(--blue)">Authors have rights too: review is a negotiation</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:26px;margin-top:4px">
-        <p><b>Respond to every comment</b> &mdash; a <b>+1</b>, a reply, or a fix-up commit. Silence reads as ignoring the reviewer.</p>
-        <p style="border-left:1px solid var(--line);padding-left:26px"><b>Declining is allowed</b> &mdash; turning down a suggestion <b>with reasoning</b> is a valid response.</p>
-        <p style="border-left:1px solid var(--line);padding-left:26px"><b>Don't force-push during review</b> &mdash; it nukes the reviewer's context. Additive commits now, squash on merge if you must.</p>
+        <p><b>Respond to every comment</b>: a <b>+1</b>, a reply, or a fix-up commit. Silence reads as ignoring the reviewer.</p>
+        <p style="border-left:1px solid var(--line);padding-left:26px"><b>Declining is allowed</b>: turning down a suggestion <b>with reasoning</b> is a valid response.</p>
+        <p style="border-left:1px solid var(--line);padding-left:26px"><b>Don't force-push during review</b>: it nukes the reviewer's context. Additive commits now, squash on merge if you must.</p>
       </div>
     </div>
   </div>
@@ -726,7 +727,88 @@ body{
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>approve · request-changes · comment · then merge deliberately</span></div>
 </section>
 
-<!-- 15 · DIVIDER · CHAPTER 3 -->
+<!-- 15 · A PR ON A FORK: WHERE TO CLICK -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Pull requests · on GitHub</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">08</span>
+      <div>
+        <div class="title">How a PR flows on GitHub when you work in a fork</div>
+        <div class="lead">Your fork is <span class="mono">origin</span>, the course repo you forked is <span class="mono">upstream</span>. In this course every PR goes <b>into your own fork</b>. Where to click and what to type, from first push to merge.</div>
+      </div>
+    </div>
+    <div class="cols2">
+      <div class="does">
+        <div class="hd">Where to click</div>
+        <ul>
+          <li><span class="d"></span><span><b>Open the PR.</b> After a push, your fork's page shows <b>Compare &amp; pull request</b>. On the next page set <b>base repository</b> to <span class="mono">&lt;you&gt;/cicd-for-ignition</span> (it defaults to the course repo), base <span class="mono">main</span>, compare = your branch. Fill in What / Why / How to test.</span></li>
+          <li><span class="d"></span><span><b>Invite a reviewer.</b> On your fork: <b>Settings → Collaborators → Add people</b>. Once they accept, pick them under <b>Reviewers</b> in the PR's sidebar.</span></li>
+          <li><span class="d"></span><span><b>Review.</b> <b>Files changed</b> tab, <b>+</b> next to a line to comment (<b>Start a review</b>), then <b>Review changes</b>: Comment, Approve or Request changes, and <b>Submit review</b>.</span></li>
+          <li><span class="d"></span><span><b>Merge.</b> <b>Merge pull request</b> (dropdown: <b>Create a merge commit</b>), <b>Confirm merge</b>, then <b>Delete branch</b>.</span></li>
+        </ul>
+      </div>
+      <div class="code">
+        <pre><span class="cm"># first push of a new branch: -u links it to your fork</span>
+git push -u origin feature/v2-silo-detail
+git push                        <span class="cm"># every later push</span>
+
+<span class="cm"># tags never ride along: push each one by name</span>
+git push origin lab02-v1.2.0
+
+<span class="cm"># gh repo fork --clone made the COURSE repo gh's default</span>
+gh repo set-default --view      <span class="cm"># must print YOUR fork</span>
+gh repo set-default &lt;you&gt;/cicd-for-ignition
+gh pr create                    <span class="cm"># PR into your fork's main</span>
+
+<span class="cm"># reviewer: run the PR's code locally, then go back</span>
+gh pr checkout &lt;n&gt; --repo &lt;author&gt;/cicd-for-ignition --detach
+git switch -</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>push → open → invite → review → merge</span></div>
+</section>
+
+<!-- 16 · CONVENTIONAL COMMITS -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Pull requests · commit messages</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">09</span>
+      <div>
+        <div class="title">Commit messages in the Conventional Commits format</div>
+        <div class="lead"><span class="mono">type(scope): summary</span>. The <b>type</b> says what kind of change it is, the <b>scope</b> where, the <b>summary</b> what, in the imperative. People scan history faster, and release tools can read it too.</div>
+      </div>
+    </div>
+    <table class="tbl">
+      <tr><th style="width:120px">Type</th><th>Use it for</th><th>Example</th></tr>
+      <tr><td><code>feat</code></td><td>A new feature or capability</td><td><code>feat(views): add v2.0 silo detail view</code></td></tr>
+      <tr><td><code>fix</code></td><td>A bug fix</td><td><code>fix(display): placeholder for null readings</code></td></tr>
+      <tr><td><code>docs</code></td><td>Documentation only</td><td><code>docs(readme): explain GATEWAY_PORT</code></td></tr>
+      <tr><td><code>refactor</code></td><td>Restructure without changing behaviour</td><td><code>refactor(display): reuse lab.util.to_float</code></td></tr>
+      <tr><td><code>test</code></td><td>Add or fix tests</td><td><code>test(display): cover None readings</code></td></tr>
+      <tr><td><code>chore</code> / <code>ci</code></td><td>Tooling, dependencies, pipelines</td><td><code>ci: run validate.sh on every PR</code></td></tr>
+    </table>
+    <div class="callout">
+      <div class="lab" style="color:var(--blue)">Two conventions, two jobs</div>
+      <p>Conventional <b>Commits</b> label commit messages (<code>feat:</code>, <code>fix:</code>); Conventional <b>Comments</b> label review comments (<code>praise:</code>, <code>suggestion:</code>, <code>issue:</code>). A <code>!</code> after the type (<code>feat!:</code>) marks a breaking change. Once releases are automated: <code>fix</code> → patch (v1.2.1), <code>feat</code> → minor (v1.3.0), <code>!</code> → major (v2.0.0). Today you need <code>feat</code> and <code>fix</code>.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>conventionalcommits.org · type(scope): summary</span></div>
+</section>
+
+<!-- 17 · DIVIDER · CHAPTER 3 -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -734,13 +816,13 @@ body{
   </div>
   <div class="divider">
     <div class="eyebrow">Chapter 3</div>
-    <div class="q">Now do it to an <em>Ignition project</em>.</div>
+    <div class="q">An <em>Ignition project</em> in Git</div>
     <div class="sub2">Everything so far was generic. Here's the part your team actually came for: what an Ignition 8.3 project looks like once it's files in a repo, and where Git's assumptions get tested.</div>
   </div>
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>files → ignore rules → diffs → conflicts</span></div>
 </section>
 
-<!-- 16 · IGNITION PROJECT AS FILES -->
+<!-- 18 · IGNITION PROJECT AS FILES -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -749,7 +831,7 @@ body{
 
   <div class="body">
     <div class="sechead">
-      <span class="num">08</span>
+      <span class="num">10</span>
       <div>
         <div class="title">An Ignition 8.3 project is a folder of small text files</div>
         <div class="lead">This is the real project from this lab's repo (<span class="mono">projects/lab-project/</span>): a Perspective HMI screen and two script libraries. <b>What the Designer edits is what Git tracks.</b></div>
@@ -774,8 +856,8 @@ body{
         <ul class="checks">
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Resources are folders.</b> Each one is a <span class="mono">resource.json</span> manifest plus its payload file(s): <span class="mono">view.json</span> for a Perspective view, <span class="mono">code.py</span> for a script library.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Namespaced by module.</b> <span class="mono">com.inductiveautomation.perspective</span>, <span class="mono">ignition/script-python</span>: each module owns its subtree.</span></li>
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>It's all JSON and Python.</b> Which means: diffable, blame-able, branchable, reviewable. Everything from this morning applies. The one exception: the Designer saves a <span class="mono">thumbnail.png</span> preview next to each view — a binary Git tracks fine but can't diff (this repo's hand-built view doesn't have one yet).</span></li>
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>In this lab</b> the compose stack bind-mounts only <span class="mono">./projects</span> into the gateway: the file you edit on your laptop <i>is</i> the file the gateway runs. Gateway config stays in a named volume, out of the repo (that story is Lab 04's).</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>It's all JSON and Python.</b> Which means: diffable, blame-able, branchable, reviewable. Everything from this morning applies. The one exception: the Designer saves a <span class="mono">thumbnail.png</span> preview next to each view, a binary Git tracks fine but can't diff.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>In this lab</b> the compose stack bind-mounts only <span class="mono">./projects</span> into the gateway: the file you edit on your laptop <i>is</i> the file the gateway runs, so the gateway serves whatever branch you have checked out. Gateway config stays in a named volume, out of the repo (that story is Lab 04's).</span></li>
         </ul>
       </div>
     </div>
@@ -784,7 +866,7 @@ body{
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>projects/lab-project/ · open it in your editor</span></div>
 </section>
 
-<!-- 17 · COMMIT vs IGNORE -->
+<!-- 19 · COMMIT vs IGNORE -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -793,7 +875,7 @@ body{
 
   <div class="body">
     <div class="sechead">
-      <span class="num">09</span>
+      <span class="num">11</span>
       <div>
         <div class="title">What to commit vs what to <span class="mono" style="font-size:34px">.gitignore</span></div>
         <div class="lead">Rule of thumb: <b>if a human authored it, commit it. If the gateway (re)generates it, ignore it.</b></div>
@@ -828,7 +910,7 @@ body{
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Open this lab's .gitignore and .gitattributes</span></div>
 </section>
 
-<!-- 18 · DESIGNER SAVES → DIFFS -->
+<!-- 20 · DESIGNER SAVES → DIFFS -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -837,7 +919,7 @@ body{
 
   <div class="body">
     <div class="sechead">
-      <span class="num">10</span>
+      <span class="num">12</span>
       <div>
         <div class="title">A Designer save is a file write, so it's a diff</div>
         <div class="lead">Save a view in the Designer → the gateway writes these JSON files. Change one label → <b>a one-line diff a reviewer reads in ten seconds</b>. That's what makes PR-sized Ignition changes possible.</div>
@@ -876,7 +958,7 @@ body{
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Small saves → small diffs → reviewable PRs</span></div>
 </section>
 
-<!-- 19 · EDIT IN VS CODE + SCAN -->
+<!-- 21 · EDIT IN VS CODE + SCAN -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -885,7 +967,7 @@ body{
 
   <div class="body">
     <div class="sechead">
-      <span class="num">11</span>
+      <span class="num">13</span>
       <div>
         <div class="title">You can also edit straight in VS Code</div>
         <div class="lead">The project is just text on disk, so your editor is a first-class way in. <b>But the gateway won't notice your edits until you tell it to scan.</b></div>
@@ -923,8 +1005,8 @@ $ scripts/scan.sh
         </div>
         <ul class="checks" style="margin-top:18px">
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Two scans, two jobs.</b> A <b>project scan</b> reloads views &amp; scripts; a <b>config scan</b> reloads gateway config. VS Code edits usually need both.</span></li>
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Three API-key gotchas.</b> There is no "scan permission": the key gets a <b>custom security level</b>, and that level must be in <b>Gateway Write Permissions</b>. The header value is the full <span class="mono" style="font-size:12px">name:secret</span> the UI shows — the secret alone is a 401. And keys are <b>HTTPS-only by default</b>: on this lab's plain-http gateway, disable "Require secure connections for API Keys". Step-by-step in <span class="mono" style="font-size:12px">.env.example</span>.</span></li>
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Or install a module.</b> The <b>ignition-project-scan-endpoint</b> module adds one clean endpoint, <span class="mono" style="font-size:12px">POST /data/project-scan-endpoint/scan</span>, that a script (and later, CI) can call to reload the project.<br><span class="mono" style="font-size:12px;color:var(--txt-faint)">github.com/bw-design-group/ignition-project-scan-endpoint</span></span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Three API-key gotchas.</b> There is no "scan permission": the key gets a <b>custom security level</b>, and that level must be in <b>Gateway Write Permissions</b>. The header value is the full <span class="mono" style="font-size:12px">name:secret</span> the UI shows; the secret alone is a 401. And keys are <b>HTTPS-only by default</b>: on this lab's plain-http gateway, disable "Require secure connections for API Keys". Step-by-step in <span class="mono" style="font-size:12px">.env.example</span>.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Or install a module.</b> The <b>ignition-project-scan-endpoint</b> module adds one clean endpoint, <span class="mono" style="font-size:12px">POST /data/project-scan-endpoint/scan</span>, that a script or CI can call to reload the project. Not installed on this lab's gateway: here you use <span class="mono" style="font-size:12px">scripts/scan.sh</span> or a restart.<br><span class="mono" style="font-size:12px;color:var(--txt-faint)">github.com/bw-design-group/ignition-project-scan-endpoint</span></span></li>
         </ul>
       </div>
     </div>
@@ -933,7 +1015,54 @@ $ scripts/scan.sh
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Edit in VS Code → scan → the gateway catches up</span></div>
 </section>
 
-<!-- 20 · IN THE LAB (closing) -->
+<!-- 22 · RUN A SCRIPT FUNCTION LOCALLY -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">Ignition · testing a script change</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">14</span>
+      <div>
+        <div class="title">Run a script function on your laptop before you open the PR</div>
+        <div class="lead"><span class="mono">validate.sh</span> only proves a file parses. To show a fix works, <b>call the function</b> with the inputs that matter, and paste the command plus its output into <b>How to test</b>.</div>
+      </div>
+    </div>
+    <div class="cols2">
+      <div>
+        <ul class="checks">
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>The gateway won't show it.</b> The overview's kiln tile always passes <span class="mono">162.0</span>, so the <span class="mono">None</span> case never reaches the screen.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b><span class="mono">runpy.run_path</span></b> loads <span class="mono">code.py</span> like a module and hands you its functions. Call them with a normal value, zero and <span class="mono">None</span>.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Python 3 is not Jython 2.7</b>, but small pure functions like <span class="mono">format_reading</span> behave the same in both.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>The limit:</b> code that calls another project library (<span class="mono">lab.util.to_float</span>) only runs on the gateway, where <span class="mono">lab</span> exists. Locally it raises <span class="mono">NameError</span>.</span></li>
+        </ul>
+      </div>
+      <div class="code">
+        <pre><span class="cm"># from the lab folder</span>
+python3 -c "import runpy
+p = 'projects/lab-project/ignition/script-python/lab/display/code.py'
+f = runpy.run_path(p)['format_reading']
+for v in (162.0, 0, None): print(f(v, '°C'))"
+
+<span class="cm"># before the fix</span>
+162.0 °C
+0.0 °C
+<span class="del">TypeError: must be real number, not NoneType</span>
+
+<span class="cm"># after the fix</span>
+162.0 °C
+0.0 °C
+<span class="add">-- °C</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>validate.sh says it parses · python3 -c says it works</span></div>
+</section>
+
+<!-- 23 · IN THE LAB (closing) -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -942,13 +1071,13 @@ $ scripts/scan.sh
 
   <div class="body">
     <div class="eyebrow">Your turn</div>
-    <div class="title" style="max-width:26ch;color:#fff">Now you live release week in an Ignition project.</div>
+    <div class="title" style="max-width:26ch;color:#fff">Assignment: run release week in GitHub Flow on the lab project</div>
     <div class="lead" style="color:#c4cfde;max-width:70ch">The assignment runs Chapter 1's release-week scenario in <b style="color:#fff">GitHub Flow</b>, the course's strategy: ship the v2.0 feature, get ambushed by the P1, and thread both through PRs your peers review.</div>
     <ul class="checks" style="max-width:960px;margin-top:22px">
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Argue the fit first.</b> In your room: which of the three strategies fits <b>your</b> team's reality? Out loud, no writing.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Two branches off <span class="mono">main</span>.</b> The v2.0 silo detail view on <span class="mono">feature/*</span>, then mid-work the P1 hits: the null-reading fix in <span class="mono">lab.display</span> on <span class="mono">fix/*</span> — edit in your Designer or in VS Code, scan so the gateway picks it up. Your first real <span class="mono">git push</span>, too.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Two branches off <span class="mono">main</span>.</b> The v2.0 silo detail view on <span class="mono">feature/*</span>, then mid-work the P1 hits: the null-reading fix in <span class="mono">lab.display</span> on <span class="mono">fix/*</span>. Edit in your Designer or in VS Code, scan so the gateway picks it up. Your first real <span class="mono">git push</span>, too.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Two PRs, merged in release order.</b> Small, one concern, filled-in template (<b>What / Why / How to test</b>), a <a href="https://www.conventionalcommits.org/" style="color:#a8bef7">Conventional Commits</a> message like <span class="mono">fix(display): …</span> (that's the commits; the review labels are a different convention). The fix merges first and is tagged <span class="mono">v1.2.1</span>: merging is releasing.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Review a peer's PR, then merge.</b> Feedback with <span class="mono">praise:</span> / <span class="mono">suggestion:</span> / <span class="mono">issue:</span>, and one PR back <b>upstream</b>. Stretch: rerun it all in Git Flow and feel the double-merge.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Review a peer's PR, then merge.</b> Feedback with <span class="mono">praise:</span> / <span class="mono">suggestion:</span> / <span class="mono">issue:</span>, and merge your own PRs once approved. Stretch: rerun it all in Git Flow and feel the double-merge.</span></li>
     </ul>
   </div>
 
@@ -958,7 +1087,7 @@ $ scripts/scan.sh
 </div>
 
 <div class="hud"><div class="bar" id="bar"></div></div>
-<div class="pager" id="pager">01 / 20</div>
+<div class="pager" id="pager">01 / 23</div>
 <div class="hint" id="hint">↑ ↓ slides · ← → step the animation</div>
 
 <script>
