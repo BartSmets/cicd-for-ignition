@@ -80,6 +80,24 @@ git update-index --no-skip-worktree <path>
 # edit, commit, push — re-run scripts/setup.sh to re-apply skip-worktree
 ```
 
+## `services/modules.json` shows up as modified (Apple Silicon)
+
+One `modules.json` is bind-mounted into all three gateways, so whenever a gateway rewrites it
+(for example after you enable or disable a module in *Platform → Modules*) the change lands in
+your working tree. On Apple Silicon (arm64) the Ignition image ships without a few modules the
+committed file lists (`com.inductiveautomation.opcua.drivers.dnp3v2`,
+`com.inductiveautomation.opcua.drivers.iec61850`, `com.inductiveautomation.phone-notification`).
+The gateway logs `The file for module ... is missing and will not be loaded` and, when it rewrites
+the file, drops those entries. That diff is machine noise, not a change you want to commit:
+
+```bash
+git diff services/modules.json          # only the arm64-missing modules removed?
+git checkout -- services/modules.json   # then undo it
+```
+
+Commit `modules.json` only for a module change you made on purpose, and keep the entries other
+machines need.
+
 ## The self-hosted runner is offline / jobs queue forever
 
 - Container up? `docker compose ps github-runner` and `docker logs lab04-runner` (look for

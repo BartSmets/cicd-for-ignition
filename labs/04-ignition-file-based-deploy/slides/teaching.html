@@ -291,7 +291,7 @@ body{
   </div>
   <div class="divider">
     <div class="eyebrow">Part 1</div>
-    <div class="q">What does Ignition actually write to <em>disk</em>?</div>
+    <div class="q">What Ignition writes to <em>disk</em>, sorted into three buckets</div>
     <div class="sub2">Everything the gateway is lives under <span class="mono" style="color:#dbe4f0">data/</span>. If you can classify any file in there, you know how to version it, deploy it, and roll it back. Let's open the box.</div>
   </div>
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>projects → config → operational</span></div>
@@ -316,14 +316,17 @@ body{
       <div class="ftree">
 <span class="dim">/usr/local/bin/ignition/</span><span class="hl">data</span><br>
 ├── <span class="hl">projects/</span><span class="ftag proj">project</span><br>
-│&nbsp;&nbsp;&nbsp;└── <span class="dim">&lt;name&gt;/ (one dir per project)</span><br>
+│&nbsp;&nbsp;&nbsp;├── <span class="dim">&lt;name&gt;/ (one dir per project)</span><br>
+│&nbsp;&nbsp;&nbsp;└── <span class="hl">.resources/</span><span class="ftag ops">operational</span> <span class="dim">(content-addressed blobs)</span><br>
 ├── <span class="hl">config/resources/</span><span class="ftag gw">gateway</span><br>
 │&nbsp;&nbsp;&nbsp;├── <span class="dim">&lt;scope&gt;/&lt;module&gt;/&lt;type&gt;/&lt;name&gt;/</span><br>
-│&nbsp;&nbsp;&nbsp;└── <span class="hl">.resources/</span><span class="ftag ops">operational</span> <span class="dim">(content-addressed blobs)</span><br>
+│&nbsp;&nbsp;&nbsp;└── <span class="hl">.resources/</span><span class="ftag ops">operational</span> <span class="dim">(same blob store, config side)</span><br>
+├── <span class="hl">config/local/</span> · <span class="hl">config/ignition/tags/</span><span class="ftag ops">operational</span> <span class="dim">(box identity, tag values)</span><br>
 ├── <span class="hl">modules.json</span><span class="ftag gw">gateway</span> <span class="dim">(which modules are enabled)</span><br>
-├── <span class="hl">modules/</span><span class="ftag gw">gateway · binaries</span> <span class="dim">(installed .modl files)</span><br>
+├── <span class="hl">modules/</span><span class="ftag ops">operational</span> <span class="dim">(per-module data dirs, not the .modl files)</span><br>
 ├── <span class="hl">db/</span><span class="ftag ops">operational</span> <span class="dim">(config.idb: internal SQLite DB, users included)</span><br>
-└── <span class="hl">jar-cache/</span> · <span class="hl">metricsdb/</span> · <span class="hl">var/</span><span class="ftag ops">operational</span>
+├── <span class="hl">jar-cache/</span> · <span class="hl">metricsdb/</span> · <span class="hl">var/</span><span class="ftag ops">operational</span><br>
+└── <span class="hl">gateway.xml</span> · <span class="hl">ignition.conf</span> · <span class="hl">redundancy.xml</span> · <span class="hl">commissioning.json</span> · <span class="hl">certificates/</span> · <span class="hl">email-profiles/</span><span class="ftag ops">operational</span>
       </div>
       <div>
         <ul class="checks">
@@ -331,7 +334,11 @@ body{
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><span class="ftag gw" style="margin-left:0">gateway</span> cross-project config: DB connections, identity providers, tag providers, module enablement. Shared by everything on the gateway.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><span class="ftag ops" style="margin-left:0">operational</span> runtime state the gateway owns: the internal DB (user store included), caches, generated blobs. <b>Never versioned, never deployed.</b></span></li>
         </ul>
-        <div class="callout" style="margin-top:18px">
+        <div class="callout" style="margin-top:14px">
+          <div class="lab" style="color:var(--blue)">The small files at the top</div>
+          <p><code>gateway.xml</code>: web ports and threads · <code>ignition.conf</code>: memory and JVM args · <code>redundancy.xml</code>: this node's redundancy role · <code>commissioning.json</code>: the "already commissioned" marker · <code>certificates/</code>: TLS and trust · <code>email-profiles/</code>: email feature runtime folder. Set once, owned by <b>this</b> gateway. The <code>.modl</code> binaries are not in <code>data/</code>: the image keeps them in <code>user-lib/modules/</code>, this lab mounts its own at <code>/third-party-modules</code>.</p>
+        </div>
+        <div class="callout" style="margin-top:12px">
           <div class="lab" style="color:var(--blue)">In this lab</div>
           <p>On the <b>local</b> gateway, <code>projects/</code> and <code>config/</code> are <b>bind-mounted from your repo</b>: the file tree on your laptop <i>is</i> the gateway's disk. The operational paths stay hidden in the container's named volume.</p>
         </div>
@@ -383,9 +390,15 @@ local-development/config-mode.json   <span class="cm"># scope descriptor {parent
 
 <span class="cm"># how a gateway picks its mode: a JVM arg at boot (docker-compose.yaml)</span>
 -Dignition.config.mode=<span class="cmd2">local-development</span>   <span class="cm"># test/production gateways boot with test / production</span></pre></div>
+      <div>
       <div class="callout" style="margin-top:6px">
         <div class="lab" style="color:var(--blue)">The mental model: same name, different reality</div>
         <p>In this repo, <b>local-development / test / production each hold exactly one override</b>: the <code>TimescaleDB</code> connection's <code>connectURL</code>. A view queries "TimescaleDB", and <b>which database</b> that hits depends on the boot mode. The real-plant version: a device named <code>PLC-01</code> is a <b>simulator in test</b> and the <b>real PLC in production</b>, same name, so your project never changes. One config set, one gateway backup, every environment.</p>
+      </div>
+      <div class="callout" style="margin-top:12px;border-left:5px solid var(--warn)">
+        <div class="lab" style="color:var(--warn)">Where a UI edit lands</div>
+        <p>In the collection selected in the <b>Deployment Modes</b> bar: <code>local-development</code> on local, an override only local reads. Config every environment shares belongs in <b><code>core</code></b>: switch the bar first, or move the folder on disk.</p>
+      </div>
       </div>
     </div>
   </div>
@@ -416,9 +429,15 @@ local-development/config-mode.json   <span class="cm"># scope descriptor {parent
       <tr><td><code>config/resources/local/</code></td><td>Instance identity (OPC-UA keystores, UUID)</td><td>Belongs to <b>this specific box</b>. Promote it and you clone a gateway's identity onto another.</td></tr>
       <tr><td><code>config/resources/core/ignition/user-source/default/ · identity-provider/default/</code></td><td>The gateway-owned <b>internal</b> identity (what commissioning creates; also <code>user-source/opcua-module/</code>)</td><td><code>users.json</code> in there holds <b>this gateway's admin password hash</b>. Commit and deploy it and you overwrite the target's admin user: instant lockout. Only these named dirs are radioactive: DB/AD user sources, SAML/OIDC providers and <code>security-properties</code> hold no password data and <b>do</b> get committed and deployed.</td></tr>
     </table>
+    <div class="cols2">
+    <div class="callout" style="border-left:5px solid var(--warn)">
+      <div class="lab" style="color:var(--warn)">This lab breaks the rule on purpose</div>
+      <p>This lab deliberately tracks a throwaway seed identity under <code>config/local</code> and <code>resources/local</code> so fresh clones boot; <code>.gitignore</code> stops new churn. In a real repo, never commit them. (Same for its one tracked <code>migration-log-*.md</code>.)</p>
+    </div>
     <div class="callout">
       <div class="lab">Where users actually live</div>
-      <p>Users ride in two radioactive places: the internal store inside <code>db/config.idb</code> (and inside every <b>gwbk</b> backup), and <code>users.json</code> under <code>user-source/default/</code>. Both carry <b>password hashes</b>: put either in git and you've committed credentials, deploy the internal user source and you overwrite the target gateway's admin user. Each gateway owns its own internal identity; the versionable pattern for real user management is a <b>database or AD user source</b> or an <b>external identity provider</b> (OIDC/SAML): those hold no password data, so their config is committed and deployed like any other resource.</p>
+      <p>Users ride in two radioactive places: the internal store inside <code>db/config.idb</code> (and every <b>gwbk</b> backup), and <code>users.json</code> under <code>user-source/default/</code>. Both carry <b>password hashes</b>. For real user management, version a <b>database or AD user source</b> or an <b>OIDC/SAML identity provider</b>: no password data, so they commit and deploy like any other resource.</p>
+    </div>
     </div>
   </div>
 
@@ -436,7 +455,7 @@ local-development/config-mode.json   <span class="cm"># scope descriptor {parent
     <div class="sechead">
       <span class="num">05</span>
       <div>
-        <div class="title">The gateway writes back: taming the churn</div>
+        <div class="title">Undo the manifest churn the gateway writes into your repo</div>
         <div class="lead">On <b>local</b>, your repo <i>is</i> the gateway's disk. That cuts both ways: every UI interaction rewrites manifests <b>inside your working tree</b>, usually touching nothing but a timestamp and a signature. The fix is to <b>undo</b> that noise, not to hide your files from git.</div>
       </div>
     </div>
@@ -478,7 +497,7 @@ scripts/clean-ignition-resource-churn.sh --apply  <span class="cm"># restore fro
     <div class="sechead">
       <span class="num">06</span>
       <div>
-        <div class="title">Scan or restart? The question that shapes your pipeline</div>
+        <div class="title">Which changes a scan applies, and which need a restart</div>
         <div class="lead">The gateway can <b>hot-reload</b> most file changes when you ask it to re-scan. But not all of them, and the ones it can't are exactly where file-based deploys stop.</div>
       </div>
     </div>
@@ -508,7 +527,7 @@ scripts/clean-ignition-resource-churn.sh --apply  <span class="cm"># restore fro
   </div>
   <div class="divider">
     <div class="eyebrow">Part 2</div>
-    <div class="q">If everything is a file… deployment is a <em>copy</em>.</div>
+    <div class="q">A file-based deploy: <em>copy</em> the files, then ask the gateway to scan</div>
     <div class="sub2">No SSH, no gwbk import, no remote desktop into the SCADA server. Files land on disk, one HTTP call tells the gateway to look, and it hot-reloads. Five steps, end to end.</div>
   </div>
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>checkout → prune → ship → scan → verify</span></div>
@@ -540,7 +559,7 @@ scripts/clean-ignition-resource-churn.sh --apply  <span class="cm"># restore fro
       <div class="p5 reveal" data-step="2">
         <span class="n">2</span>
         <h5>Checkout</h5>
-        <p>The self-hosted runner checks out the merged commit. Plain <code>actions/checkout@v4</code>.</p>
+        <p>The self-hosted runner checks out the merged commit. Plain <code>actions/checkout@v7</code>.</p>
       </div>
       <span class="p5arr reveal" data-step="3">→</span>
       <div class="p5 reveal" data-step="3">
@@ -607,19 +626,18 @@ scripts/clean-ignition-resource-churn.sh --apply  <span class="cm"># restore fro
       <span class="num">08</span>
       <div>
         <div class="title"><span class="mono" style="font-size:34px">.deployignore</span>: what <em style="font-style:italic">not</em> to put on a gateway</div>
-        <div class="lead">But what if you <b>don't</b> want to deploy everything that is in git? <span class="inlinecode">.gitignore</span> won't cut it (those files aren't even in the repo), so we build <span class="inlinecode">.deployignore</span>: things that live in git but must <b>never land on a gateway</b>. Think <b>simulation PLCs, tags, and environment-specific config</b>, plus docs and lab tooling.</div>
+        <div class="lead">Not everything in git belongs on a gateway. <span class="inlinecode">.gitignore</span> can't express that: it only decides what enters the repo. So we add <span class="inlinecode">.deployignore</span>, the files that live in git but must <b>never land on a gateway</b>: docs and lab tooling, the box's own identity, local secrets. In a customer repo the list grows with things like simulation devices you keep in git but off the plant.</div>
       </div>
     </div>
     <div class="cols2">
       <div class="code"><pre><span class="cm"># .deployignore (shipped in this repo, abridged)</span>
-README.md
-LICENSE
-.github/
-docs/
-exercises/
-tests/
-third-party-modules/
-db-init/
+/README.md   <span class="cm"># ← leading / = only at the lab root</span>
+/.github/
+/docs/
+/exercises/
+/scripts/
+/tests/      <span class="cm"># ← not projects/…/script-python/tests</span>
+/third-party-modules/
 services/config/local/   <span class="cm"># ← instance-bound scope!</span>
 services/config/resources/local/
 services/config/resources/core/ignition/user-source/default/
@@ -627,14 +645,15 @@ services/config/resources/core/ignition/user-source/default/
 services/config/resources/core/ignition/user-source/opcua-module/
 services/config/resources/core/ignition/identity-provider/default/
                          <span class="cm"># ← only the INTERNAL identity, by name</span>
-.DS_Store
-docker-compose.yaml <span class="cm"># ← unless you want it to run there with your settings</span>
+services/config/resources/core/ignition/api-token/
+.DS_Store    <span class="cm"># ← no slash = matches anywhere</span>
+/docker-compose.yaml
 .env</pre></div>
       <div>
         <ul class="checks">
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Mostly hygiene:</b> a stray <span class="inlinecode">README.md</span> inside <span class="inlinecode">data/projects/</span> is harmless noise, but noise accumulates, and some lab files could shadow real resources.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Mostly hygiene:</b> a stray <span class="inlinecode">README.md</span> on a gateway is harmless noise, but noise accumulates.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Sometimes safety:</b> <span class="inlinecode">.env</span> holds your API keys. <span class="inlinecode">services/config/local/</span> is instance identity. <span class="inlinecode">user-source/default/</span> holds admin password hashes: ship it and you lock everyone out of the target gateway. None of these may ever reach a shared gateway. But note how narrow the exclusion is: DB/AD user sources, SAML/OIDC providers and <span class="inlinecode">security-properties</span> hold no password data and <b>do</b> deploy.</span></li>
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>The lab's prune step handles <b>literal paths</b> and <b>bare-name globs</b>, not full gitignore semantics (no <span class="inlinecode">!</span> negation). Keep patterns simple.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Anchor what lives at the root.</b> A leading <span class="inlinecode">/</span> anchors a pattern to the lab root; bare names match anywhere. <span class="inlinecode">example-project</span> has a script package called <span class="inlinecode">tests</span>: a bare <span class="inlinecode">tests/</span> would prune real code. No <span class="inlinecode">!</span> negation: keep patterns simple.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Tailor it per customer.</b> One customer wants simulation tags shipped, another never; one keeps a device config in the repo but off the plant. A per-project <span class="inlinecode">.deployignore</span> lets each pipeline draw its own line between "in git" and "on the gateway".</span></li>
         </ul>
         <div class="callout" style="margin-top:16px">
@@ -671,7 +690,7 @@ docker exec "$IGNITION_CONTAINER" sh -c '
   find $DATA/config -mindepth 1 -maxdepth 1 \
     ! -name local ! -name resources -exec rm -rf {} +
   find $DATA/config/resources -mindepth 1 -maxdepth 1 \
-    ! -name local ! -name core -exec rm -rf {} +
+    ! -name local ! -name core ! -name .resources -exec rm -rf {} +
   find $DATA/config/resources/core -mindepth 1 -maxdepth 1 \
     ! -name ignition -exec rm -rf {} +
   find $DATA/config/resources/core/ignition -mindepth 1 -maxdepth 1 \
@@ -688,7 +707,7 @@ docker cp ./services/config/. "$IGNITION_CONTAINER:$DATA/config/"</pre></div>
         <ul class="checks">
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Why wipe first?</b> <span class="inlinecode">docker cp</span> has no <span class="inlinecode">--delete</span>. Without the wipe, a view you deleted from the repo <b>keeps living on the gateway</b>, forever.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>Wipe-then-copy gives you <b>"deleted in repo → deleted on gateway"</b>: the same semantics <span class="inlinecode">rsync --delete</span> would give a bind-mount setup.</span></li>
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Wipe repo-owned, spare gateway-owned.</b> Six entries are kept back: <span class="inlinecode">config/local/</span> and <span class="inlinecode">config/resources/local/</span> (UUID, OPC-UA keystores), the internal identity by name: <span class="inlinecode">user-source/default/</span>, <span class="inlinecode">user-source/opcua-module/</span> and <span class="inlinecode">identity-provider/default/</span> (users.json is that gateway's admin password hash; deploying or wiping it locks everyone out), plus <span class="inlinecode">api-token/</span> (the scan key setup.sh generated — it's not in git, so wiping it would revoke the very key the deploy scans with). All six are exactly what <span class="inlinecode">.deployignore</span> prunes, so they're never copied back. Everything else, including <span class="inlinecode">security-properties</span> and any DB/AD/SAML identity resources you added, is committed and copied fresh.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Wipe repo-owned, spare gateway-owned.</b> Six entries are kept back: <span class="inlinecode">config/local/</span> and <span class="inlinecode">config/resources/local/</span> (UUID, OPC-UA keystores), the internal identity by name: <span class="inlinecode">user-source/default/</span>, <span class="inlinecode">user-source/opcua-module/</span> and <span class="inlinecode">identity-provider/default/</span> (users.json is that gateway's admin password hash; deploying or wiping it locks everyone out), plus <span class="inlinecode">api-token/</span> (the scan key setup.sh generated: it's not in git, so wiping it would revoke the very key the deploy scans with). All six are exactly what <span class="inlinecode">.deployignore</span> prunes, so they're never copied back. Also spared: <span class="inlinecode">config/resources/.resources/</span>, the live gateway's blob store; deleting it breaks every login until a scan or restart. Everything else, including <span class="inlinecode">security-properties</span> and any DB/AD/SAML identity resources you added, is committed and copied fresh.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>It is not atomic.</b> A runner killed mid-copy leaves a partial tree. Two mitigations here. Deploys are idempotent, so you <b>re-run and it converges</b>, and the workflows' <span class="inlinecode">concurrency</span> group <b>queues instead of cancelling</b>, so CI never kills its own copy.</span></li>
         </ul>
         <div class="callout" style="margin-top:16px">
@@ -735,19 +754,67 @@ curl -X POST \
 scripts/scan.sh test</pre></div>
       <div>
         <ul class="checks">
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Keys are per-gateway, not per-URL.</b> Generate each in <i>that gateway's</i> UI (Platform → Security → API Keys). The test key will never authenticate against production.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Keys are per-gateway, not per-URL.</b> Normally you create each in <i>that gateway's</i> UI (Platform → Security → API Keys); in this lab <span class="inlinecode">setup.sh</span> generates them into <span class="inlinecode">.env</span>. The test key will never authenticate against production.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Least privilege:</b> 8.3 has no scan-only scope. A key gets a <b>security level</b>, and the scan API needs that level in <b>Gateway Write Permissions</b>, so give the deploy key its own level and nothing more. The deploy runner has no business taking backups or writing tags.</span></li>
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>In CI the key lives as an <b>environment-scoped GitHub secret</b> (<span class="inlinecode">lab04-gateway-test</span> / <span class="inlinecode">lab04-gateway-production</span>): per-target secrets and deploy history for free, exactly like Lab 03 taught.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>In CI the key lives as an <b>environment-scoped GitHub secret</b> (<span class="inlinecode">lab04-gateway-test</span> / <span class="inlinecode">lab04-gateway-production</span>). Lab 03 taught secrets; Environments add per-target scoping and reviewers. Next slide.</span></li>
         </ul>
         <div class="callout" style="margin-top:16px">
           <div class="lab" style="color:var(--blue)">Symptom dictionary</div>
-          <p><i>"The file is right there but my change isn't picked up"</i> → <b>you forgot the scan</b>. <i>"Scan returns 401"</i> → wrong key. <i>"Scan returns 403"</i> → the key is valid but lacks scan permissions. And fittingly: the key is itself a config resource on disk at <code>config/resources/core/ignition/api-token/&lt;name&gt;/config.json</code>, storing only a hash. In this lab <code>setup.sh</code> generates a unique key per gateway into <code>.env</code> and writes the token onto each gateway's disk — nothing key-related is committed (a committed key is a working credential in every clone of the repo), and the deploy's wipe step spares <code>api-token/</code> so the key survives every deploy. One wrinkle the workflows handle for you: a <b>fresh gateway</b> booted before its config mode (<code>test</code> / <code>production</code>) was on its disk, and Ignition picks its deployment mode at boot. So the first deploy restarts it once; every later deploy scans hot.</p>
+          <p><i>"The file is right there but my change isn't picked up"</i> → <b>you forgot the scan</b>. <i>"Scan returns 401"</i> → wrong key. <i>"Scan returns 403"</i> → the key is valid but lacks scan permissions. And fittingly: the key is itself a config resource on disk at <code>config/resources/core/ignition/api-token/&lt;name&gt;/config.json</code>, storing only a hash. In this lab <code>setup.sh</code> generates a unique key per gateway into <code>.env</code> and writes the token onto each gateway's disk. Nothing key-related is committed (a committed key is a working credential in every clone of the repo), and the deploy's wipe step spares <code>api-token/</code> so the key survives every deploy. One wrinkle the workflows handle for you: a <b>fresh gateway</b> booted before its config mode (<code>test</code> / <code>production</code>) was on its disk, and Ignition picks its deployment mode at boot. So the first deploy restarts it once; every later deploy scans hot.</p>
         </div>
       </div>
     </div>
   </div>
 
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>POST /data/api/v1/scan/{projects,config}</span></div>
+</section>
+
+<!-- 15 · GITHUB ENVIRONMENTS + ENVIRONMENT SECRETS -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">File-based deploy · GitHub environments</div>
+  </div>
+
+  <div class="body">
+    <div class="sechead">
+      <span class="num">11</span>
+      <div>
+        <div class="title">Create a GitHub Environment per gateway and give it its own secret</div>
+        <div class="lead">Lab 03 taught <b>repository secrets</b>: every workflow in the repo can read them. An <b>Environment</b> is a named deploy target with its own secrets and protection rules. A job that says <span class="inlinecode">environment: lab04-gateway-test</span> gets that environment's secrets, and nothing else does.</div>
+      </div>
+    </div>
+    <div class="cols2">
+      <div>
+        <ul class="checks">
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Create it:</b> your fork → <i>Settings → Environments → New environment</i> → name <span class="inlinecode">lab04-gateway-test</span> → <i>Configure environment</i>.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Give it a secret:</b> on that page, <i>Environment secrets → Add environment secret</i>: name <span class="inlinecode">IGNITION_API_KEY</span>, value = <span class="inlinecode">IGNITION_API_KEY_TEST</span> from your <span class="inlinecode">.env</span>. Repeat for <span class="inlinecode">lab04-gateway-production</span> with the production key.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Same name, different value.</b> Both workflows read <span class="inlinecode">secrets.IGNITION_API_KEY</span>; the <span class="inlinecode">environment:</span> line decides which value arrives. The test job can never see the production key.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Protection rules come free.</b> <i>Required reviewers</i> on <span class="inlinecode">lab04-gateway-production</span> pause every release until someone approves. Each environment also lists its deployment history.</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="code"><pre><span class="cm"># the workflow side (lab04-deploy.yml)</span>
+jobs:
+  deploy:
+    runs-on: [self-hosted, lab04]
+    environment: <span class="cmd2">lab04-gateway-test</span>
+    env:
+      IGNITION_API_KEY: <span class="cmd2">${{ secrets.IGNITION_API_KEY }}</span>
+
+<span class="cm"># the same two environments from the CLI</span>
+gh api -X PUT repos/&lt;you&gt;/cicd-for-ignition/environments/lab04-gateway-test
+grep '^IGNITION_API_KEY_TEST=' .env | cut -d= -f2- \
+  | gh secret set IGNITION_API_KEY --env lab04-gateway-test</pre></div>
+        <div class="callout" style="margin-top:16px">
+          <div class="lab" style="color:var(--blue)">Repository secret or environment secret?</div>
+          <p>A value every job may use (a registry token for CI) is a repository secret. A credential for <b>one target</b> (this gateway's API key) belongs in that target's environment, next to the rules that guard it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>One environment per gateway · one key per environment</span></div>
 </section>
 
 <!-- 18 · FAILURE MODES -->
@@ -759,9 +826,9 @@ scripts/scan.sh test</pre></div>
 
   <div class="body">
     <div class="sechead">
-      <span class="num">11</span>
+      <span class="num">12</span>
       <div>
-        <div class="title">Where people get it wrong</div>
+        <div class="title">Five ways a file-based deploy goes wrong</div>
         <div class="lead">Five classic failure modes, and you'll trigger at least one on purpose in the You-do, because reading the failure is half the lesson.</div>
       </div>
     </div>
@@ -776,7 +843,7 @@ scripts/scan.sh test</pre></div>
       </div>
       <div class="fail">
         <h5>Wrong API key for the gateway</h5>
-        <p>The <code>docker cp</code> succeeds (it doesn't care about keys), the scan <b>401s</b>: files shipped, gateway never loaded them. Know your recovery: fix the secret, re-run, idempotent.</p>
+        <p>The <code>docker cp</code> succeeds (it doesn't care about keys), the scan <b>401s</b>: new files on disk, but the gateway keeps running the old state until a scan or restart. Know your recovery: fix the secret, re-run, idempotent.</p>
       </div>
       <div class="fail">
         <h5>Scanning when a restart is needed</h5>
@@ -793,7 +860,7 @@ scripts/scan.sh test</pre></div>
     </div>
   </div>
 
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>You'll break one of these on purpose in Part 5</span></div>
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>You'll break one of these on purpose in Part 2.5</span></div>
 </section>
 
 <!-- 19 · TWO WORKFLOWS, ONE PATTERN -->
@@ -805,7 +872,7 @@ scripts/scan.sh test</pre></div>
 
   <div class="body">
     <div class="sechead">
-      <span class="num">12</span>
+      <span class="num">13</span>
       <div>
         <div class="title">Two workflows, one pattern</div>
         <div class="lead"><span class="inlinecode">lab04-deploy.yml</span> and <span class="inlinecode">lab04-release.yml</span> run the <b>same five deploy steps</b>: checkout → prune → ship → scan → verify. Validation already happened on the PR (<span class="inlinecode">lab04-ci.yml</span>), so they go straight to shipping. Diff them and the only differences are <b>the trigger and the target</b>. That's the whole deployment policy.</div>
@@ -814,7 +881,7 @@ scripts/scan.sh test</pre></div>
     <table class="tbl" style="max-width:1080px">
       <tr><th></th><th>lab04-deploy.yml → test</th><th>lab04-release.yml → production</th></tr>
       <tr><td><b>Trigger</b></td><td>Push to <code>main</code>, gated by a <code>paths:</code> filter (<code>projects/**</code>, <code>services/config/**</code>, …). Docs-only pushes don't deploy.</td><td>Tag <code>lab04-v*</code> · manual <code>workflow_dispatch</code> with a <b>tag input</b>: the rollback button.</td></tr>
-      <tr><td><b>Checks out</b></td><td>The merged commit</td><td>The tag: <code>ref: inputs.tag || github.ref</code>, so re-deploying <code>lab04-v0.1.0</code> ships that exact tree again.</td></tr>
+      <tr><td><b>Checks out</b></td><td>The merged commit</td><td>The tag: <code>ref: github.event.inputs.tag || github.ref</code>, so re-deploying <code>lab04-v0.1.0</code> ships that exact tree again.</td></tr>
       <tr><td><b>Environment</b></td><td><code>lab04-gateway-test</code> · secret <code>IGNITION_API_KEY</code></td><td><code>lab04-gateway-production</code>: add <b>required reviewers</b> here for an approval gate, zero workflow changes.</td></tr>
       <tr><td><b>Target defaults</b></td><td><code>http://ignition-test:8088</code> · <code>lab04-ignition-test</code></td><td><code>http://ignition-production:8088</code> · <code>lab04-ignition-production</code></td></tr>
       <tr><td><b>Concurrency</b></td><td colspan="2">One group per gateway, <code>cancel-in-progress: false</code>: new runs <b>queue</b>; an in-flight copy is never killed.</td></tr>
@@ -837,11 +904,11 @@ scripts/scan.sh test</pre></div>
 
   <div class="body">
     <div class="eyebrow">Now we make it real</div>
-    <div class="title" style="max-width:24ch;color:#fff">Next: watch a change ride from your editor to a <em style="font-style:normal;color:var(--peri2)">production</em> gateway.</div>
+    <div class="title" style="max-width:24ch;color:#fff">Next: ship a change from your editor to the <em style="font-style:normal;color:var(--peri2)">production</em> gateway</div>
     <ul class="checks" style="max-width:940px;margin-top:22px">
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>We-do (part 1).</b> Live tour of <span class="mono" style="color:#dbe4f0">data/</span> from inside the container, plus the marker trick: touch a marker, click in the UI, <span class="mono" style="color:#dbe4f0">find -newer</span> the file it wrote.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>We-do (part 2).</b> A view created on disk by hand, scanned into the local gateway, then shipped to test with the exact <span class="mono" style="color:#dbe4f0">docker cp</span> commands the workflow automates.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You-do (breakout rooms).</b> Part 1: classify real UI changes into buckets. Part 2: wire your fork's runner, merge a PR into <span class="mono" style="color:#dbe4f0">main</span> → <b>test</b>, tag <span class="mono" style="color:#dbe4f0">lab04-v0.1.0</span> → <b>production</b>. Then break a deploy on purpose.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>We-do (part 1).</b> Live tour of <span class="mono" style="color:#dbe4f0">data/</span> from inside the container, the marker trick (touch a marker, click in the UI, <span class="mono" style="color:#dbe4f0">find -newer</span> the file it wrote), then "everything is a file": connections, devices, tags, deployment modes.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>We-do (part 2).</b> Edit the shipped <span class="mono" style="color:#dbe4f0">overview</span> view, scan it into the local gateway, then ship it to test with the exact <span class="mono" style="color:#dbe4f0">docker cp</span> commands the workflow automates.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You-do (breakout rooms).</b> Part 1: classify real UI changes into buckets. Part 2.1 to 2.5: wire your fork's runner, merge a PR into <span class="mono" style="color:#dbe4f0">main</span> → <b>test</b>, tag <span class="mono" style="color:#dbe4f0">lab04-v0.1.0</span> → <b>production</b>. Then break a deploy on purpose.</span></li>
     </ul>
     <p class="lead" style="font-size:13.5px;color:#8fa0b6;margin-top:22px">Day 3 teaser: everything a scan <i>can't</i> apply (modules, the gateway baseline) gets baked into images. Lab 05.</p>
   </div>
@@ -852,7 +919,7 @@ scripts/scan.sh test</pre></div>
 </div>
 
 <div class="hud"><div class="bar" id="bar"></div></div>
-<div class="pager" id="pager">01 / 17</div>
+<div class="pager" id="pager">01 / 18</div>
 <div class="hint" id="hint">↑ ↓ slides · ← → step the animation</div>
 
 <script>
@@ -986,7 +1053,7 @@ function bindControls(slideEl,ctrl){
   const lead=slides[10].querySelector('#promo-step');
   const steps=[
     {on:[repo,local,fBind],t:'<b>local</b> is your scratchpad: it bind-mounts <b>projects/</b> and <b>services/config/</b> straight from the repo. Edit a file, hit scan, see it at :8088, no CI involved.'},
-    {on:[runner],t:'The <b>bundled runner</b> registers against <i>your fork</i> and polls GitHub for jobs. It shares the host\'s Docker socket, which is how it reaches inside the other containers. Lab convenience, not a production pattern.'},
+    {on:[runner],t:'The <b>bundled runner</b> registers against <i>your fork</i> and polls GitHub for jobs. It shares the host\'s Docker socket, which is how it reaches inside the other containers. Lab convenience, not a production pattern. Your fork is public, so Lab 03\'s rule applies: before it goes online, set <b>Require approval for all external contributors</b> for fork PR workflows.'},
     {on:[test,fPushD,fShipD],t:'Merge a feature PR into <b>main</b> → <b>lab04-deploy.yml</b> runs on the runner → wipe + docker cp + scan → the change is live on <b>test</b> (:8089). Many small merges a day.'},
     {on:[production,fTag,fShipP],t:'Merging to <b>main</b> ships <i>test</i>, not production. Push a tag <b>lab04-vX.Y.Z</b> on main → <b>lab04-release.yml</b> ships that exact commit to <b>production</b> (:8090). Production always runs a named, re-deployable version.'},
     {on:[],t:'The pipelines hold the routing: <b>lab04-deploy.yml → test</b> · <b>lab04-release.yml → production</b> · <b>local outside the flow entirely</b>. Your merge or tag just triggers them, and no human picks a target by hand.'}

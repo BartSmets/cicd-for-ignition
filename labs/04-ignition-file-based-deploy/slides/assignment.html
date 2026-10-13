@@ -159,7 +159,7 @@ body{
 <div class="deck" id="deck">
 
 <!-- 1 · COVER -->
-<!-- Day 2 · afternoon per instructor brief. You-do slots per the exercise files: Part 1 30 min, Part 2 40 min. -->
+<!-- Day 2 · afternoon per instructor brief. Slots per exercises/lab.md: Part 1 ~65 min (solo ~25), Part 2 ~55 min (solo ~40 + optional 2.5). -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img logo-lg" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -167,7 +167,7 @@ body{
   </div>
   <div class="cover">
     <div class="eyebrow">The assignment · breakout rooms</div>
-    <div class="big">Let's <em>deploy Ignition</em> now!</div>
+    <div class="big">Map the gateway's files, then <em>deploy them</em> with GitHub Actions</div>
     <div class="sub">Two parts. In the first part you become the person who can point at any file in an Ignition gateway's <span class="mono" style="color:#dbe4f0">data/</span> directory and say what it is, who owns it, and whether it belongs in git. In the second part you wire that knowledge into GitHub Actions: a push to <span class="mono" style="color:#dbe4f0">main</span> lands on the test gateway, a tag on <span class="mono" style="color:#dbe4f0">main</span> lands on production. Hot scan, no restarts.</div>
     <div class="for">
       <span>Floating to help</span>
@@ -191,11 +191,12 @@ body{
     <ul class="checks" style="max-width:940px">
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Share your screen</b> in your breakout room. This is a "look over your shoulder" class, so we'll drop in where it's useful.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Run <span class="inlinecode">scripts/setup.sh</span> first</b> (it's idempotent). It brings up three gateways + TimescaleDB + the runner and waits until everything is RUNNING (cold start takes a few minutes).</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Trial mode is fine.</b> Each gateway runs a 2-hour trial. Reset it when necessary</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Trial mode is fine.</b> Each gateway runs a 2-hour trial. Reset it when necessary (<i>Platform → Licensing → Reset Trial</i>).</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b><span class="inlinecode">exercises/lab.md</span> is the source of truth.</b> These slides summarize it; when they differ, follow the exercise file.</span></li>
     </ul>
     <div class="goal good-g">
       <span class="badge">Ask early</span>
-      <p>Stuck for more than a couple of minutes? <b>Say so in the room.</b> Also: <span class="inlinecode">docs/TROUBLESHOOTING.md</span> covers the common stack / runner / deploy failures.</p>
+      <p>Stuck for more than a couple of minutes? <b>Say so in the room.</b> Also: <span class="inlinecode">docs/TROUBLESHOOTING.md</span> covers the common stack / runner / deploy failures, including a port that is already taken.</p>
     </div>
   </div>
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 1 → Part 2, in order</span></div>
@@ -208,12 +209,12 @@ body{
     <div class="stage">The assignment · the plan</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num">THE PLAN</span><div><div class="title">Four stops, in order</div></div></div>
+    <div class="sechead"><span class="num">THE PLAN</span><div><div class="title">The plan: four blocks, in order</div></div></div>
     <div class="pmap">
       <div class="pcard">
         <div class="pn">PART 1 · WE DO</div>
-        <h4>Find the file</h4>
-        <p>Read the shipped database connection and its per-mode overrides, then make a UI change and let <span class="inlinecode">git status</span> show where the gateway wrote it.</p>
+        <h4>Tour, find the file, everything is a file</h4>
+        <p>List <span class="inlinecode">data/</span>, catch a UI change with the <span class="inlinecode">/tmp/marker</span> + <span class="inlinecode">find -newer</span> trick, then read connections, devices, tags and deployment modes as files.</p>
         <div class="gate">exercises/lab.md · We do</div>
       </div>
       <div class="pcard p1">
@@ -225,14 +226,14 @@ body{
       <div class="pcard p2">
         <div class="pn">PART 2 · WE DO</div>
         <h4>Deploy by hand</h4>
-        <p>Edit a view → scan local → <span class="inlinecode">docker cp</span> to test → scan test. The workflow, done manually once.</p>
+        <p>Edit the shipped overview view → scan local → <span class="inlinecode">docker cp</span> to test → scan test. The workflow, done manually once.</p>
         <div class="gate">exercises/lab.md · We do</div>
       </div>
       <div class="pcard p3">
         <div class="pn">PART 2 · YOU DO</div>
         <h4>Wire it into Actions</h4>
         <p>Runner online → environments + secrets → push to <span class="inlinecode">main</span> ships test → tag ships production → break one on purpose.</p>
-        <div class="gate">Parts 1 → 5</div>
+        <div class="gate">Parts 2.1 → 2.5 · gate → definition of done ✅</div>
       </div>
     </div>
     <div class="goal">
@@ -250,18 +251,18 @@ body{
     <div class="stage">Before you start · setup</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num warm">SETUP</span><div><div class="title">First: your course fork, Actions on, this lab's folder</div><div class="lead">Part 2's deploy pipeline runs in <b>your own fork's</b> GitHub Actions, driving a self-hosted runner on your machine. So everyone forks — and because forks ship with <b>workflows disabled</b>, you enable them by hand before anything can trigger.</div></div></div>
+    <div class="sechead"><span class="num warm">SETUP</span><div><div class="title">First: your course fork, Actions on, this lab's folder</div><div class="lead">Part 2's deploy pipeline runs in <b>your own fork's</b> GitHub Actions, driving a self-hosted runner on your machine. So everyone forks, and because forks ship with <b>workflows disabled</b>, you enable them by hand before anything can trigger.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix t">1</div><div class="tx">Go to your course clone <span class="inlinecode">~/mustry-academy/cicd-for-ignition/</span> — every lab is a folder under <span class="inlinecode">labs/</span>; this one is <span class="inlinecode">labs/04-ignition-file-based-deploy</span>. <b>On WSL2, clone into your Linux home</b> (<span class="inlinecode">~/…</span>), never <span class="inlinecode">/mnt/c/…</span>: the gateways' bind mounts are far slower and line endings get messy across the Windows boundary.</div></div>
-        <div class="step"><div class="ix t">2</div><div class="tx"><b>Fork &amp; clone — once for the whole course.</b> Already did it for an earlier lab? Skip this. Otherwise <span class="inlinecode">gh repo fork … --clone</span> forks the course repo to <i>your</i> account and clones your fork in one go. Prefer the website? Press <b>Fork</b> on github.com, then <span class="inlinecode">git clone</span> your fork.</div></div>
-        <div class="step"><div class="ix t">3</div><div class="tx"><b>Enable Actions.</b> Open your fork's <b>Actions</b> tab and click "<i>I understand my workflows, go ahead and enable them</i>" (once per fork; the root <span class="inlinecode">course-setup.sh</span> may already have done it). Skip this and no PR or tag will ever deploy. This is also where <span class="inlinecode">RUNNER_REPO_URL</span> in <span class="inlinecode">.env</span> must point — at <b>your fork</b>, not the course repo.</div></div>
-        <div class="step"><div class="ix t">4</div><div class="tx"><b>Create a runner PAT</b> — the bundled runner needs it to register. At <span class="inlinecode">github.com/settings/tokens</span>: <b>Generate new token (classic)</b> → tick the <span class="inlinecode">repo</span> scope → <b>Generate</b> → copy the <span class="inlinecode">ghp_…</span> value. You make this <b>once</b>; Labs 05 and 06 reuse the same token, so keep it handy.</div></div>
-        <div class="step"><div class="ix t">5</div><div class="tx"><b>Copy the env file</b> with <span class="inlinecode">[ -f .env ] || cp .env.example .env</span> (the root <span class="inlinecode">course-setup.sh</span> may already have created it) and check <b>two lines</b>: point <span class="inlinecode">RUNNER_REPO_URL</span> at <b>your fork</b>, and paste your token into <span class="inlinecode">RUNNER_GITHUB_PAT</span>. Leave everything else as shipped: the admin logins stay as-is, and the three <span class="inlinecode">IGNITION_API_KEY_*</span> lines stay <b>empty</b> — <span class="inlinecode">setup.sh</span> generates a unique key per gateway into <span class="inlinecode">.env</span> in the next step. No key ever lives in the repo.</div></div>
-        <div class="step"><div class="ix t">6</div><div class="tx"><b>Check the remotes and set the default:</b> <span class="inlinecode">git remote -v</span> — <span class="inlinecode">origin</span> must show <b>your username</b> — then <span class="inlinecode">gh repo set-default <span class="cmd2">&lt;you&gt;</span>/cicd-for-ignition</span> so <span class="inlinecode">gh</span> targets <b>your fork</b>, not the course repo (once per clone; already done if you set it in an earlier lab). Then <span class="inlinecode">code .</span> to open VS Code, and <span class="inlinecode">scripts/setup.sh</span> brings up the stack (three gateways + TimescaleDB + the runner).</div></div>
+        <div class="step"><div class="ix t">1</div><div class="tx">Go to your course clone <span class="inlinecode">~/mustry-academy/cicd-for-ignition/</span>: every lab is a folder under <span class="inlinecode">labs/</span>; this one is <span class="inlinecode">labs/04-ignition-file-based-deploy</span>. <b>On WSL2, clone into your Linux home</b> (<span class="inlinecode">~/…</span>), never <span class="inlinecode">/mnt/c/…</span>: the gateways' bind mounts are far slower and line endings get messy across the Windows boundary.</div></div>
+        <div class="step"><div class="ix t">2</div><div class="tx"><b>Fork &amp; clone, once for the whole course.</b> Already did it for an earlier lab? Skip this. Otherwise <span class="inlinecode">gh repo fork … --clone</span> forks the course repo to <i>your</i> account and clones your fork in one go. Prefer the website? Press <b>Fork</b> on github.com, then <span class="inlinecode">git clone</span> your fork.</div></div>
+        <div class="step"><div class="ix t">3</div><div class="tx"><b>Enable Actions.</b> Open your fork's <b>Actions</b> tab and click "<i>I understand my workflows, go ahead and enable them</i>" (once per fork; the root <span class="inlinecode">course-setup.sh</span> may already have done it). Skip this and nothing ever deploys. Then <i>Settings → Actions → General</i> → <b>Approval for running fork pull request workflows from contributors</b> → <b>Require approval for all external contributors</b> → Save: your fork is public and the runner holds the Docker socket, so no stranger's PR may start a job without your click (Lab 03's rule).</div></div>
+        <div class="step"><div class="ix t">4</div><div class="tx"><b>Create a runner PAT</b>: the bundled runner needs it to register. At <span class="inlinecode">github.com/settings/tokens</span>: <b>Generate new token (classic)</b> → tick the <span class="inlinecode">repo</span> scope → <b>Generate</b> → copy the <span class="inlinecode">ghp_…</span> value. You make this <b>once</b>; Lab 06 reuses the same token, so keep it handy.</div></div>
+        <div class="step"><div class="ix t">5</div><div class="tx"><b>Copy the env file</b> with <span class="inlinecode">[ -f .env ] || cp .env.example .env</span> (the root <span class="inlinecode">course-setup.sh</span> may already have created it) and check <b>two lines</b>: point <span class="inlinecode">RUNNER_REPO_URL</span> at <b>your fork</b> (not the course repo), and paste your token into <span class="inlinecode">RUNNER_GITHUB_PAT</span>. Leave everything else as shipped: the admin logins stay as-is, and the three <span class="inlinecode">IGNITION_API_KEY_*</span> lines stay <b>empty</b>: <span class="inlinecode">setup.sh</span> generates a unique key per gateway into <span class="inlinecode">.env</span> in the next step. No key ever lives in the repo.</div></div>
+        <div class="step"><div class="ix t">6</div><div class="tx"><b>Check the remotes and set the default:</b> <span class="inlinecode">git remote -v</span> (<span class="inlinecode">origin</span> must show <b>your username</b>), then <span class="inlinecode">gh repo set-default <span class="cmd2">&lt;you&gt;</span>/cicd-for-ignition</span> so <span class="inlinecode">gh</span> targets <b>your fork</b>, not the course repo (once per clone; already done if you set it in an earlier lab). Then <span class="inlinecode">code .</span> to open VS Code, and <span class="inlinecode">scripts/setup.sh</span> brings up the stack (three gateways + TimescaleDB + the runner).</div></div>
       </div>
       <div>
-        <div class="code"><pre><span class="cm"># 1–2: once per course: fork to your account + clone your fork</span>
+        <div class="code"><pre><span class="cm"># 1-2: once per course: fork to your account + clone your fork</span>
 mkdir -p ~/mustry-academy &amp;&amp; cd ~/mustry-academy
 gh repo fork Mustry-Academy/cicd-for-ignition --clone
 <span class="cm">#    …or press "Fork" on github.com, then clone YOUR fork:</span>
@@ -271,6 +272,8 @@ gh repo fork Mustry-Academy/cicd-for-ignition --clone
 cd ~/mustry-academy/cicd-for-ignition/labs/04-ignition-file-based-deploy
 
 <span class="cm"># 3: your fork's Actions tab → enable workflows (once)</span>
+<span class="cm">#    Settings → Actions → General → fork PR workflows:</span>
+<span class="cm">#    "Require approval for all external contributors"</span>
 
 <span class="cm"># 4: make a repo-scope PAT (github.com/settings/tokens)</span>
 <span class="cm">#    Generate new token (classic) → tick "repo" → copy ghp_…</span>
@@ -290,7 +293,7 @@ scripts/setup.sh          <span class="cm"># three gateways + TimescaleDB + runn
       </div>
     </div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Setup · fork &amp; clone → enable Actions → .env → setup.sh</span></div>
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Setup · fork &amp; clone → enable Actions + fork PR approval → .env → setup.sh</span></div>
 </section>
 
 <!-- 5 · PART 1 · WE DO -->
@@ -300,27 +303,32 @@ scripts/setup.sh          <span class="cm"># three gateways + TimescaleDB + runn
     <div class="stage">File structure · we do → you do</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num warm">PART 1 · WE DO</span><div><div class="title">Gateway config is just files — read one, then watch changes land</div><div class="lead">The database connection already ships as a file in the repo. Read it to learn the path shape, then make a change of your own in the UI and let <span class="inlinecode">git status</span> / <span class="inlinecode">git diff</span> show you exactly where the gateway put it — because <b>local</b> bind-mounts <span class="inlinecode">./services/config/</span> onto the host.</div></div></div>
+    <div class="sechead"><span class="num warm">PART 1 · WE DO</span><div><div class="title">Tour data/, catch a UI change on disk, read config as files</div><div class="lead">Three guided blocks from <span class="inlinecode">exercises/lab.md</span>, then three changes solo. <b>local</b> bind-mounts <span class="inlinecode">./services/config/</span>, so whatever the gateway writes there also shows up in <span class="inlinecode">git status</span>.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix t">1</div><div class="tx"><b>Open the shipped connection</b> at <span class="inlinecode">services/config/resources/core/ignition/database-connection/TimescaleDB/config.json</span>. No UI needed — it's already a file. Read the path shape (<span class="inlinecode">resources/&lt;scope&gt;/&lt;module&gt;/&lt;type&gt;/&lt;name&gt;/config.json</span>) and the contents: JDBC URL, pool sizes, encrypted password. See it <b>both ways</b>: the same connection shows in the <b>local</b> gateway's UI (<span class="inlinecode">:8088</span> → <b>Connections → Databases → Connections</b>) and in these config files — one is the view, the other is the source of truth.</div></div>
-        <div class="step"><div class="ix t">2</div><div class="tx"><b>See deployment modes.</b> <span class="inlinecode">diff</span> the <span class="inlinecode">local-development</span> vs <span class="inlinecode">production</span> copies of the same connection: exactly one line differs (<span class="inlinecode">ignition_local_development</span> vs <span class="inlinecode">ignition_production</span>). Same name, one per-mode override — that's how test and production diverge under one config set.</div></div>
-        <div class="step"><div class="ix t">3</div><div class="tx"><b>Now make your own change</b> in the UI — e.g. <b>Connections → Devices → Connections</b>, create fake device connection. Run <span class="inlinecode">git status</span>: it shows up right here under <span class="inlinecode">config/</span>. <span class="inlinecode">git diff</span> shows exactly what the gateway rewrote. Then <b>go solo</b>: make <b>three</b> changes this way (e.g. new user, new project, a new tag provider, tag changes... or invent your own). For each, note: <b>what you changed · where it lives on disk (relative to <span class="inlinecode">data/</span>) · which bucket · would you commit it, one sentence why</b>.</div></div>
-        <div class="step"><div class="ix t">4</div><div class="tx"><b>Answer out loud:</b> gateway-level or project-level? Would you commit it? Which scope did it land in, and why does that matter for test vs production?</div></div>
+        <div class="step"><div class="ix t">1</div><div class="tx"><b>Tour.</b> <span class="inlinecode">ls -la</span> the gateway's <span class="inlinecode">data/</span> from inside the container and put every top-level entry in a bucket: project, gateway or operational.</div></div>
+        <div class="step"><div class="ix t">2</div><div class="tx"><b>Find the file.</b> Touch <span class="inlinecode">/tmp/marker</span>, change the <i>Welcome Screen Notes</i> in <b>Platform → Gateway Settings</b>, then <span class="inlinecode">find -newer</span> the file it wrote. Note the scope in its path.</div></div>
+        <div class="step"><div class="ix t">3</div><div class="tx"><b>Again with a DB connection.</b> Re-touch the marker, create a Postgres connection named <span class="inlinecode">Scratch</span> (Connect URL <span class="inlinecode">jdbc:postgresql://timescaledb:5432/ignition_local_development</span>, user <span class="inlinecode">ignition</span>, Password → <b>Embedded</b>, <span class="inlinecode">ignition</span>), <span class="inlinecode">find -newer</span>, then <span class="inlinecode">git status</span>. Which deployment-mode collection did it land in, and why does that matter for test vs production?</div></div>
+        <div class="step"><div class="ix t">4</div><div class="tx"><b>Everything is a file.</b> Open the shipped <span class="inlinecode">TimescaleDB</span> connection, the <span class="inlinecode">Simulator</span> device and the <span class="inlinecode">example-tags</span> tag definitions, <span class="inlinecode">diff</span> the <span class="inlinecode">local-development</span> vs <span class="inlinecode">production</span> connection, and find where Perspective keeps its styles.</div></div>
+        <div class="step"><div class="ix t">5</div><div class="tx"><b>Go solo:</b> make <b>three</b> changes from the list in <span class="inlinecode">lab.md</span> (a view, a device, a user, a tag provider, a module). For each note: <b>what you changed · where it lives on disk (relative to <span class="inlinecode">data/</span>) · which bucket · would you commit it, one sentence why</b>. Marker trick every time.</div></div>
       </div>
       <div>
-        <div class="code"><pre><span class="cm"># 1: the DB connection already ships as a file — read it</span>
-cat services/config/resources/core/ignition/database-connection/TimescaleDB/config.json
+        <div class="code"><pre><span class="cm"># 1: the tour</span>
+docker exec -it lab04-ignition-local bash -lc \
+  "ls -la /usr/local/bin/ignition/data"
 
-<span class="cm"># 2: deployment modes — same connection, per-mode override</span>
-diff services/config/resources/{local-development,production}/ignition/database-connection/TimescaleDB/config.json
+<span class="cm"># 2-3: set a marker, click in the UI, find what changed</span>
+docker exec lab04-ignition-local touch /tmp/marker
+<span class="cm">#    ... make the change in the gateway UI ...</span>
+docker exec lab04-ignition-local find \
+  /usr/local/bin/ignition/data/config -newer /tmp/marker -type f
+git status                 <span class="cm"># the same files, in your repo</span>
 
-<span class="cm"># 3: make a UI config change, then watch it land in the repo</span>
-git status                 <span class="cm"># new / edited files, right here</span>
-git diff services/config</pre></div>
+<span class="cm"># 4: deployment modes, one per-mode override</span>
+diff services/config/resources/{local-development,production}/ignition/database-connection/TimescaleDB/config.json</pre></div>
         <div class="goal warn-g" style="margin-top:18px">
           <span class="badge">Heads-up</span>
-          <p>Expect a <b>longer path than 8.1 habits suggest</b>: scope first, then module namespace. And not everything on the host shows in git: a <b>new user</b> is written to <span class="inlinecode">services/config/…/user-source/default/users.json</span>, but <span class="inlinecode">.gitignore</span> hides it because it holds <b>password hashes</b>. Caches and runtime state stay in the container's volume.</p>
+          <p>A UI edit lands in the collection selected in the <b>Deployment Modes</b> bar: <span class="inlinecode">local-development</span> on local. Shared config belongs in <span class="inlinecode">core</span>. And not everything on the host shows in git: a <b>new user</b> is written to <span class="inlinecode">…/user-source/default/users.json</span>, which <span class="inlinecode">.gitignore</span> hides because it holds <b>password hashes</b>.</p>
         </div>
       </div>
     </div>
@@ -338,17 +346,17 @@ git diff services/config</pre></div>
     <div class="sechead"><span class="num warm">PART 2 · WE DO</span><div><div class="title">The deploy, by hand, once</div><div class="lead">Everything <span class="inlinecode">lab04-deploy.yml</span> automates, done manually so the workflow holds no mysteries.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix t">1</div><div class="tx"><b>Edit a view that already exists</b>: the shipped <span class="inlinecode">overview</span> view's <span class="inlinecode">view.json</span> in <span class="inlinecode">example-project</span> (e.g. <span class="inlinecode">height: 920 → 700</span>). Local bind-mounts <span class="inlinecode">./projects/</span>, so editing the file in your working tree <b>is</b> editing the local gateway's disk.</div></div>
-        <div class="step"><div class="ix t">2</div><div class="tx">Run scan.sh, verify at <span class="inlinecode">localhost:8088 (or Designer)</span>. The scan makes the gateway <i>notice</i> what's on disk.</div></div>
-        <div class="step"><div class="ix t">3</div><div class="tx"><b>Ship to test by hand</b>: <span class="inlinecode">docker cp</span> the project, scan. Test starts <b>empty</b>, so nothing to wipe. Verify at <span class="inlinecode">localhost:8089 (or Designer)</span>: same view, same height. Bonus check from the host: <span class="inlinecode">ls gateways/test/projects</span> shows what just landed.</div></div>
+        <div class="step"><div class="ix t">1</div><div class="tx"><b>Edit a view that already exists</b>: in the shipped <span class="inlinecode">overview</span> view's <span class="inlinecode">view.json</span> in <span class="inlinecode">example-project</span>, change the label text <span class="inlinecode">"Run Control"</span> to <span class="inlinecode">"Run Control v2"</span>. Local bind-mounts <span class="inlinecode">./projects/</span>, so editing the file in your working tree <b>is</b> editing the local gateway's disk.</div></div>
+        <div class="step"><div class="ix t">2</div><div class="tx">Run <span class="inlinecode">scripts/scan.sh</span>, then open <span class="inlinecode">localhost:8088/data/perspective/client/example-project</span>: the top-left card reads <b>RUN CONTROL V2</b>. The scan makes the gateway <i>notice</i> what's on disk.</div></div>
+        <div class="step"><div class="ix t">3</div><div class="tx"><b>Ship to test by hand</b>: <span class="inlinecode">docker cp</span> the project, scan. Test starts <b>empty</b>, so nothing to wipe. Verify at <span class="inlinecode">localhost:8089/data/perspective/client/example-project</span>: same view, same title. Every value shows a red <b>null</b>: test has no tags or connections yet, because you only copied the project. The first real deploy ships the config too. Bonus check from the host: <span class="inlinecode">ls gateways/test/projects</span> shows what just landed.</div></div>
         <div class="step"><div class="ix t">4</div><div class="tx">Open <span class="inlinecode">.deployignore</span>. For each pattern, say <b>why the gateway shouldn't have that file</b>. Notice the leading <span class="inlinecode">/</span>: it anchors a pattern to the lab root, as in <span class="inlinecode">.gitignore</span>. Without it, <span class="inlinecode">tests/</span> would also prune <span class="inlinecode">example-project</span>'s script package called <span class="inlinecode">tests</span>.</div></div>
       </div>
       <div>
-        <div class="code"><pre><span class="cm"># 1: edit the shipped view — the bind mount means your</span>
+        <div class="code"><pre><span class="cm"># 1: edit the shipped view; the bind mount means your</span>
 <span class="cm">#   working-tree edit is already on local's disk</span>
 <span class="cm">#   projects/example-project/com.inductiveautomation</span>
 <span class="cm">#     .perspective/views/pages/overview/view.json</span>
-<span class="cm">#   props.defaultSize.height: 920 → e.g. 700</span>
+<span class="cm">#   "text": "Run Control" → "Run Control v2"</span>
 
 <span class="cm"># 2 (local): just scan, then verify at :8088</span>
 scripts/scan.sh
@@ -371,19 +379,19 @@ scripts/scan.sh test</pre></div>
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">File-based deploy · you do · parts 1-2</div>
+    <div class="stage">File-based deploy · you do · parts 2.1-2.2</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num p" style="background:var(--peri)">PARTS 1-2</span><div><div class="title">Runner online + GitHub environments &amp; secrets</div><div class="lead">15 min. The plumbing between your fork and your gateways. Steps 1, 3 and 4 happen <b>on github.com, in your fork's Settings</b>; the API key values come from your <span class="inlinecode">.env</span> (setup.sh generated them).</div></div></div>
+    <div class="sechead"><span class="num p" style="background:var(--peri)">PARTS 2.1-2.2</span><div><div class="title">Runner online + GitHub environments &amp; secrets</div><div class="lead">15 min. The plumbing between your fork and your gateways. Steps 1, 3 and 4 happen <b>on github.com, in your fork's Settings</b>; the API key values come from your <span class="inlinecode">.env</span> (setup.sh generated them).</div></div></div>
     <div class="cols2">
       <div class="steps">
         <div class="step"><div class="ix p">1</div><div class="tx"><b>Verify the runner</b> (it's part of the compose stack). Then check your fork: <i>Settings → Actions → Runners</i> must show it <b>online</b> with labels <span class="inlinecode">self-hosted, lab04</span>.</div></div>
         <div class="step"><div class="ix p">2</div><div class="tx">Not there? Three checks: <span class="inlinecode">RUNNER_REPO_URL</span> points at <b>your fork</b> · <span class="inlinecode">RUNNER_GITHUB_PAT</span> is a real <span class="inlinecode">repo</span>-scope PAT, not the placeholder (a bad one shows a <b>401</b> in <span class="inlinecode">docker compose logs github-runner</span>) · <span class="inlinecode">docker compose up -d --force-recreate github-runner</span>.</div></div>
-        <div class="step"><div class="ix p">3</div><div class="tx"><b>Create environment</b> <span class="inlinecode">lab04-gateway-test</span> <b>in your fork on GitHub</b> (<i>Settings → Environments → New environment</i>) with secret <span class="inlinecode">IGNITION_API_KEY</span> = the <span class="inlinecode">IGNITION_API_KEY_TEST</span> value from your <span class="inlinecode">.env</span> — the <b>test gateway's</b> own key (:8089).</div></div>
-        <div class="step"><div class="ix p">4</div><div class="tx">Repeat on GitHub: environment <span class="inlinecode">lab04-gateway-production</span> with <span class="inlinecode">IGNITION_API_KEY_PRODUCTION</span> from <span class="inlinecode">.env</span> — the <b>production gateway's</b> key (:8090). Other GitHub environment parameters (<span class="inlinecode">IGNITION_URL</span> / <span class="inlinecode">IGNITION_CONTAINER</span>) can be left as is.</div></div>
+        <div class="step"><div class="ix p">3</div><div class="tx"><b>Create environment</b> <span class="inlinecode">lab04-gateway-test</span> <b>in your fork on GitHub</b> (<i>Settings → Environments → New environment</i>) with secret <span class="inlinecode">IGNITION_API_KEY</span> = the <span class="inlinecode">IGNITION_API_KEY_TEST</span> value from your <span class="inlinecode">.env</span>: the <b>test gateway's</b> own key (:8089).</div></div>
+        <div class="step"><div class="ix p">4</div><div class="tx">Repeat on GitHub: environment <span class="inlinecode">lab04-gateway-production</span> with <span class="inlinecode">IGNITION_API_KEY_PRODUCTION</span> from <span class="inlinecode">.env</span>: the <b>production gateway's</b> key (:8090). Other GitHub environment parameters (<span class="inlinecode">IGNITION_URL</span> / <span class="inlinecode">IGNITION_CONTAINER</span>) can be left as is.</div></div>
       </div>
       <div>
-        <div class="code"><pre><span class="cm"># part 1: is the runner alive?</span>
+        <div class="code"><pre><span class="cm"># part 2.1: is the runner alive?</span>
 docker compose ps github-runner
 docker compose logs --tail 50 github-runner
 <span class="cm"># look for "Listening for Jobs"</span></pre></div>
@@ -394,25 +402,25 @@ docker compose logs --tail 50 github-runner
       </div>
     </div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Parts 1-2 of 5</span></div>
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Parts 2.1-2.2 of 2.5</span></div>
 </section>
 
 <!-- 8 · PART 2 · YOU DO · PART 3 -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">File-based deploy · you do · part 3</div>
+    <div class="stage">File-based deploy · you do · part 2.3</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num p" style="background:var(--peri)">PART 3</span><div><div class="title">Ship to the test environment via the <span class="mono" style="font-size:30px">main</span> branch</div><div class="lead">15 min. A real PR rides the pipeline: feature branch → PR → CI → merge → lab04-deploy.yml → test gateway.</div></div></div>
+    <div class="sechead"><span class="num p" style="background:var(--peri)">PART 2.3</span><div><div class="title">Ship to the test environment via the <span class="mono" style="font-size:30px">main</span> branch</div><div class="lead">15 min. A real PR rides the pipeline: feature branch → PR → CI → merge → lab04-deploy.yml → test gateway.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix p">1</div><div class="tx"><b>Create a new project named <span class="inlinecode">sample-project</span></b> on the local gateway, the way you always do in Ignition (Designer → New Project, or Platform → Projects). The bind mount drops it into your working tree — <span class="inlinecode">git status</span> shows an untracked <span class="inlinecode">projects/sample-project/</span>. That folder <b>is</b> your deployable.</div></div>
-        <div class="step"><div class="ix p">2</div><div class="tx"><b>Create one simple view</b> in that project in the Designer (any name, e.g. a label with your name on it) and <b>save</b>. That gives you something visible to recognize on the test gateway after the deploy.</div></div>
-        <div class="step"><div class="ix p">3</div><div class="tx">Branch <span class="inlinecode">feature/add-sample-project</span> off <span class="inlinecode">main</span>, <span class="inlinecode">git add projects/</span> and commit — this also picks up the we-do's height tweak, so the repo matches your local gateway — then push.</div></div>
-        <div class="step"><div class="ix p">4</div><div class="tx">Open a PR <b>into <span class="inlinecode">main</span> on GitHub</b>. Watch <span class="inlinecode">lab04-ci.yml</span> run on <span class="inlinecode">ubuntu-latest</span> (free): yamllint, actionlint, shellcheck, ign-lint, <span class="inlinecode">docker compose config</span>, JSON validity, <span class="inlinecode">.deployignore</span> syntax, and the security-properties identity check.</div></div>
+        <div class="step"><div class="ix p">1</div><div class="tx"><b>Create a new project named <span class="inlinecode">sample-project</span></b> on the local gateway, the way you always do in Ignition (Designer → New Project, or Platform → Projects). The bind mount drops it into your working tree: <span class="inlinecode">git status</span> shows an untracked <span class="inlinecode">projects/sample-project/</span>. That folder <b>is</b> your deployable.</div></div>
+        <div class="step"><div class="ix p">2</div><div class="tx"><b>Create one simple view</b> in that project in the Designer (any name, e.g. a label with your name on it). Tick <b>Page URL</b> (<span class="inlinecode">/</span>) in the <i>New View</i> dialog so a browser can open it. <b>Save</b>. That gives you something visible to recognize on the test gateway after the deploy.</div></div>
+        <div class="step"><div class="ix p">3</div><div class="tx">Branch <span class="inlinecode">feature/add-sample-project</span> off <span class="inlinecode">main</span>, <span class="inlinecode">git add projects/</span> and commit (this also picks up the we-do's <i>Run Control v2</i> edit, so the repo matches your local gateway), then push.</div></div>
+        <div class="step"><div class="ix p">4</div><div class="tx">Open a PR <b>into <span class="inlinecode">main</span> on GitHub</b>, base repository <span class="inlinecode">&lt;you&gt;/cicd-for-ignition</span> (your fork, not the course repo). Watch <span class="inlinecode">lab04-ci.yml</span> run on <span class="inlinecode">ubuntu-latest</span> (free): yamllint, actionlint, shellcheck, ign-lint, <span class="inlinecode">docker compose config</span>, JSON validity, <span class="inlinecode">.deployignore</span> syntax, and the security-properties identity check.</div></div>
         <div class="step"><div class="ix p">5</div><div class="tx"><b>Merge.</b> <span class="inlinecode">lab04-deploy.yml</span> fires (note the <span class="inlinecode">paths:</span> filter, since docs-only pushes don't deploy). Validation already happened on the PR, so it goes straight to shipping. Watch the <b>Ship</b> and <b>Trigger gateway scan</b> steps. The <b>first</b> deploy to a fresh gateway restarts it once (Ignition picks its deployment mode at boot); every later deploy scans hot.</div></div>
-        <div class="step"><div class="ix p">6</div><div class="tx"><b>Verify at localhost:8089 (or Designer).</b> Platform → Projects lists <span class="inlinecode">sample-project</span>. From the host, <span class="inlinecode">ls gateways/test/projects</span> shows the tree CI shipped — <span class="inlinecode">example-project</span>, <span class="inlinecode">packaging-site</span> <b>and</b> yours: the unit of deploy is the whole <span class="inlinecode">projects/</span> tree.</div></div>
+        <div class="step"><div class="ix p">6</div><div class="tx"><b>Verify at localhost:8089.</b> Platform → Projects lists <span class="inlinecode">sample-project</span>; its view opens at <span class="inlinecode">…/data/perspective/client/sample-project</span>, and <i>RUN CONTROL V2</i> now shows live values. From the host, <span class="inlinecode">ls gateways/test/projects</span> shows the tree CI shipped: <span class="inlinecode">example-project</span>, <span class="inlinecode">packaging-site</span> <b>and</b> yours: the unit of deploy is the whole <span class="inlinecode">projects/</span> tree.</div></div>
       </div>
       <div>
         <div class="code"><pre><span class="cm"># 1-2: create project + view in Ignition, then look at the repo</span>
@@ -435,17 +443,17 @@ ls gateways/test/projects</pre></div>
       <p>Two classic causes: the change didn't touch a deploy path (the <span class="inlinecode">paths:</span> filter skipped it), or Actions isn't enabled on your fork.</p>
     </div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 3 of 5</span></div>
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 2.3 of 2.5</span></div>
 </section>
 
 <!-- 9 · PART 2 · YOU DO · PART 4 -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">File-based deploy · you do · part 4</div>
+    <div class="stage">File-based deploy · you do · part 2.4</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num p" style="background:var(--peri)">PART 4</span><div><div class="title">Release to production: <span class="mono" style="font-size:30px">main</span> + a tag</div><div class="lead">10 min. The GitHub Flow release: tag the commit on <span class="inlinecode">main</span> you want in production. <b>The tag, not the merge, is what ships production.</b></div></div></div>
+    <div class="sechead"><span class="num p" style="background:var(--peri)">PART 2.4</span><div><div class="title">Release to production: <span class="mono" style="font-size:30px">main</span> + a tag</div><div class="lead">10 min. The GitHub Flow release: tag the commit on <span class="inlinecode">main</span> you want in production. <b>The tag, not the merge, is what ships production.</b></div></div></div>
     <div class="cols2">
       <div class="steps">
         <div class="step"><div class="ix p">1</div><div class="tx">The change is already on <span class="inlinecode">main</span> from the test deploy, now tag it.</div></div>
@@ -466,20 +474,20 @@ git push origin lab04-v0.1.0        <span class="cm"># ← lab04-release.yml fir
       </div>
     </div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 4 of 5</span></div>
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 2.4 of 2.5</span></div>
 </section>
 
 <!-- 10 · PART 2 · YOU DO · PART 5 -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">File-based deploy · you do · part 5</div>
+    <div class="stage">File-based deploy · you do · part 2.5</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num p" style="background:var(--peri)">PART 5</span><div><div class="title">Break a deploy on purpose</div><div class="lead">~5 min, optional but strongly encouraged, because reading the failure is half the lesson. Pick one.</div></div></div>
+    <div class="sechead"><span class="num p" style="background:var(--peri)">PART 2.5</span><div><div class="title">Break a deploy on purpose</div><div class="lead">~5 min, optional but strongly encouraged, because reading the failure is half the lesson. Pick one.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix p">A</div><div class="tx"><b>Wrong API key.</b> Set garbage in <span class="inlinecode">lab04-gateway-test</span>'s secret, re-run the deploy. The <b>Ship step succeeds</b> (docker cp doesn't care about keys), then the scan step gets a <b>401</b> and fails fast, naming the secret to check. Files are in the container, but the gateway never loaded them. <i>What's your recovery story?</i></div></div>
+        <div class="step"><div class="ix p">A</div><div class="tx"><b>Wrong API key.</b> Set garbage in <span class="inlinecode">lab04-gateway-test</span>'s secret, re-run the deploy. The <b>Ship step succeeds</b> (docker cp doesn't care about keys), then the scan step gets a <b>401</b> and fails fast, naming the secret to check. The new files are on the gateway's disk, but no scan told it to load them: it keeps running the old state and you can still log in. <i>What's your recovery story?</i></div></div>
         <div class="step"><div class="ix p">B</div><div class="tx"><b>Stopped container.</b> <span class="inlinecode">docker compose stop ignition-test</span>, then trigger a deploy. The <b>verify step fails fast</b>: "container is in state 'exited', expected 'running'", before any file moved. Much better than failing halfway.</div></div>
         <div class="step"><div class="ix p">C</div><div class="tx">Then <b>fix it and re-run</b> the workflow (manual <span class="inlinecode">workflow_dispatch</span> works too). The steps are idempotent, so the deploy converges.</div></div>
       </div>
@@ -495,10 +503,46 @@ docker compose up -d ignition-test  <span class="cm"># recovery</span></pre></di
       </div>
     </div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 5 of 5 → definition of done</span></div>
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 2.5 of 2.5 → definition of done</span></div>
 </section>
 
-<!-- 11 · STRETCH · GITIGNORE DRAFT -->
+<!-- 11 · DEFINITION OF DONE -->
+<section class="slide">
+  <div class="topbar">
+    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
+    <div class="stage">The assignment · definition of done</div>
+  </div>
+  <div class="body">
+    <div class="sechead"><span class="num warm">DONE?</span><div><div class="title">Definition of done for Part 1 and Part 2</div><div class="lead">The same checklists as <span class="inlinecode">exercises/lab.md</span>. Tick every box without peeking before you call the lab finished or start a stretch.</div></div></div>
+    <div class="cols2">
+      <div>
+        <div class="goal" style="margin-bottom:12px"><span class="badge">Part 1 · file structure</span><p>You can, without peeking:</p></div>
+        <ul class="checks">
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>List the top-level <span class="inlinecode">data/</span> entries and say which <b>bucket</b> each is (project / gateway / operational).</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>Make a UI change and <b>find the file it wrote</b> with the <span class="inlinecode">/tmp/marker</span> + <span class="inlinecode">find -newer</span> trick.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>State the 8.3 path shape for a view (<span class="inlinecode">projects/&lt;x&gt;/com.inductiveautomation.perspective/views/…</span> + <span class="inlinecode">resource.json</span>) and a config resource (<span class="inlinecode">config/resources/&lt;scope&gt;/&lt;module&gt;/&lt;type&gt;/&lt;name&gt;/config.json</span>).</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>Point at the file for a database connection, a device connection and a tag definition, and explain why "it's all in git" follows.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>Explain <b>deployment modes</b> in one sentence and name what differs between the <span class="inlinecode">local-development</span> and <span class="inlinecode">production</span> <span class="inlinecode">TimescaleDB</span> connection.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>Explain why <span class="inlinecode">db/</span> and <span class="inlinecode">.resources/</span> must <b>not</b> be committed.</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="goal" style="margin-bottom:12px"><span class="badge">Part 2 · the deploy</span><p>Your fork and gateways show:</p></div>
+        <ul class="checks">
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>The bundled runner shows <b>online</b> in your fork (<span class="inlinecode">self-hosted, lab04</span>).</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>Both GitHub environments (<span class="inlinecode">lab04-gateway-test</span>, <span class="inlinecode">lab04-gateway-production</span>) exist, each with an <span class="inlinecode">IGNITION_API_KEY</span> secret.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>A push to <b><span class="inlinecode">main</span></b> (merged PR) triggered <span class="inlinecode">lab04-deploy.yml</span> and <b>your project</b> is on <b>test</b> (:8089).</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>A <span class="inlinecode">lab04-v*</span> tag on <span class="inlinecode">main</span> triggered <span class="inlinecode">lab04-release.yml</span> and that project is on <b>production</b> (:8090).</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>You broke <b>one</b> deploy on purpose and can describe the failure mode and recovery.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>You can name the routing (push to <span class="inlinecode">main</span> → test, tag on <span class="inlinecode">main</span> → production) and the five steps between "merge" and "gateway reloaded".</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Definition of done → optional stretch → wrap-up</span></div>
+</section>
+
+<!-- 12 · STRETCH · GITIGNORE DRAFT -->
 <section class="slide">
   <div class="topbar">
     <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
@@ -510,7 +554,7 @@ docker compose up -d ignition-test  <span class="cm"># recovery</span></pre></di
       <div class="steps">
         <div class="step"><div class="ix t">1</div><div class="tx">From memory, draft a starter <span class="inlinecode">.gitignore</span> for an Ignition project repo. Cover the <b>operational bucket</b>: the internal DB, tag value stores, caches, blob stores.</div></div>
         <div class="step"><div class="ix t">2</div><div class="tx">Compare with the shipped <span class="inlinecode">.gitignore</span> in this repo. <b>What did you miss? What did the shipped one miss?</b></div></div>
-        <div class="step"><div class="ix t">3</div><div class="tx">Commonly forgotten: <span class="inlinecode">config/resources/local/</span> (instance identity), <span class="inlinecode">*.gwbk</span> (backups), <span class="inlinecode">*.modl</span> (module binaries), <span class="inlinecode">tags/*.idb</span> (tag value stores inside the versioned config tree).</div></div>
+        <div class="step"><div class="ix t">3</div><div class="tx">Commonly forgotten: <span class="inlinecode">config/resources/local/</span> and <span class="inlinecode">config/local/</span> (instance identity), <span class="inlinecode">*.gwbk</span> (backups), <span class="inlinecode">*.modl</span> (module binaries), <span class="inlinecode">tags/*.idb</span> (tag value stores inside the versioned config tree), <span class="inlinecode">migration-log-*.md</span>. This lab deliberately tracks a throwaway seed identity under <span class="inlinecode">config/local</span> and <span class="inlinecode">resources/local</span> so fresh clones boot; <span class="inlinecode">.gitignore</span> stops new churn. In a real repo, never commit them.</div></div>
       </div>
       <div>
         <div class="code"><pre><span class="cm"># a reasonable answer looks something like:</span>
@@ -519,9 +563,13 @@ data/jar-cache/
 data/metricsdb/
 data/var/
 data/config/resources/.resources/
+data/projects/.resources/
 data/config/ignition/tags/*.idb
 data/config/resources/local/
-data/modules/*.modl
+data/config/local/
+data/modules/
+**/migration-log-*.md
+*.modl
 *.gwbk
 .env</pre></div>
       </div>
@@ -534,7 +582,7 @@ data/modules/*.modl
   <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Stretch · optional · then on to the deploy part</span></div>
 </section>
 
-<!-- 12 · DONE -->
+<!-- 13 · DONE -->
 <section class="slide dark">
   <div class="topbar">
     <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
@@ -546,7 +594,7 @@ data/modules/*.modl
     <ul class="checks" style="max-width:960px;margin-top:22px">
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>Your runner is <b>online</b> · both environments hold an <b>API key</b> · a push to <span class="mono" style="color:#dbe4f0">main</span> deployed <b>test</b> · a <span class="mono" style="color:#dbe4f0">lab04-v*</span> tag deployed <b>production</b> · you broke one deploy and can explain its recovery.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>You can say, in five steps, what happens between "merge" and "gateway reloaded", and name the routing: <b>push to main → test, tag on main → production, local outside the flow</b>.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>Bring to the debrief: your Part 5 failure story, your rollback answer (revert on <span class="mono" style="color:#dbe4f0">main</span> vs re-deploy a tag), and <b>where a runner would sit at your customer's site</b>.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>Bring to the debrief: your Part 2.5 failure story, your rollback answer (revert on <span class="mono" style="color:#dbe4f0">main</span> vs re-deploy a tag), and <b>where a runner would sit at your customer's site</b>.</span></li>
     </ul>
     <div class="goal" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.14);border-left-color:var(--peri2)">
       <span class="badge" style="background:var(--peri2);color:var(--navy)">Day 3</span>
@@ -559,7 +607,7 @@ data/modules/*.modl
 </div>
 
 <div class="hud"><div class="bar" id="bar"></div></div>
-<div class="pager" id="pager">01 / 12</div>
+<div class="pager" id="pager">01 / 13</div>
 <div class="hint" id="hint">↑ ↓ / scroll to navigate</div>
 
 <script>

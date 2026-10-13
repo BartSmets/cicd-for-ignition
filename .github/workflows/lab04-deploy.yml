@@ -136,7 +136,7 @@ jobs:
         #     token, generated per clone by setup.sh and never committed (a
         #     committed token would be a working credential in every fork).
         #     Wiping it would revoke the very key this workflow scans with.
-        #   config/resources/.resources/ — the running gateway's content-addressed
+        #   config/resources/.resources/: the running gateway's content-addressed
         #     blob store (gitignored, so never in the payload). Deleting it under
         #     a live gateway breaks every login (NoSuchFileException on a blob)
         #     until a successful config scan or a restart rebuilds it.

@@ -63,21 +63,21 @@ docker exec -it lab04-ignition-local bash -lc "ls -la /usr/local/bin/ignition/da
 
 In order:
 
-1. **`projects/<name>/`** — project-level state. One directory per project. Inside: `project.json` + module-namespaced resource folders, e.g. `com.inductiveautomation.perspective/views/pages/<Page>/{view.json, resource.json}` and `ignition/`. *This is the thing you'll deploy via file-based CI/CD.* (`projects/.resources/` next to them is generated, see 8.)
-2. **`config/resources/<scope>/`** — gateway-level config, organized scope-first (`core`, `local-development`/`test`/`production`, `local`) then by module: `core/ignition/database-connection/<name>/`, `identity-provider/<name>/`, `tag-provider/<name>/`. Shared across all projects.
-3. **`config/`** root — next to `resources/`: `config/local/` (this box's Gateway Network keystore and UUID) and the runtime tag value store `config/ignition/tags/valueStore.idb`. Small, mostly operational.
-4. **`modules.json`** — which modules the gateway has enabled. Gateway-level. (Repo source: `services/modules.json`.)
-5. **`modules/`** — per-module **data** folders the modules write at runtime (here `modules/flint/`). Operational. The module *binaries* (`.modl`) are not in `data/` at all: the built-in ones ship in the image at `/usr/local/bin/ignition/user-lib/modules/`, and this lab's third-party ones are mounted at `/third-party-modules`.
-6. **`db/`** — the internal SQLite DB (`config.idb`), which includes the internal user store (password hashes, lockout state). **Operational state.** Never commit.
-7. **`jar-cache/`, `metricsdb/`, `var/`** — runtime / generated stuff. Never commit. (Gateway logs live outside `data/`, at the install root.)
-8. **`.resources/`** — Ignition's content-addressed blob store. Not at the top of `data/`: one sits in `config/resources/.resources/` and one in `projects/.resources/`, inside the trees you version. Generated, so gitignored and never deployed.
-9. **The small files at the top** — set once, then owned by this gateway, so operational:
-   - **`gateway.xml`** — web server settings: HTTP/HTTPS ports, Gateway Network port, thread pools.
-   - **`ignition.conf`** — the Java wrapper config: memory, JVM arguments. In this lab the compose `command:` sets those (`-m 1024`, `-Dignition.config.mode=…`).
-   - **`certificates/`** — this gateway's TLS and trusted certificates.
-   - **`commissioning.json`** — the "already commissioned" marker (EULA, first-boot choices). Delete it and the gateway runs commissioning again.
-   - **`redundancy.xml`** — the redundancy role (independent / master / backup) of this node.
-   - **`email-profiles/`** — a runtime folder of the email notification feature (empty here).
+1. **`projects/<name>/`**: project-level state. One directory per project. Inside: `project.json` + module-namespaced resource folders, e.g. `com.inductiveautomation.perspective/views/pages/<Page>/{view.json, resource.json}` and `ignition/`. *This is the thing you'll deploy via file-based CI/CD.* (`projects/.resources/` next to them is generated, see 8.)
+2. **`config/resources/<scope>/`**: gateway-level config, organized scope-first (`core`, `local-development`/`test`/`production`, `local`) then by module: `core/ignition/database-connection/<name>/`, `identity-provider/<name>/`, `tag-provider/<name>/`. Shared across all projects.
+3. **`config/`** root, next to `resources/`: `config/local/` (this box's Gateway Network keystore and UUID) and the runtime tag value store `config/ignition/tags/valueStore.idb`. Small, mostly operational.
+4. **`modules.json`**: which modules the gateway has enabled. Gateway-level. (Repo source: `services/modules.json`.)
+5. **`modules/`**: per-module **data** folders the modules write at runtime (here `modules/flint/`). Operational. The module *binaries* (`.modl`) are not in `data/` at all: the built-in ones ship in the image at `/usr/local/bin/ignition/user-lib/modules/`, and this lab's third-party ones are mounted at `/third-party-modules`.
+6. **`db/`**: the internal SQLite DB (`config.idb`), which includes the internal user store (password hashes, lockout state). **Operational state.** Never commit.
+7. **`jar-cache/`, `metricsdb/`, `var/`**: runtime / generated stuff. Never commit. (Gateway logs live outside `data/`, at the install root.)
+8. **`.resources/`**: Ignition's content-addressed blob store. Not at the top of `data/`: one sits in `config/resources/.resources/` and one in `projects/.resources/`, inside the trees you version. Generated, so gitignored and never deployed.
+9. **The small files at the top**: set once, then owned by this gateway, so operational:
+   - **`gateway.xml`**: web server settings: HTTP/HTTPS ports, Gateway Network port, thread pools.
+   - **`ignition.conf`**: the Java wrapper config: memory, JVM arguments. In this lab the compose `command:` sets those (`-m 1024`, `-Dignition.config.mode=…`).
+   - **`certificates/`**: this gateway's TLS and trusted certificates.
+   - **`commissioning.json`**: the "already commissioned" marker (EULA, first-boot choices). Delete it and the gateway runs commissioning again.
+   - **`redundancy.xml`**: the redundancy role (independent / master / backup) of this node.
+   - **`email-profiles/`**: a runtime folder of the email notification feature (empty here).
    - Plus dotfiles and backups the gateway or the container image writes for itself (`.gateway.xml.bak`, `init.properties.bak`, `.container-init.conf`, …). Ignore them.
 
 The three-bucket model:

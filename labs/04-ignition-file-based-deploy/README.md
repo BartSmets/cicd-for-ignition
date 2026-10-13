@@ -13,6 +13,7 @@ This is the **first lab that opens up the Ignition gateway itself**. Labs 02–0
 
 - Your fork of the course repo, `<you>/cicd-for-ignition`, with Actions enabled (the self-hosted runner registers against your fork, not the upstream)
 - A GitHub Personal Access Token with `repo` scope — the bundled runner uses it to auto-register against your fork. Create it at [github.com/settings/tokens](https://github.com/settings/tokens) (Generate new token → classic → tick `repo`) and put it in `.env` as `RUNNER_GITHUB_PAT` (the root `course-setup.sh` asks for it once and writes it there for you). You make it once here; **Lab 06 reuses the same token** (Lab 05 has no runner). It never leaves `.env`.
+- On your fork, *Settings → Actions → General → Approval for running fork pull request workflows from contributors* set to **Require approval for all external contributors**. Your fork is public and the bundled runner holds the Docker socket, so no outside PR may start a job on it without your approval (see [`exercises/lab.md`](./exercises/lab.md), Pre-flight).
 - The [GitHub CLI](https://cli.github.com/) (`gh`), authenticated (`gh auth status`) — used to fork and clone the course repo
 - **≥ 8 GB free RAM for Docker** — three Ignition gateways each cap at 1 GB, plus TimescaleDB, the runner, and the usual Docker Desktop overhead
 - _Optional but recommended:_ pass the [preflight](../../preflight/) checks so unrelated env issues don't bite you mid-lab
