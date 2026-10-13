@@ -251,7 +251,7 @@ jobs:
         #     and identity-provider/default/ — the gateway-owned INTERNAL
         #     identity; users.json holds THIS gateway's admin password hash.
         #     Wiping or overwriting it locks everyone out.
-        #   config/resources/.resources/ — the running gateway's own blob
+        #   config/resources/.resources/: the running gateway's own blob
         #     store (it is gitignored, so nothing in the payload replaces it).
         #     Wiping it breaks logins until the next successful scan or
         #     restart, and a scan that then fails leaves the UI locked.
