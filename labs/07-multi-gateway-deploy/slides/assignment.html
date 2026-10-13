@@ -505,7 +505,7 @@ docker logs oatmakers-test-runner-<span class="cmd2">&lt;yourname&gt;</span> 2>&
     <div class="sechead"><span class="num warm">0B</span><div><div class="title">Copy the workflow template under your name, merge it, and watch it deploy main to localhost:8090</div><div class="lead">The deploy workflow is already written. You copy it, put your name in it, and PR it in like anything else. Your own merge is the first push it deploys.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix t">4</div><div class="tx"><b>Make the provided workflow yours:</b> copy <code>test-example.yml.template</code> to <code>test-&lt;yourname&gt;.yml</code> and replace <code>example</code> with your name everywhere it is marked <code>CHANGEME</code>. The line that matters most is <code>runs-on</code>.</div></div>
+        <div class="step"><div class="ix t">4</div><div class="tx"><b>Make the provided workflow yours:</b> copy <code>test-example.yml.template</code> to <code>test-&lt;yourname&gt;.yml</code> and replace <code>CHANGEME</code> with your name in the one line marked <code>CHANGEME</code>: <code>runs-on</code>.</div></div>
         <div class="step"><div class="ix t">5</div><div class="tx"><b>PR it in:</b> branch, <code>git add</code> that one file, push, open the PR, wait for <code>CI OK</code>, ask for an approval, merge.</div></div>
         <div class="step"><div class="ix t">6</div><div class="tx"><b>Verify it works.</b> Your merge is a push to <code>main</code>, so it starts your workflow: Actions → <code>test-&lt;yourname&gt;</code> runs on <b>your</b> runner and goes green, and <code>localhost:8090/data/perspective/client/oatmakers/</code> serves the shared project. From now on every merge anyone makes runs it.</div></div>
       </div>
@@ -513,7 +513,7 @@ docker logs oatmakers-test-runner-<span class="cmd2">&lt;yourname&gt;</span> 2>&
         <div class="code" style="margin-top:0"><pre>git switch -c feature/&lt;yourname&gt;-test-workflow
 cp .github/workflows/test-example.yml.template \
    .github/workflows/test-<span class="cmd2">&lt;yourname&gt;</span>.yml
-<span class="cm"># every CHANGEME: example → &lt;yourname&gt;, above all:</span>
+<span class="cm"># the one CHANGEME line: CHANGEME → &lt;yourname&gt;</span>
 runs-on: [self-hosted, <span class="cmd2">&lt;yourname&gt;-local</span>]
 
 git add .github/workflows/test-&lt;yourname&gt;.yml

@@ -313,8 +313,8 @@ cp .github/workflows/test-example.yml.template \
    .github/workflows/test-<yourname>.yml
 ```
 
-In the new file, replace `example` with your name everywhere it is marked
-`CHANGEME`. The line that matters most is the runner label:
+In the new file, replace `CHANGEME` with your name in the one line marked
+`CHANGEME`, the runner label:
 
 ```yaml
 runs-on: [self-hosted, <yourname>-local]
@@ -634,6 +634,10 @@ tag, one release PR at a time.
 - **The runner log says the token is invalid or expired.** Ask for a fresh
   token in the chat, put it in `.env` as `RUNNER_TOKEN`, and re-run
   `./scripts/setup.sh`.
+- **`setup.sh` says a port is already in use.** Something else holds
+  8088, 8090 or 5432 (often the lab 06 stack). Stop it, or move this lab:
+  set `GATEWAY_PORT`, `TEST_GATEWAY_PORT` or `POSTGRES_PORT` in `.env` and
+  re-run `./scripts/setup.sh`. The URLs in this lab then use your ports.
 - **Perspective pages are blank, the Designer disconnects, a deploy that
   worked an hour ago fails.** The trial lapsed: `scripts/reset-trial.sh`.
 - **`git status` shows files you never touched** (`services/modules.json`
