@@ -4,7 +4,8 @@
 #
 # GitHub Flow has one long-lived branch, so we validate PRs into it:
 #   main  ← feature/* branches merge here via PR. A push to main then ships to
-#           the test gateway (lab06-deploy.yml); a manual lab06-deploy.yml run with target=production ships to production.
+#           the test gateway (lab06-deploy.yml); production: a lab06-v* tag
+#           (lab06-release.yml).
 #
 # Purpose: catch the cheap stuff before a deploy gets near it. We DON'T spin
 # up Ignition here; that's left to the deploy workflow on its self-hosted
@@ -44,10 +45,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -72,7 +73,12 @@ jobs:
           shellcheck -x scripts/*.sh
 
       - name: ignition-lint (Perspective views)
-        run: ign-lint --config rule_config.json --files "projects/**/view.json"
+        # From the repo root, like the pre-commit hook: rule_config.json
+        # names its pylint config with a repo-root-relative path.
+        working-directory: .
+        run: >-
+          ign-lint --config labs/06-secrets-db-and-modules/rule_config.json
+          --files "labs/06-secrets-db-and-modules/projects/**/view.json"
 
       - name: docker compose config
         run: docker compose config -q
@@ -81,7 +87,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: JSON validity sweep
         # Walks every *.json under projects/ and services/ and confirms it
@@ -143,7 +149,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: No real secret files committed
         # Only *.example files and the README are allowed under secrets/.
