@@ -12,6 +12,11 @@ This is the course repo. Everything you work on during the four days lives here:
 
 Work in **WSL2 (Windows), Linux or macOS**. On Windows, keep the clone in your Linux home (`~/…`), never on `/mnt/c/…`: the Docker labs break there.
 
+Have these ready before you start:
+
+- The [GitHub CLI](https://cli.github.com/), logged in with the `workflow` scope: `gh auth login -s workflow`.
+- A GitHub **classic Personal Access Token with the `repo` scope** ([github.com/settings/tokens](https://github.com/settings/tokens) → *Generate new token (classic)*). The course setup asks for it once; the self-hosted runners of Labs 04 and 06 use it to register on your fork.
+
 1. **Fork and clone** the course repo:
    ```bash
    mkdir -p ~/mustry-academy && cd ~/mustry-academy
@@ -22,7 +27,7 @@ Work in **WSL2 (Windows), Linux or macOS**. On Windows, keep the clone in your L
    ```bash
    ./course-setup.sh
    ```
-   It runs the [preflight](./preflight/) checks (tools, Docker, course images), sets up this clone's git hooks, checks that `origin` is your fork, switches on Actions for it (forks start with workflows off), and prepares the `.env` files for Labs 04 and 06 (it asks once for the GitHub token their runner needs). Safe to re-run until everything is green.
+   It runs the [preflight](./preflight/) checks (tools, Docker, course images), sets up this clone's git hooks, checks that `origin` is your fork, sets `gh`'s default repo to your fork, switches on Actions for it (forks start with workflows off), and prepares the `.env` files for Labs 04 and 06 (it asks once for the GitHub token their runner needs). Safe to re-run until everything is green.
 3. **Paste `preflight/preflight-report.txt`** in the Discord `#preflight-help` channel so the TA can confirm you're ready.
 
 ## Labs
@@ -45,6 +50,7 @@ Each day runs **09:00–17:15 CET**. Start every lab from its README.
 
 - **Open the lab folder, not the repo root,** in VS Code (`cd labs/04-… && code .`). The Flint extension and the lab scripts expect the lab folder as the workspace.
 - **One lab stack at a time.** The Docker labs share the same ports (8088–8090, 5432) and container names. Before you start a lab, stop the previous one: `docker compose down` in that lab's folder.
+- **Port taken by something else on your machine?** Move it in that lab's `.env`: `GATEWAY_PORT` (local gateway, default 8088), `TEST_GATEWAY_PORT`, `PRODUCTION_GATEWAY_PORT` and `POSTGRES_PORT` (default 5432). See [preflight/troubleshooting.md](./preflight/troubleshooting.md#ports-already-in-use).
 - **Workflows live at the root.** GitHub only runs workflows from `.github/workflows/` at the top of the repo, so each lab's workflows sit there as `labNN-*.yml`, filtered to their own folder. A change in Lab 04 never triggers Lab 06's pipeline.
 - **Tags carry the lab number.** Release tags are `labNN-vX.Y.Z` (e.g. `lab04-v1.0.0`), so a tag releases only its own lab.
 
@@ -67,6 +73,6 @@ Code: [Apache 2.0](./labs/01-git-fundamentals/LICENSE), see each lab's `LICENSE`
 
 ## Contact
 
-- Lead instructor: Jasper Mustry (jasper@mustrysolutions.com)
+- Lead instructor: Jasper Louage (jasper@mustrysolutions.com)
 - General enquiries: academy@mustrysolutions.com
 - Discord: cohort link in your welcome email
