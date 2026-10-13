@@ -281,7 +281,8 @@ one reviewer: the collaborator invites from Part 2 decide who reviews whom.
      yourself: `gh pr checkout <number> --repo <author>/cicd-for-ignition --detach`
      puts their branch in your working tree without creating a local branch; run the
      `python3 -c ...` command from Part 2's "Test the function", then `git switch -`
-     to return to your own branch.
+     to return to your own branch (Git warns that you leave a commit behind: that's
+     the author's commit, safe to ignore).
    - GitHub Flow check: is the fix **just the fix** (no v2.0 work riding along),
      and is it set to merge **before** the feature? Merging is releasing.
    - Did they run `validate.sh`? Is the "How to test" something you could follow?
