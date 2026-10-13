@@ -256,6 +256,28 @@ owner where it can:
 - **On WSL2, "could not tell which"** — the owner is a Windows program the Linux side can't see.
   In PowerShell: `netstat -ano | findstr :8088` shows the PID, then Task Manager → Details.
 
+**Can't free the port?** Move the lab instead. Every lab's compose file reads the host side of the
+gateway and database ports from that lab's `.env`, so you can pick free ports per lab:
+
+| Default port | Variable in the lab's `.env` |
+|---|---|
+| 8088 (local gateway) | `GATEWAY_PORT` |
+| 8089 (test gateway, Labs 04-06) | `TEST_GATEWAY_PORT` |
+| 8090 (production gateway, Labs 04-06; the test gateway in Lab 07) | `PRODUCTION_GATEWAY_PORT` (Lab 07: `TEST_GATEWAY_PORT`) |
+| 5432 (TimescaleDB) | `POSTGRES_PORT` |
+
+For example, with 8088 and 5432 taken, put this in the lab's `.env` (copy `.env.example` first if
+the lab has no `.env` yet) and run `docker compose up -d` again:
+
+```bash
+GATEWAY_PORT=18088
+POSTGRES_PORT=15432
+```
+
+Then open the gateway on the new port (`http://localhost:18088`). Because of this way out, the
+preflight reports a busy gateway or database port as a **warning**. The gateway network ports
+8060-8062 have no such variable, so a busy one there is still a failure: free it.
+
 ## "A local Ignition gateway install was found"
 
 A **warning, not a failure**, raised even when 8088 is currently free: the installed gateway's
@@ -265,7 +287,7 @@ for how to stop and disable it.
 ## "TLS interception detected" (corporate certificate)
 
 **TL;DR** — your company's proxy re-signs HTTPS traffic. Export its root certificate to
-`~/corp-root.crt`, re-run the preflight (it turns green), and in Lab 06 and the capstone add
+`~/corp-root.crt`, re-run the preflight (it turns green), and in Lab 06 and Lab 07 add
 the small compose override from step 3 so the GitHub Actions runner trusts it too.
 
 ### What's going on
@@ -331,7 +353,7 @@ Keep `~/corp-root.crt` exactly there: step 3 relies on it.
 ### 3. Make the labs use it
 
 The only containers in the course that talk to GitHub are the self-hosted runners in
-**Lab 06** and the **capstone (Lab 07)**. Everything else — `git`, `gh`, `docker pull`, the
+**Lab 06** and **Lab 07**. Everything else — `git`, `gh`, `docker pull`, the
 Ignition gateways — works already. So the fix is: get the certificate into the runner
 container before it registers.
 
@@ -460,17 +482,26 @@ that combination, so when this check fails, something on your machine blocks it 
   Linux home (the preflight checks this separately).
 - **Anything else:** paste `preflight/preflight-report.txt` in `#preflight-help`.
 
+## "chmod g+s (setgid) is not permitted on directories in …"
+
+A **warning, not a failure**. The labs make their mounted folders setgid so that files the gateway
+creates get the folder's group (yours). You may only set that bit on a folder whose group is one of
+your own groups; the warning names the group the preflight found. This usually means the course repo
+sits somewhere outside your home directory (on macOS, folders under `/tmp` belong to `wheel`). Move
+the clone to `~/mustry-academy/` and re-run. The labs still work without the bit, but files the
+gateway writes may end up with a group you can't edit.
+
 ## "Gateway did not respond within 90s"
 
 Two common causes (the preflight publishes the gateway on a Docker-assigned free port, so a busy port is no longer one of them):
 
-1. **Docker has too little memory.** In Docker Desktop → Settings → Resources, allocate at least 4 GB RAM to Docker.
+1. **Docker has too little memory.** In Docker Desktop → Settings → Resources, allocate at least 8 GB RAM to Docker (see "Memory available to Docker" above).
 2. **First-pull slowness.** Try `docker logs mustry-preflight-gateway` (if the container is still around) or just re-run the preflight; subsequent runs are much faster.
 
 ## "gh is not authenticated"
 
 ```bash
-gh auth login
+gh auth login -s workflow
 ```
 
 Choose GitHub.com → HTTPS → "Login with a web browser" → follow the prompts. The script will pop a one-time code; enter it in the browser.

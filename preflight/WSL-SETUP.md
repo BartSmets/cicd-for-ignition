@@ -51,7 +51,15 @@ than working around it with `sudo` — see step 4.
 
 ```bash
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl git build-essential
+sudo apt install -y curl git jq python3 python3-venv build-essential
+```
+
+A fresh Ubuntu has no GitHub CLI (`gh`), and the Ubuntu archive's version is often too old. Install
+it from GitHub's own apt repository, following the Debian/Ubuntu instructions linked from
+[cli.github.com](https://cli.github.com/) (*Installation* → *Linux & BSD*), then log in:
+
+```bash
+gh auth login -s workflow
 ```
 
 Installing packages is one of the few legitimate uses of `sudo` in this course.

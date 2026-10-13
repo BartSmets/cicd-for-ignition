@@ -6,7 +6,7 @@ The preflight script checks that you have all the tools required for the course 
 
 ## Quick start
 
-You need the [GitHub CLI](https://cli.github.com/) logged in (`gh auth login`) with access to the Mustry-Academy organisation; the course repo is private for now.
+You need the [GitHub CLI](https://cli.github.com/) logged in (`gh auth login -s workflow`). The `workflow` scope lets you push GitHub Actions files from Lab 03 on; the preflight checks for it. Have a GitHub **classic Personal Access Token with the `repo` scope** ready too ([github.com/settings/tokens](https://github.com/settings/tokens) → *Generate new token (classic)*): `./course-setup.sh` asks for it once, and the Labs 04 and 06 runners use it to register on your fork.
 
 ```bash
 mkdir -p ~/mustry-academy && cd ~/mustry-academy     # Windows: this must be your LINUX home
@@ -15,7 +15,7 @@ cd cicd-for-ignition
 ./course-setup.sh
 ```
 
-`./course-setup.sh` runs this preflight and then does the one-time setup of your fork. The [course README](../README.md) covers the rest of the fork setup (enabling Actions on it, `gh repo set-default`). To run only the checks, from the repo root:
+`./course-setup.sh` runs this preflight and then does the one-time setup of your fork: it installs the shared git hooks, checks that `origin` is your fork, sets `gh`'s default repo to your fork (`gh repo set-default`), switches on Actions for it (forks start with workflows off), and prepares the `.env` files for Labs 04 and 06. To run only the checks, from the repo root:
 
 ```bash
 preflight/scripts/preflight.sh
@@ -52,7 +52,8 @@ Every check is one of two tiers:
 | Operating system (and WSL2 on Windows) | Required |
 | The course repo is on the Linux filesystem, not `/mnt/c` (WSL only) | Required |
 | Not running as root / under `sudo` | Required |
-| `git` ≥ 2.40, with a commit identity (`user.name` / `user.email`) | Required |
+| `git` installed, with a commit identity (`user.name` / `user.email`) | Required |
+| `git` ≥ 2.40 | Recommended |
 | `core.autocrlf` is not `true` (CRLF checkouts break every lab script) | Required |
 | `curl` installed | Required |
 | `jq` and `openssl` installed | Recommended |
@@ -71,8 +72,10 @@ Every check is one of two tiers:
 | At least 20 GB free disk space | Recommended |
 | At least 8 GB total RAM | Recommended |
 | Containers can reach GitHub and GHCR over HTTPS (detects corporate TLS interception) | Required |
-| Lab ports are free: 8088–8090, 8060–8062, 5432 | Required |
-| Can pull every course image (`ignition:8.3.6`, `ignition:8.3.8`, `timescaledb`, `github-runner`, `migrate`, `alpine`) | Required |
+| Lab ports are free: 8060-8062 | Required |
+| Lab ports are free: 8088-8090, 5432 (a busy one can be moved with the lab's `.env`, see [troubleshooting](./troubleshooting.md#ports-already-in-use)) | Recommended |
+| Can pull every course image (`ignition:8.3.8`, `timescaledb` for Labs 04-06 and Lab 07, `github-runner`, `migrate`, `alpine`) | Required |
+| Directories in the course repo accept `chmod g+s` (setgid) | Recommended |
 | Gateway container (uid 2003) can write to a bind mount from the course repo | Required |
 | Gateway container starts and responds over HTTP | Required |
 
@@ -85,7 +88,7 @@ Every check is one of two tiers:
 
 ## Platform notes
 
-- **Windows:** you must use **WSL2 with Docker Desktop's WSL2 backend**. Run the preflight script from inside Ubuntu (or your WSL distro of choice). Native Windows / Git Bash setups are not supported. **Keep your course repo clones (`cicd-for-ignition` and, for Lab 07, your cohort's repo) in your Linux home (`~/mustry-academy/…`), never under `/mnt/c/…`.** See [`WSL-SETUP.md`](./WSL-SETUP.md). A repo on the Windows drive is governed by Windows ACLs rather than your WSL user, so your Windows user, your WSL user and the gateway container's user are three different identities: `chown` and `chmod` do not stick, Docker bind mounts lose permission bits, and the only thing that seems to help is running WSL as a Windows administrator — which hides the problem and makes every later lab worse. The lab setup scripts refuse to run from there, and none of them ever need `sudo`. Note that the **disk space and RAM figures are measured inside WSL2, not for your whole Windows machine** — that's deliberate, since Docker images, volumes and containers live in WSL2. The RAM number is the WSL2 VM's allocation (configurable in `C:\Users\<you>\.wslconfig`).
+- **Windows:** you must use **WSL2 with Docker Desktop's WSL2 backend**. Run the preflight script from inside Ubuntu (or your WSL distro of choice). Native Windows / Git Bash setups are not supported. **Keep your course repo clones (`cicd-for-ignition` and, for Lab 07, your clone of `Mustry-Solutions/demo-oatmakers`) in your Linux home (`~/mustry-academy/…`), never under `/mnt/c/…`.** See [`WSL-SETUP.md`](./WSL-SETUP.md). A repo on the Windows drive is governed by Windows ACLs rather than your WSL user, so your Windows user, your WSL user and the gateway container's user are three different identities: `chown` and `chmod` do not stick, Docker bind mounts lose permission bits, and the only thing that seems to help is running WSL as a Windows administrator, which hides the problem and makes every later lab worse. The lab setup scripts refuse to run from there, and none of them ever need `sudo`. Note that the **disk space and RAM figures are measured inside WSL2, not for your whole Windows machine**: that's deliberate, since Docker images, volumes and containers live in WSL2. The RAM number is the WSL2 VM's allocation (configurable in `C:\Users\<you>\.wslconfig`).
 - **macOS:** Apple Silicon is fully supported. Ignition publishes `linux/arm64` images.
 - **Linux:** Docker Engine + Docker Compose v2. The smoothest experience.
 
