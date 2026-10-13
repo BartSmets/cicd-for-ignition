@@ -264,6 +264,7 @@ gateway and database ports from that lab's `.env`, so you can pick free ports pe
 | 8088 (local gateway) | `GATEWAY_PORT` |
 | 8089 (test gateway, Labs 04-06) | `TEST_GATEWAY_PORT` |
 | 8090 (production gateway, Labs 04-06; the test gateway in Lab 07) | `PRODUCTION_GATEWAY_PORT` (Lab 07: `TEST_GATEWAY_PORT`) |
+| 8060 / 8061 / 8062 (gateway network, Labs 04-06) | `GATEWAY_GAN_PORT` / `TEST_GATEWAY_GAN_PORT` / `PRODUCTION_GATEWAY_GAN_PORT` |
 | 5432 (TimescaleDB) | `POSTGRES_PORT` |
 
 For example, with 8088 and 5432 taken, put this in the lab's `.env` (copy `.env.example` first if
@@ -275,8 +276,7 @@ POSTGRES_PORT=15432
 ```
 
 Then open the gateway on the new port (`http://localhost:18088`). Because of this way out, the
-preflight reports a busy gateway or database port as a **warning**. The gateway network ports
-8060-8062 have no such variable, so a busy one there is still a failure: free it.
+preflight reports a busy gateway, gateway network or database port as a **warning**.
 
 ## "A local Ignition gateway install was found"
 

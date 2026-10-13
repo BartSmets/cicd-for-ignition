@@ -265,6 +265,9 @@ port_env_var() {
     8088) echo "GATEWAY_PORT" ;;
     8089) echo "TEST_GATEWAY_PORT" ;;
     8090) echo "PRODUCTION_GATEWAY_PORT" ;;
+    8060) echo "GATEWAY_GAN_PORT" ;;
+    8061) echo "TEST_GATEWAY_GAN_PORT" ;;
+    8062) echo "PRODUCTION_GATEWAY_GAN_PORT" ;;
     5432) echo "POSTGRES_PORT" ;;
   esac
 }
