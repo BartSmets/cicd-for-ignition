@@ -62,7 +62,7 @@ cp .env.example .env   # Part 0: LAB_USER + the runner token from the Zoom chat
 
 | Part | Topic | Gate |
 |---|---|---|
-| 0 (±15 min) | Your test gateway and runner from the provided `test` profile, plus your own `test-<yourname>.yml` workflow on your runner label | a green `test-<yourname>` run that put `main` on `localhost:8090` |
+| 0 (±15 min) | Your test gateway and runner from the provided `test` profile, plus your own `test-<yourname>.yml` workflow on your runner label | a green `test-<yourname>.yml` run that put `main` on `localhost:8090` |
 | 1 (±20 min) | Your own project through the full loop: PR → approval → `<yourname>@v1.0.0` tag → `release.yaml` pin | your view live on production |
 | 2 (±35 min) | Five challenges on the shared oatmakers project: module, JAR, migration + referenced secret, simulator tags, history in the TimescaleDB-Historian | your challenge live via an `oatmakers@` tag (the group starts at the `v5.0.0` pin) |
 | 3 (extra) | Build on each other's work: a showcase view, a shared library at its own tag, small PRs, real merge conflicts | a merged PR that uses someone else's Part 2 work |

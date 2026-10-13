@@ -38,8 +38,8 @@ You should leave this lab able to:
   student's test gateway**, while **only `release.yaml` decides what reaches
   production**, and why one is gated and the other is not
 - Cut a **prefixed tag** (`<yourname>@v1.0.0`, the next free
-  `oatmakers@vX.Y.Z`) and explain why the tag must exist **before**
-  `release.yaml` may point at it
+  `oatmakers@vX.Y.Z`) and explain why the tag must exist, on a commit on
+  `main`, **before** `release.yaml` may point at it
 - Read `runs-on: [self-hosted, <yourname>-local]` and
   `runs-on: [self-hosted, demo-oatmakers]` and explain how a runner label
   routes a deploy to one machine's network
@@ -85,8 +85,9 @@ scripts/                     setup, teardown, validate, migrate, scan, reset-tri
 - **Two deploy channels, two triggers.** Every merge to `main` lands on
   **your own test gateway** automatically, through a workflow you add in
   Part 0 (and on everyone else's, through theirs). Only a change to
-  `release.yaml` reaches the **production gateway**: workflow `Deploy`, on
-  the runner labelled `[self-hosted, demo-oatmakers]`.
+  `release.yaml` on `main` reaches the **production gateway**: workflow
+  `Deploy`, on the runner labelled `[self-hosted, demo-oatmakers]`. Started
+  by hand from any other branch, `Deploy` refuses to run.
 - **The production deploy is wide.** It ships every pinned project from its
   own tag, plus the gateway payload (config, module manifest, third-party
   modules, JARs, migrations) from the `oatmakers` pin. Migrations run first.
@@ -110,7 +111,11 @@ One repository, two jobs. The seam between them is a version string:
   release that does not exist.
 - **`release.yaml` answers "what runs on production, right now?"** One
   file, one production gateway (`oatmakers-site-7`). You change a version
-  number by PR, a deploy happens. Nothing reaches production any other way.
+  number by PR, a deploy happens. No workflow in the repo deploys any other
+  way, and a pin may only point at a tag on a commit that is on `main`, so
+  only reviewed code ships. (Write access to a repo with a self-hosted runner
+  is still a lot of trust: a workflow file you push on a branch runs before
+  anyone reviews it. Keep that in mind for the debrief.)
 
 ```yaml
 # release.yaml
@@ -206,7 +211,7 @@ stack, the same move as every previous lab:
   evidence about production and not just about your laptop.
 - **Referenced secrets work locally too.** `local-development/secrets/`
   holds the local stand-ins at the path the gateway's file secret provider
-  reads, so a connection that references `POSTGRES_PASSWORD` resolves on
+  (named `environment`) reads, so a connection that references `POSTGRES_PASSWORD` resolves on
   your laptop and on production, each against its own database.
 - **The 2-hour trial will lapse.** Perspective pages go blank and the
   Designer drops its connection; it looks like a bug in your work and it is
@@ -230,7 +235,8 @@ stack, the same move as every previous lab:
 1. `release.yaml` on screen: one file, one production gateway.
 2. The tags behind it: `git tag -l 'oatmakers@*' --sort=-v:refname`.
 3. Bump a pin on a branch, `git add release.yaml`, open the PR, read the diff
-   as a release note, watch `CI OK` confirm the tag exists.
+   as a release note, watch `CI OK` confirm the tag exists and sits on
+   `main`.
 4. Approve and merge, watch `Deploy` pick the job up on the
    `[self-hosted, demo-oatmakers]` runner, open the live demo. Then show
    what the **Revert** button on that merged PR would do.
@@ -346,8 +352,9 @@ merge.
 **6. Verify it works.** Your merge is itself a push to `main`, so it starts
 your new workflow straight away:
 
-- Actions tab → workflow `test-<yourname>` → the run for your merge commit
-  is picked up by **your** runner and goes green.
+- Actions tab → workflow `.github/workflows/test-<yourname>.yml` (a
+  workflow without a `name:` is listed by its path) → the run for your
+  merge commit is picked up by **your** runner and goes green.
 - <http://localhost:8090/data/perspective/client/oatmakers/> serves the
   oatmakers project on your test gateway.
 - From now on, every merge anyone makes runs your workflow too. Watch the
@@ -360,9 +367,14 @@ your new workflow straight away:
 - **Observe:** your test gateway gets its files the way production does,
   never through a bind mount of your working tree.
 
+- **From now on you can also deploy a branch** to your test gateway before
+  you merge it: `gh workflow run test-<yourname>.yml --ref <your-branch>`
+  (or **Run workflow** in the Actions tab, then pick the branch). The next
+  push to `main` puts `main` back.
+
 **Part 0 gate:** your `test-<yourname>.yml` merged through an approved PR,
-`Listening for Jobs` in your runner's log, and a green `test-<yourname>` run
-that put `main` on `localhost:8090`.
+`Listening for Jobs` in your runner's log, and a green `test-<yourname>.yml`
+run that put `main` on `localhost:8090`.
 
 ### Part 1 (±20 min): create your own project and bring it live
 
@@ -395,12 +407,14 @@ approval. If you get review comments, fix them and push again: same PR.
 **4. Merge.**
 
 - **Observe:** your test gateway (and everyone else's) now serves
-  <http://localhost:8090/data/perspective/client/><yourname>/.
+  `http://localhost:8090/data/perspective/client/<yourname>/`.
 - **Observe:** production did **not** change. `Deploy` did not even run:
   `release.yaml` did not change. `main` means "reviewed and could ship",
   not "shipped".
 
-**5. Tag your release.** This is what makes the release *exist*:
+**5. Tag your release.** This is what makes the release *exist*. Tag the
+merged `main`, never your feature branch: a tag must point at a commit on
+`main`, so that only reviewed code can ship.
 
 ```bash
 git switch main && git pull
@@ -434,12 +448,16 @@ PR, `CI OK`, approval, merge. If someone else's pin merged first and your
 PR shows a conflict in `release.yaml`, rebase and keep both lines (rule 4
 above).
 
-- **Observe:** CI checks that `<yourname>@v1.0.0` exists before it lets the
-  pin through. A pin that points at a tag nobody pushed turns `CI OK` red.
+- **Observe:** CI checks that `<yourname>@v1.0.0` exists, and that it
+  points at a commit on `main`, before it lets the pin through. A pin to a
+  tag nobody pushed, or to a tag on an unmerged branch, turns `CI OK` red.
+  Pushed the missing tag afterwards? CI does not re-run by itself: open the
+  PR's **Checks** tab → **Re-run failed jobs** (or
+  `gh run rerun <run-id> --failed`).
 
 **7. Watch it go live.** Actions tab → workflow `Deploy` → the run for
 your merge, on the `demo-oatmakers` runner. When it is green, open
-<https://cloud.mustrysolutions.com/data/perspective/client/><yourname>/.
+`https://cloud.mustrysolutions.com/data/perspective/client/<yourname>/`.
 
 **Part 1 gate:** your project merged through an approved PR, the tag
 `<yourname>@v1.0.0` pushed, your line in `release.yaml` merged through an
@@ -462,10 +480,12 @@ together, on a live gateway.
   (for example `Course/<yourname>/`) with a page route like
   `/course/<yourname>`, your tags under a `Course/` folder, your tables
   with a `course_` prefix. Leave the demo's existing screens alone.
-- **Check it on your test gateway first.** After your PR merges, your
-  `test-<yourname>` run puts it on `localhost:8090`. If it does not work
-  there, it will not work on production: fix it with a follow-up PR before
-  you tag.
+- **Check it on your test gateway first.** Before you merge, run
+  `gh workflow run test-<yourname>.yml --ref <your-branch>` to put your
+  branch on `localhost:8090`. After your PR merges, your
+  `test-<yourname>.yml` run puts `main` there. If it does not work there, it
+  will not work on production: fix it (with a follow-up PR if it already
+  merged) before you tag.
 - **Finished means live.** Merge your PR, cut the **next free**
   `oatmakers@` tag, pin it in `release.yaml` by PR. The gateway payload
   (config, modules, JARs, migrations) rides the `oatmakers` pin, which is
@@ -481,7 +501,17 @@ git switch main && git pull
 git fetch --tags
 git tag -l 'oatmakers@*' --sort=-v:refname | head -3
 git tag oatmakers@v5.1.0          # the next free number
-git push origin oatmakers@v5.1.0  # rejected? someone took it: fetch and take the next
+git push origin oatmakers@v5.1.0
+```
+
+Push rejected? Someone took that number first. Your local tag still points
+at your commit, and `git fetch --tags` will not overwrite it, so delete it,
+fetch, and take the next number:
+
+```bash
+git tag -d oatmakers@v5.1.0 && git fetch --tags
+git tag -l 'oatmakers@*' --sort=-v:refname | head -3
+git tag oatmakers@v5.2.0 && git push origin oatmakers@v5.2.0
 ```
 
 **Before you pin: is your change already live?** Your tag contains
@@ -499,58 +529,92 @@ tag from the current `main` and pin that one.
 
 **Challenge 1: add the Embr Charts module and build a chart screen**
 
-- Download Embr Charts for Ignition 8.3 from
-  <https://github.com/mussonindustrial/embr/releases/tag/releases%2F8.3%2F2026.6.17>.
-- Add the `.modl` to `third-party-modules/` and register it in
-  `services/modules.json`, copying the shape of the entries already there
-  (the lab 06 move). Restart your local gateway once
-  (`docker restart oatmakers-gateway`) so it fills in `certFingerprint` and
-  `licenseAgreementHash`; commit what it wrote for **your** entry only.
+- Download `Embr-Charts-Ignition83-6.0.1.modl` (Embr Charts 6.0.1 for
+  Ignition 8.3, module id `com.mussonindustrial.embr.charts`) from
+  <https://github.com/mussonindustrial/embr/releases/tag/releases%2F8.3%2F2026.6.17>
+  and put it in `third-party-modules/`.
+- Add a minimal entry to `services/modules.json` (the lab 06 move):
+
+  ```json
+  "com.mussonindustrial.embr.charts": {
+    "filename": "/third-party-modules/Embr-Charts-Ignition83-6.0.1.modl",
+    "onStartup": "enabled"
+  },
+  ```
+
+- Recreate your local gateway (a recreate, not a restart: environment
+  variables only reach a container when it is created):
+
+  ```bash
+  docker compose up -d --force-recreate gateway
+  ```
+
+  The repo's `docker-compose.yaml` already lists this module id in
+  `ACCEPT_MODULE_LICENSES` and `ACCEPT_MODULE_CERTS` for your local gateway
+  (the lab 06 env vars), so it installs headless and writes
+  `certFingerprint` and `licenseAgreementHash` into your entry. Commit only
+  your `modules.json` entry and the `.modl`.
+- Your test gateway and production do not have that env var: they trust the
+  module because of the two values in your entry. Your test gateway proves
+  that before production does.
 - Build a Perspective screen with a chart from the module on it.
 - This release restarts production: announce it in the chat before you
   merge the pin.
 - Verify on production: your chart renders on your page.
 
-**Challenge 2: use the Commons CSV JAR in a recipe-parsing function**
+**Challenge 2: use the FastCSV JAR in a recipe-parsing function**
 
-- The JAR is `jar-files/jar/commons-csv-1.14.1.jar`. If it is not in the
-  repo yet, add it from Maven Central
-  (<https://repo1.maven.org/maven2/org/apache/commons/commons-csv/1.14.1/commons-csv-1.14.1.jar>),
-  the lab 06 move. (commons-csv on purpose: the gateway already bundles
-  commons-lang3 and friends, so importing those proves nothing.)
+- Download `fastcsv-4.4.0.jar` from Maven Central
+  (<https://repo1.maven.org/maven2/de/siegmar/fastcsv/4.4.0/fastcsv-4.4.0.jar>)
+  into `jar-files/jar/` and add its row (source and sha256) to
+  `jar-files/jar/README.md`, the lab 06 move. FastCSV on purpose: the
+  gateway does not bundle it, so the import fails until the JAR is really
+  there. (Importing commons-lang3 and friends proves nothing: the image
+  already has them.)
 - Make your local gateway load it: JARs come from `lib/core/gateway`, which
   is not bind-mounted:
 
   ```bash
-  docker cp jar-files/jar/commons-csv-1.14.1.jar \
+  docker cp jar-files/jar/fastcsv-4.4.0.jar \
     oatmakers-gateway:/usr/local/bin/ignition/lib/core/gateway/
   docker restart oatmakers-gateway
   ```
 
-- Add a project script function that parses a CSV line of ingredients:
+- Add a project script, for example `course/<yourname>/recipe`, with a
+  function that parses a CSV line of ingredients:
 
   ```python
-  from org.apache.commons.csv import CSVFormat
-  from java.io import StringReader
-  records = CSVFormat.DEFAULT.parse(StringReader("oats,water,salt")).getRecords()
-  fields = list(records[0])
+  from de.siegmar.fastcsv.reader import CsvReader
+
+  def parseIngredients(line):
+      records = list(CsvReader.builder().ofCsvRecord(line))
+      return list(records[0].getFields())
   ```
 
-- Build a Perspective screen that **calls your function** and shows the
-  parsed fields: **oats | water | salt**.
+- Build a Perspective screen that **calls your function**
+  (`course.<yourname>.recipe.parseIngredients("oats,water,salt")`) and shows
+  the parsed fields: **oats | water | salt**.
 - A new JAR restarts production: announce it in the chat before you merge
   the pin.
 - Verify on production: your page shows the three fields.
 
 **Challenge 3: a database connection, a migration with a seed, a view on the data**
 
-- Create a database connection to `jdbc:postgresql://postgres:5432/ignition`
-  (that hostname resolves locally and on production). Username: the plain
-  string `ignition`. Password: the **referenced secret** `POSTGRES_PASSWORD`
-  from the `environment` secret provider that is already in the gateway
-  config. You reference it; you never see the value. Lab 06's secrets
-  ladder, for real. (Ignition only references a secret for the password
-  field; the username stays a plain setting.)
+- Create a database connection named `Course_<yourname>` to
+  `jdbc:postgresql://postgres:5432/ignition` (that hostname resolves locally
+  and on production). Username: the plain string `ignition`. Password: the
+  **referenced secret** `POSTGRES_PASSWORD` from the file secret provider
+  named `environment` that is already in the gateway config. You reference
+  it; you never see the value. Lab 06's secrets ladder, for real. (Ignition
+  only references a secret for the password field; the username stays a
+  plain setting.)
+- The gateway creates a **store-and-forward engine** with the same name
+  along with the connection, plus its status tags. Stage them with your
+  connection, so nobody else's gateway shows them as stray files:
+  `services/config/resources/core/ignition/database-connection/Course_<yourname>/`,
+  `.../store-and-forward-engine/Course_<yourname>/`,
+  `.../tag-definition/System/Gateway/Database/Course_<yourname>/` and
+  `.../tag-definition/System/Gateway/StoreAndForward/course_<yourname>/`.
 - Write a migration pair in `db-migration/migrate/` with the next free
   number: `.up.sql` creates your `course_` tables and seeds them,
   `.down.sql` undoes exactly that. **Always pairs.** Test it locally before
@@ -560,8 +624,13 @@ tag from the current `main` and pin that one.
   scripts/migrate.sh up
   ```
 
-  Two people grabbing the same migration number is a real conflict: if
-  `main` already has your number when you rebase, renumber yours.
+  Your test workflow migrates this same local database. Run
+  `scripts/migrate.sh down 1` before you switch branches or renumber, and
+  `up` again after your PR merges; otherwise every test run on `main` fails
+  with `no migration found for version N`. Pick a number higher than any on
+  `main` at merge time, not just a free one: a lower number merged after a
+  higher one already ran is silently skipped. If `main` already has your
+  number when you rebase, renumber yours.
 - Build a Perspective view that queries the seeded rows.
 - Verify on production: your page shows the rows (so the connection is
   valid and the migration ran before the screen arrived).
@@ -569,13 +638,27 @@ tag from the current `main` and pin that one.
 **Challenge 4: a simulator device with tags and live values**
 
 - Add a **Programmable Device Simulator** device to your local gateway
-  (*Connections → Devices*), name it after the challenge (`CourseSim`), and
-  give it a few changing values (a ramp, a sine).
+  (*Connections → Devices*) named `CourseSim`. Then open its program (the
+  device's menu → **Edit Program**) and add two instructions, or load them
+  as CSV:
+
+  ```
+  Time Interval, Browse Path, Value Source, Data Type
+  0,"Ramp","ramp(0,100,60,1)","Double"
+  0,"Sine","sine(-50,50,30,1)","Double"
+  ```
+
+  A ramp from 0 to 100 every 60 seconds and a sine between -50 and 50
+  every 30 seconds.
 - Create OPC tags on it in a `Course/` folder of the default tag provider
-  and use them on a Perspective screen.
+  (OPC server `Ignition OPC UA Server`, item paths `ns=1;s=[CourseSim]Ramp`
+  and `ns=1;s=[CourseSim]Sine`, data type Float8) and use them on a
+  Perspective screen.
 - The device config and the tags live in `services/config/`: they travel
-  with the pipeline like everything else. Stage only your device and your
-  tag folder.
+  with the pipeline like everything else. Stage your device
+  (`.../com.inductiveautomation.opcua/device/CourseSim/`), your tag folder
+  (`.../tag-definition/default/Course/`) and the status tags the gateway
+  creates for the device (`.../tag-definition/System/Gateway/Devices/CourseSim/`).
 - Verify on production: **values changing live**, on a gateway you never
   logged in to configure.
 
@@ -585,9 +668,15 @@ tag from the current `main` and pin that one.
   `third-party-modules/` and is registered in `services/modules.json`: you
   build on it, you do not install it. It runs in trial mode unless a
   licence is installed; `scripts/reset-trial.sh` resets your local trial.
-- Create a historian of the module's TimescaleDB type that stores into the
-  same plant database challenge 3's connection reads. Password: the
-  referenced `POSTGRES_PASSWORD`, like challenge 3.
+- Create a historian named `CourseHistorian` of the module's TimescaleDB
+  type that stores into the same plant database challenge 3's connection
+  reads (`jdbc:postgresql://postgres:5432/ignition`, username `ignition`).
+  Password: the referenced `POSTGRES_PASSWORD`, like challenge 3.
+- Like a connection, a historian comes with a store-and-forward engine of
+  the same name. Stage `.../store-and-forward-engine/CourseHistorian/` and
+  `.../tag-definition/System/Gateway/StoreAndForward/coursehistorian/` with
+  it. Never give a historian the name of a connection: they would share
+  one engine, and removing either one deletes it and stops the other.
 - Enable **tag history** on challenge 4's tags, pointed at your historian.
 - Build a dashboard view that charts that history.
 - You will be merging into files the others just changed. **Merge
@@ -611,12 +700,15 @@ tag, one release PR at a time.
   project `projects/course-lib/` with something others can reuse (a
   styled component, a script function). Tag `course-lib@v1.0.0` and pin it
   in `release.yaml`. Then make your own Part 1 project inherit from it, tag
-  `<yourname>@v1.1.0` and pin that too. The parent has to be on the gateway
+  `<yourname>@v1.1.0` and pin that too. Inheritance is two fields in
+  `project.json`: `"inheritable": true` in `course-lib`, and
+  `"parent": "course-lib"` in yours (or set both in the gateway's project
+  settings); `scripts/scan.sh` loads the change. The parent has to be on the gateway
   before (or together with) the child that inherits from it: the teaching's
   "parent pinned alongside", in one flat release file.
 - **Cross the challenges.** Historize more tags, add a migration on top of
-  someone else's tables, put an Embr chart on the seeded data, call the CSV
-  function from your own view. Or rebuild something that looks like
+  someone else's tables, put an Embr chart on the seeded data, call the
+  recipe function from your own view. Or rebuild something that looks like
   another challenge, purely to train the move you want more reps on.
 - **Stay current.** Pull `main` often and rebase your branch. Most merge
   conflicts die before they are born; the ones that do happen are the
@@ -626,7 +718,7 @@ tag, one release PR at a time.
 
 ## Troubleshooting
 
-- **My `test-<yourname>` run says "Waiting for a runner to pick up this
+- **My `test-<yourname>.yml` run says "Waiting for a runner to pick up this
   job".** The label in `runs-on` does not match your runner. It must be
   exactly `<yourname>-local`, with the same `<yourname>` as `LAB_USER` in
   `.env`. Check `docker logs oatmakers-test-runner-<yourname>` for
@@ -644,9 +736,26 @@ tag, one release PR at a time.
   fingerprints, `resource.json` stamps). That is gateway churn, not your
   change: do not stage it. See
   [`docs/resource-json-hygiene.html`](../docs/resource-json-hygiene.html).
+  The exception: folders the gateway creates for something **you** added
+  belong in your PR: `store-and-forward-engine/<name>/` and
+  `tag-definition/System/Gateway/{Devices,Database,StoreAndForward}/<name>/`
+  for your device, connection or historian. The same folders for someone
+  else's work, after a pull, are theirs: leave them.
+- **Your `test-<yourname>.yml` run fails with
+  `no migration found for version N`.** Your local database ran a
+  migration from a branch that `main` does not have. On that branch:
+  `scripts/migrate.sh down 1`, then re-run the failed run.
+- **Your test run says `Still not authorized`.** Your test gateway holds an
+  older API token than the key in your `.env` (`setup.sh` only seeds a
+  new test gateway volume). Recreate it:
+  `docker compose --profile test rm -sf test-gateway test-runner && docker volume rm oatmakers_test-gateway-data && ./scripts/setup.sh`,
+  then re-run the failed run.
 - **`CI OK` is red on a release PR.** Open the failing job: most often the
-  pin points at a tag that was never pushed (`git push origin <tag>`), or
-  the YAML lost a line in a rebase.
+  pin points at a tag that was never pushed (`git push origin <tag>`), a
+  tag on a commit that is not on `main` (tag `main` after your PR merged),
+  or the YAML lost a line in a rebase. After pushing a missing tag, CI does
+  not re-run by itself: **Checks** tab → **Re-run failed jobs** (or
+  `gh run rerun <run-id> --failed`).
 - **`Deploy` is red, or production looks wrong after your release.** Say so
   in the chat straight away. The fix is a revert of the release PR (the
   **Revert** button on the merged PR, then review and merge as usual); the
@@ -659,7 +768,7 @@ Everything on this list is visible on GitHub or on the production gateway;
 nothing needs your laptop.
 
 0. **Part 0:** your `test-<yourname>.yml` merged through an approved PR, and
-   a green `test-<yourname>` run on your own runner.
+   a green `test-<yourname>.yml` run on your own runner.
 1. **Part 1:** `projects/<yourname>/` merged through an approved PR, the tag
    `<yourname>@v1.0.0`, your line in `release.yaml`, and your view **live on
    cloud.mustrysolutions.com**.
