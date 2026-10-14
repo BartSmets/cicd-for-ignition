@@ -8,8 +8,8 @@ Everything inside an Ignition gateway's `data/` directory falls into one of thre
 
 | Bucket | What | Owner | In git? |
 |---|---|---|---|
-| **Project-level** | Per-project resources: views, scripts, tags, UDTs | The application (versioned, peer-reviewed) | **Yes** |
-| **Gateway-level** | Cross-project config: DB connections, tag providers, tag history connections, enabled modules, identity resources you configure (DB/AD user sources, SAML/OIDC identity providers, security-properties) | The application (versioned, but smaller scope) | **Yes** |
+| **Project-level** | Per-project resources: views, scripts, page and session config | The application (versioned, peer-reviewed) | **Yes** |
+| **Gateway-level** | Cross-project config: DB connections, devices, tag providers with their tags and UDTs, tag history connections, themes, enabled modules, identity resources you configure (DB/AD user sources, SAML/OIDC identity providers, security-properties) | The application (versioned, but smaller scope) | **Yes** |
 | **Operational** | Runtime state: internal DBs, logs, temp, metadata, runtime users, the gateway-owned *internal* identity (the `default` user source and `default` identity provider that commissioning creates) | The gateway (gateway owns this, full stop) | **No** |
 
 The whole point of the file-structure part is to internalize this split. If you can answer "which bucket?" for any file in `data/`, you'll know how to version, deploy, and roll back.
@@ -198,11 +198,12 @@ environment variables and JVM arguments (Lab 05).
 
 ### `db/`
 
-**Operational.** The internal SQLite database (`config.idb`, plus `autobackup/` copies). The gateway
-is constantly reading and writing it — and it holds the **internal user store**: password hashes,
-last-login timestamps, lockout state. There is no separate `users.idb` file; the user tables live
-inside `config.idb`, which is one more reason this directory must never be committed. (A `gwbk`
-backup carries the same data — keep those out of git too.)
+**Operational.** The internal SQLite database (`config.idb`). Up to 8.1 this file held the whole
+gateway configuration. 8.3 migrated that configuration out to the JSON resource files under
+`config/resources/`: on a fresh 8.3.8 gateway the old tables, the internal user table included,
+are empty, and what remains is the gateway's own runtime bookkeeping. The internal users are not
+in here: they live in `config/resources/core/ignition/user-source/default/users.json` (see the
+internal identity note above). A `gwbk` backup carries both, so keep backups out of git too.
 
 - **In git?** Absolutely **no**.
 - **Backup story?** Gateway-level backup (`gwbk` file), not git.

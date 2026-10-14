@@ -68,7 +68,7 @@ In order:
 3. **`config/`** root, next to `resources/`: `config/local/` (this box's Gateway Network keystore and UUID) and the runtime tag value store `config/ignition/tags/valueStore.idb`. Small, mostly operational.
 4. **`modules.json`**: which modules the gateway has enabled. Gateway-level. (Repo source: `services/modules.json`.)
 5. **`modules/`**: per-module **data** folders the modules write at runtime (here `modules/flint/`). Operational. The module *binaries* (`.modl`) are not in `data/` at all: the built-in ones ship in the image at `/usr/local/bin/ignition/user-lib/modules/`, and this lab's third-party ones are mounted at `/third-party-modules`.
-6. **`db/`**: the internal SQLite DB (`config.idb`), which includes the internal user store (password hashes, lockout state). **Operational state.** Never commit.
+6. **`db/`**: the internal SQLite DB (`config.idb`). Up to 8.1 it held the whole gateway config; 8.3 moved that config out to the files under `config/`, and what is left here is the gateway's own runtime bookkeeping. **Operational state.** Never commit. (The internal *users* are not in here either: they live in `config/resources/core/ignition/user-source/default/users.json`, see the slides on what never goes in git.)
 7. **`jar-cache/`, `metricsdb/`, `var/`**: runtime / generated stuff. Never commit. (Gateway logs live outside `data/`, at the install root.)
 8. **`.resources/`**: Ignition's content-addressed blob store. Not at the top of `data/`: one sits in `config/resources/.resources/` and one in `projects/.resources/`, inside the trees you version. Generated, so gitignored and never deployed.
 9. **The small files at the top**: set once, then owned by this gateway, so operational:
@@ -119,6 +119,8 @@ The marker trick: set a timestamp marker, make the change in the UI, then ask `f
    > **Which collection did that land in?** A UI edit lands in the deployment-mode collection selected in the *Deployment Modes* bar at the top of the page. On the local gateway that is `local-development`, so `Scratch` is created in `config/resources/local-development/`, an override only the local gateway reads. A resource every environment should share must be created under **`core`** (switch the bar to `core` first), or moved there on disk.
 7. Repeat step 4 (re-touch the marker first) — find the new files. The connection lands at `config/resources/<scope>/ignition/database-connection/Scratch/config.json`. Which `<scope>`? Gateway-level or project-level? Because `local` bind-mounts `./services/config/`, it also just appeared **in your repo on the host** — run `git status`.
 
+   Look closely at the list: one click wrote more than the connection. The gateway also created a store-and-forward engine (`store-and-forward-engine/Scratch/`) and the System tags that report on it, and those landed in **`core`**, not in `local-development`. Commit all of it and every other gateway gets a store-and-forward engine for a connection only the local gateway has. Read what a UI action wrote before you commit it.
+
 ## "Everything is a file in git" (guided, ~10 min)
 
 Prove that the things people assume live "inside Ignition somewhere" are all plain files you can read, diff, and commit. Do these from the repo root on your host (no gateway needed — they're already on disk under `services/` and `projects/`).
@@ -139,7 +141,7 @@ Prove that the things people assume live "inside Ignition somewhere" are all pla
 5. **Where is the CSS "hidden"?** In Perspective, styling lives in a few honest places, all of them files:
    - **Inline component styles** live right in the view: open `projects/example-project/com.inductiveautomation.perspective/views/pages/refrigeration/view.json` and find the `style` props on components.
    - **Style classes** (reusable named styles) are a *project resource* under `com.inductiveautomation.perspective/style-classes/<name>/` when a project defines them. This repo styles inline, so it has none, but that is where they land.
-   - **Themes** (the gateway-wide look) are gateway-level theme CSS the gateway generates under `data/`.
+   - **Themes** (the gateway-wide look) are gateway-level resources: `services/config/resources/core/com.inductiveautomation.perspective/themes/<name>/` holds each theme's `index.css` and `variables.css`.
 
    The takeaway: there is no secret CSS store. It is inline in views, or a style-class resource, or a gateway theme file — all readable, all diffable.
 
@@ -193,13 +195,13 @@ Commonly forgotten: `config/resources/local/` and `config/local/` (instance iden
 
 The file-based pattern, end-to-end across the three lab gateways.
 
-The five steps:
+It starts when a developer's `feature/*` PR merges into `main` (or a `lab04-v*` tag is pushed). From there the runner does five steps:
 
-1. **Developer commits** to `projects/<name>/` on a `feature/*` branch off `main`, then opens a PR into `main`.
-2. **Runner checks out** the merged commit (after the PR merges into `main`). The bundled `github-runner` container handles this.
-3. **Runner prunes** the working tree per `.deployignore` so lab-only files (READMEs, docs, scripts) don't pollute the gateway.
-4. **Runner ships** the files into the target gateway container via `docker cp` (the runner is a container itself, so it reaches through the docker socket; test and production bind-mount `./gateways/<gw>/{projects,config}` on the host, which is how you'll *verify* what landed).
-5. **Runner calls** `POST /data/api/v1/scan/{projects,config}` to make the gateway notice the change without a restart.
+1. **Checkout:** the runner checks out that commit. The bundled `github-runner` container handles this.
+2. **Prune:** it deletes what `.deployignore` matches from the working tree, so lab-only files (READMEs, docs, scripts) don't pollute the gateway.
+3. **Ship:** it wipes the target's `projects/` and `config/resources/`, then copies the files into the target gateway container via `docker cp` (the runner is a container itself, so it reaches through the docker socket; test and production bind-mount `./gateways/<gw>/{projects,config}` on the host, which is how you'll see what landed).
+4. **Scan:** it calls `POST /data/api/v1/scan/{projects,config}` to make the gateway notice the change without a restart.
+5. **Verify:** it polls `/StatusPing` until the gateway answers RUNNING, so a deploy that broke the gateway turns the run red.
 
 ## The deploy, by hand, once (guided, ~15 min)
 
@@ -277,7 +279,7 @@ You **don't** need to set `IGNITION_URL` or `IGNITION_CONTAINER` variables unles
 
 1. Create a **new project named `sample-project`** on the local gateway, the way you always do in Ignition: Designer → New Project (or the gateway UI, Platform → Projects). Because local bind-mounts `./projects/`, the project lands in your working tree the moment the gateway saves it — `git status` shows it as an untracked `projects/sample-project/` folder. That folder is your deployable: no export, no file editing.
 2. Create **one simple view** in that project in the Designer (any name — e.g. a label with your name on it) and save. In the *New View* dialog, tick **Page URL** and give it `/`: that makes the view the project's start page, so a browser can open it. That gives you something visible to recognize on the test gateway after the deploy.
-3. Branch off `main` and commit it — together with the still-uncommitted height tweak from the deploy-by-hand, so the repo matches what's already on the local gateway:
+3. Branch off `main` and commit it, together with the still-uncommitted *Run Control v2* edit from the deploy-by-hand, so the repo matches what's already on the local gateway:
    ```bash
    git switch main && git switch -c feature/add-sample-project
    git add projects/
@@ -309,7 +311,7 @@ git push origin lab04-v0.1.0        # ← lab04-release.yml fires
 Cause one of these and read the workflow output:
 
 - **Wrong API key.** Set garbage in `lab04-gateway-test`'s secret, re-run the deploy. The **Ship step succeeds** (`docker cp` doesn't care about keys), then the scan step gets a **401** and fails fast, naming the secret to check. The new files are on the gateway's disk, but no scan told it to load them: the gateway keeps running what it had and you can still log in. It only picks the files up at its next restart, so "disk" and "running" now disagree. *What's your recovery story?*
-- **Stopped container.** `docker compose stop ignition-test`, then trigger a deploy. The **verify step fails fast** ("container is in state 'exited', expected 'running'") before any file moved — much better than failing halfway.
+- **Stopped container.** `docker compose stop ignition-test`, then trigger a deploy. The **Verify deploy prerequisites step fails fast** ("container is in state 'exited', expected 'running'") before any file moved, much better than failing halfway.
 
 Then fix it and re-run (manual `workflow_dispatch` works too). The steps are idempotent, so the deploy converges.
 

@@ -550,21 +550,20 @@ a{color:var(--primary-deep)}
       <li><small>Part 2 · we do</small><b>Deploy by hand</b><span>Edit the shipped overview view, scan local, <code>docker cp</code> to test, scan test</span></li>
       <li class="now"><small>Part 2 · you do</small><b>Wire it into Actions</b><span>Parts 2.1 to 2.5: runner, environments and secrets, <code>main</code> ships test, a tag ships production, break one</span></li>
     </ol>
-    <div class="aside" style="margin-top:1.5rem"><span class="label">Why this order</span>The deploy part automates <b>exactly</b> what you do by hand first. Start its prerequisites early: <b>fork with Actions enabled, <code>gh</code> authenticated, the generated API keys in <code>.env</code></b>. The #1 "nothing deploys" cause is forgetting to enable Actions on the fork.</div>
   </div>
 </section>
 
 <!-- SETUP · FORK -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num warm">SETUP · 1</span><h2 class="title">Your course fork, with Actions enabled and fork PRs gated</h2></div>
+  <div class="sechead"><span class="num warm">SETUP · 1</span><h2 class="title">Set up your fork: enable Actions, require approval for outside PRs</h2></div>
   <div class="body">
     <div class="work">
       <ol class="steps alt">
         <li><b>Your course clone</b> <code>~/mustry-academy/cicd-for-ignition/</code>: this lab is <code>labs/04-ignition-file-based-deploy</code>. <b>On WSL2, clone into your Linux home</b> (<code>~/…</code>), never <code>/mnt/c/…</code>: bind mounts are far slower and line endings get messy.</li>
         <li><b>Fork and clone, once for the course.</b> Did it in an earlier lab? Skip. Otherwise <code>gh repo fork … --clone</code>, or press <b>Fork</b> on github.com and <code>git clone</code> your fork.</li>
         <li><b>Enable Actions:</b> your fork's <b>Actions</b> tab, "<i>I understand my workflows, go ahead and enable them</i>" (once per fork; <code>course-setup.sh</code> may have done it). Skip this and nothing ever deploys.</li>
-        <li><b>Gate fork PRs:</b> <i>Settings → Actions → General</i> → <b>Approval for running fork pull request workflows from contributors</b> → <b>Require approval for all external contributors</b> → Save. Your fork is public and the runner holds the Docker socket (Lab 03's rule).</li>
+        <li><b>Require approval for outside PRs:</b> <i>Settings → Actions → General</i> → <b>Approval for running fork pull request workflows from contributors</b> → <b>Require approval for all external contributors</b> → Save. Your fork is public and the runner holds the Docker socket (Lab 03's rule).</li>
       </ol>
       <div class="side">
         <div class="code"><pre><span class="cm"># 1-2: once per course: fork to your account + clone your fork</span>
@@ -587,7 +586,7 @@ cd ~/mustry-academy/cicd-for-ignition/labs/04-ignition-file-based-deploy
 <!-- SETUP · TOKEN, .ENV, STACK -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num warm">SETUP · 2</span><h2 class="title">A runner token, two lines in <code>.env</code>, then the stack</h2></div>
+  <div class="sechead"><span class="num warm">SETUP · 2</span><h2 class="title">Create a runner token, fill in <code>.env</code>, start the stack</h2></div>
   <div class="body">
     <div class="work">
       <ol class="steps alt">
@@ -654,7 +653,6 @@ docker exec lab04-ignition-local touch /tmp/marker
 docker exec lab04-ignition-local find \
   /usr/local/bin/ignition/data/config -newer /tmp/marker -type f
 git status                 <span class="cm"># the same files, in your repo</span></pre></div>
-        <div class="aside" style="font-size:var(--text-base)"><span class="label">Why it shows up in git</span><b>local</b> bind-mounts <code>./services/config/</code>: whatever the gateway writes there is in your working tree.</div>
       </div>
     </div>
   </div>
@@ -798,7 +796,6 @@ scripts/scan.sh test</pre></div>
 docker compose ps github-runner
 docker compose logs --tail 50 github-runner
 <span class="cm"># look for "Listening for Jobs"</span></pre></div>
-        <div class="aside warn"><span class="label">Per-gateway keys</span><b>API keys are per gateway, not per URL:</b> the test key won't authenticate against production. The runner reaches gateways by <b>compose service name</b> (<code>http://ignition-test:8088</code>); host ports 8089/8090 are only how <i>you</i> reach the UIs.</div>
       </div>
     </div>
   </div>
@@ -871,7 +868,6 @@ git switch main &amp;&amp; git pull
 
 git tag lab04-v0.1.0
 git push origin lab04-v0.1.0        <span class="cm"># ← lab04-release.yml fires</span></pre></div>
-        <div class="aside good"><span class="label">Why tags</span>Production always runs a <b>named, re-deployable version</b>. That's your rollback button too: <code>lab04-release.yml</code>'s <b>workflow_dispatch</b> takes a tag input, so re-deploying <code>lab04-v0.1.0</code> is two clicks.</div>
       </div>
     </div>
   </div>
@@ -885,7 +881,7 @@ git push origin lab04-v0.1.0        <span class="cm"># ← lab04-release.yml fir
     <div class="work">
       <ol class="steps az">
         <li data-n="A"><b>Wrong API key.</b> Garbage in <code>lab04-gateway-test</code>'s secret, re-run. <b>Ship succeeds</b> (<code>docker cp</code> doesn't care about keys), the scan gets a <b>401</b> and fails fast. Files are on disk, but the gateway keeps running the old state. <i>Your recovery story?</i></li>
-        <li data-n="B"><b>Stopped container.</b> <code>docker compose stop ignition-test</code>, then deploy. The <b>verify step fails fast</b> ("container is in state 'exited', expected 'running'") before any file moved.</li>
+        <li data-n="B"><b>Stopped container.</b> <code>docker compose stop ignition-test</code>, then deploy. The <b>prerequisites check fails fast</b> ("container is in state 'exited', expected 'running'") before any file moved.</li>
         <li data-n="C"><b>Fix it and re-run</b> (manual <code>workflow_dispatch</code> works too). The steps are idempotent: the deploy converges.</li>
       </ol>
       <div class="side">
@@ -967,7 +963,6 @@ data/modules/
 *.modl
 *.gwbk
 .env</pre></div>
-        <div class="aside"><span class="label">Debrief question</span>Which bucket has the <b>trickiest deploy story</b>? Hint: the one that <i>sometimes</i> needs a restart.</div>
       </div>
     </div>
   </div>

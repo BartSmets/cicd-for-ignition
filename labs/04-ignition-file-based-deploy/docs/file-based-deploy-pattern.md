@@ -5,21 +5,28 @@ Reference reading for the deploy part of the lab. The complete pattern in five s
 ## The pattern in five steps
 
 ```
-┌───────────────┐    ┌────────────┐    ┌───────────┐    ┌────────────┐    ┌────────┐
-│ 1. Commit     │ →  │ 2. Check   │ →  │ 3. Prune  │ →  │ 4. Ship    │ →  │ 5.     │
-│    to git     │    │    out on  │    │    per    │    │ files into │    │ Trigger│
-│               │    │    runner  │    │ .deploy-  │    │ gateway    │    │ scan   │
-│               │    │            │    │ ignore    │    │ container  │    │ API    │
-└───────────────┘    └────────────┘    └───────────┘    └────────────┘    └────────┘
+┌────────────┐    ┌───────────┐    ┌────────────┐    ┌────────────┐    ┌────────────┐
+│ 1. Check   │ →  │ 2. Prune  │ →  │ 3. Ship    │ →  │ 4. Scan    │ →  │ 5. Verify  │
+│    out on  │    │    per    │    │ files into │    │ one POST   │    │ StatusPing │
+│    runner  │    │ .deploy-  │    │ gateway    │    │ per tree   │    │ RUNNING?   │
+│            │    │ ignore    │    │ container  │    │            │    │            │
+└────────────┘    └───────────┘    └────────────┘    └────────────┘    └────────────┘
 ```
 
-1. **Commit** to `projects/<name>/` or `services/config/` in git — on a `feature/*` branch, PR'd into `main` (see *GitHub Flow* below).
-2. **Check out** the repo on the self-hosted runner or the runner hosted by Github.
-3. **Prune** the working tree per `.deployignore` — exclude lab files, READMEs, secrets, anything that shouldn't reach the gateway.
-4. **Ship** the files into the target gateway's container. How depends on the gateway:
+It starts when a commit to `projects/<name>/` or `services/config/` reaches `main` through a `feature/*` PR (or when you push a `lab04-v*` tag; see *GitHub Flow* below). The working tree of that commit is the artifact: no build, no registry.
+
+1. **Check out** that commit on the runner (this lab uses a self-hosted one, because it has to reach your gateways).
+2. **Prune** the working tree per `.deployignore`: exclude lab files, READMEs, secrets, anything that shouldn't reach the gateway.
+3. **Ship** the files into the target gateway's container. How depends on the gateway:
    - **`local`** uses a bind mount on `./projects/` and `./services/config/`, so the files are already on disk inside the gateway. No copy step needed.
-   - **`test` / `production`** bind-mount `./gateways/test/{projects,config,modules.json}` and `./gateways/production/{projects,config,modules.json}` (gitignored, created by `setup.sh`); the rest of their `data/` stays in named volumes. Only `projects/` and `config/` are deploy targets: `modules.json` is each gateway's own copy, seeded by `setup.sh`. The runner is itself a container and doesn't share those host paths, so the workflows still `docker exec ... rm -rf` to wipe the destination (`projects/` and `config/`, sparing seven entries: the six `.deployignore` protects, `config/local/`, `config/resources/local/`, the gateway-owned internal identity by name: `config/resources/core/ignition/user-source/default/`, `user-source/opcua-module/` and `identity-provider/default/`, plus the gateway's own scan token `config/resources/core/ignition/api-token/`; and the gateway's blob store `config/resources/.resources/`, which is gitignored and must not be deleted under a running gateway (logins fail until a scan or restart rebuilds it). Other user sources and identity providers in those dirs are repo-owned and ARE wiped), then `docker cp` the working tree in. This wipe-then-copy gives you "deleted in repo → deleted in gateway" semantics that `rsync --delete` would have given you with a bind mount. The bind mounts pay off on the verification side: `ls gateways/test/projects` on the host shows exactly what a deploy shipped.
-5. **Trigger** a project + config scan via `POST /data/api/v1/scan/{projects,config}` with that gateway's API key. On the first deploy to a fresh gateway, the workflows restart it once instead: it booted before its config mode (`test` / `production`) was on disk, and Ignition picks its deployment mode at boot. A 401 fails fast (wrong key: check the environment's `IGNITION_API_KEY` secret); a 403 (first-boot commissioning reset the permissions) gets one restart and a retry, because the gateway reads `security-properties` at boot. Every later deploy hot-scans with no restart.
+   - **`test` / `production`** bind-mount `./gateways/test/{projects,config,modules.json}` and `./gateways/production/{projects,config,modules.json}` (gitignored, created by `setup.sh`); the rest of their `data/` stays in named volumes. Only `projects/` and `config/` are deploy targets: `modules.json` is each gateway's own copy, seeded by `setup.sh`. The runner is itself a container and doesn't share those host paths, so the workflows `docker exec ... rm -rf` to wipe the destination, then `docker cp` the working tree in. The wipe clears `projects/` and `config/resources/` and spares:
+     - the six entries `.deployignore` protects: `config/local/`, `config/resources/local/`, the gateway-owned internal identity by name (`config/resources/core/ignition/user-source/default/`, `user-source/opcua-module/`, `identity-provider/default/`) and the gateway's own scan token `config/resources/core/ignition/api-token/`;
+     - the blob store `config/resources/.resources/`, which is gitignored and must not be deleted under a running gateway (logins fail until a scan or restart rebuilds it);
+     - everything in `config/` next to `resources/`, such as the tag value store in `config/ignition/tags/`.
+
+     Other user sources and identity providers are repo-owned and ARE wiped. This wipe-then-copy gives you "deleted in repo → deleted in gateway" semantics that `rsync --delete` would have given you with a bind mount. The bind mounts pay off on the verification side: `ls gateways/test/projects` on the host shows exactly what a deploy shipped.
+4. **Scan:** a project + config scan via `POST /data/api/v1/scan/{projects,config}` with that gateway's API key. On the first deploy to a fresh gateway, the workflows restart it once instead: it booted before its config mode (`test` / `production`) was on disk, and Ignition picks its deployment mode at boot. A 401 fails fast (wrong key: check the environment's `IGNITION_API_KEY` secret); a 403 (first-boot commissioning reset the permissions) gets one restart and a retry, because the gateway reads `security-properties` at boot. Every later deploy hot-scans with no restart.
+5. **Verify:** poll `/StatusPing` for up to 20 seconds. A gateway that does not answer RUNNING turns the run red, so a deploy that broke the gateway fails in CI.
 
 That's it. No SSH, no SCP, no remote shell. The gateway has an HTTP API that picks up disk changes.
 
@@ -87,8 +94,8 @@ In the lab the keys live in `.env` (for manual scripts) as `IGNITION_API_KEY_LOC
 Three patterns, in increasing order of operational maturity:
 
 1. **`git revert` / `git reset` + re-deploy.** The deploys are idempotent; reverting a bad PR and pushing again restores the test gateway. Most cohorts start here. Works for most cases.
-2. **Tagged deploys + re-deploy a known-good tag.** This lab's `lab04-release.yml` is built for this: `workflow_dispatch` takes a tag as input, so re-deploying `lab04-v0.1.0` to production is two clicks in the GitHub UI. Lab 07 extends this pattern across multiple gateways.
-3. **Snapshot before deploy.** A mature workflow would take a `gwbk` of the gateway *before* copying, so rollback is "restore the backup." This lab's workflows do **not** do this (their steps are checkout → verify → prune → `rm -rf` + `docker cp` → scan → smoke-check); it's the heaviest pattern, only worth it for high-stakes deploys, and is left as a stretch. Lab 07 covers gateway backups properly.
+2. **Tagged deploys + re-deploy a known-good tag.** This lab's `lab04-release.yml` is built for this: `workflow_dispatch` takes a tag as input, so re-deploying `lab04-v0.1.0` to production is two clicks in the GitHub UI. Lab 07 pins released versions in a `release.yaml` file, so rollback there is a `git revert` of that pin.
+3. **Snapshot before deploy.** A mature workflow would take a `gwbk` of the gateway *before* copying, so rollback is "restore the backup." This lab's workflows do **not** do this (their steps are checkout → verify prerequisites → prune → `rm -rf` + `docker cp` → scan → smoke-check); it's the heaviest pattern, only worth it for high-stakes deploys, and is left as a stretch.
 
 Lab 04 ships patterns 1 and 2 (the latter as a hand-cranked workflow_dispatch); pattern 3 is left as a stretch.
 
