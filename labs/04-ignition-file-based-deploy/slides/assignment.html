@@ -765,7 +765,7 @@ scripts/scan.sh test</pre></div>
     <div class="compare wipe">
       <div class="blue">
         <h3>The workflow wipes first</h3>
-        <p class="t-md muted">Before copying, <code>lab04-deploy.yml</code> <b>wipes</b> <code>projects/</code> and <code>config/</code>, so a resource deleted in the repo disappears from the gateway too. You'll read that step in the workflow.</p>
+        <p class="t-md muted">Before copying, <code>lab04-deploy.yml</code> <b>wipes</b> <code>projects/</code> and <code>config/resources/</code>, so a resource deleted in the repo disappears from the gateway too. You'll read that step in the workflow.</p>
       </div>
       <div style="border-top-color:var(--teal)">
         <h3>…sparing what <code>.deployignore</code> protects</h3>
@@ -773,6 +773,7 @@ scripts/scan.sh test</pre></div>
           <li><code>config/local/</code> and <code>config/resources/local/</code></li>
           <li>The internal identity, by name: <code>user-source/default/</code>, <code>user-source/opcua-module/</code>, <code>identity-provider/default/</code></li>
           <li>The gateway's own <code>api-token/</code></li>
+          <li>The gateway's runtime state next to <code>config/resources/</code>, such as the tag value store in <code>config/ignition/tags/</code></li>
         </ul>
         <p class="t-sm muted">Other identity resources and <code>security-properties</code> are ordinary config and ship normally.</p>
       </div>

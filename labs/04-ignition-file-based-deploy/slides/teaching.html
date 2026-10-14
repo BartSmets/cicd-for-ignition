@@ -1003,9 +1003,7 @@ services/config/resources/core/ignition/api-token/
       <div class="code"><pre><span class="cm"># the "Ship" step from lab04-deploy.yml ($DATA = GATEWAY_DATA_PATH)</span>
 docker exec "$IGNITION_CONTAINER" sh -c '
   rm -rf $DATA/projects/*
-  <span class="cm"># wipe config/, but keep the subtrees .deployignore protects</span>
-  find $DATA/config -mindepth 1 -maxdepth 1 \
-    ! -name local ! -name resources -exec rm -rf {} +
+  <span class="cm"># wipe config/resources/ only, keeping what .deployignore protects</span>
   find $DATA/config/resources -mindepth 1 -maxdepth 1 \
     ! -name local ! -name core ! -name .resources -exec rm -rf {} +
   find $DATA/config/resources/core -mindepth 1 -maxdepth 1 \
@@ -1042,19 +1040,20 @@ docker cp ./services/config/. "$IGNITION_CONTAINER:$DATA/config/"</pre></div>
         <h3>Wiped, then copied fresh</h3>
         <ul class="dots">
           <li><code>projects/*</code></li>
-          <li>The rest of <code>config/</code></li>
+          <li>The rest of <code>config/resources/</code></li>
           <li><code>security-properties</code></li>
           <li>Any DB, AD or SAML identity resources you added</li>
         </ul>
         <p class="t-sm muted">All committed, all shipped by the copy.</p>
       </div>
       <div style="border-top-color:var(--teal)">
-        <h3>Spared: the six <code>.deployignore</code> entries, plus the blob store</h3>
+        <h3>Spared: the six <code>.deployignore</code> entries, plus runtime state</h3>
         <table class="table tight">
           <tr><td><code>config/local/</code><br><code>config/resources/local/</code></td><td>UUID, OPC-UA keystores</td></tr>
           <tr><td><code>user-source/default/</code><br><code>user-source/opcua-module/</code><br><code>identity-provider/default/</code></td><td>The internal identity: <code>users.json</code> is that gateway's admin hash. Deploying <i>or</i> wiping it locks everyone out.</td></tr>
           <tr><td><code>api-token/</code></td><td>The scan key setup.sh generated. Not in git: wiping it revokes the key the deploy scans with.</td></tr>
           <tr><td><code>config/resources/.resources/</code></td><td>The live blob store: deleting it breaks every login until a scan or restart.</td></tr>
+          <tr><td><code>config/ignition/tags/</code></td><td>The tag value store: the gateway keeps <code>valueStore.idb</code> open, so deleting it breaks tag value writes until a restart.</td></tr>
         </table>
         <p class="t-sm muted"><code>.deployignore</code> prunes the six, so the copy never brings them back.</p>
       </div>
