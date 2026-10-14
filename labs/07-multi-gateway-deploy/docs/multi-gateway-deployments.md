@@ -402,7 +402,7 @@ git push origin <yourname>@v1.0.0
  # release.yaml
  gateway: oatmakers-site-7
  projects:
-   oatmakers: v5.0.0
+   oatmakers: v5.1.0
 +  <yourname>: v1.0.0
 ```
 
@@ -427,16 +427,16 @@ git fetch --tags
 git tag -l 'oatmakers@*' --sort=-v:refname | head -3
 ```
 
-- **Tag races happen.** Two people pick `v5.1.0`; the second `git push` of the
-  tag is rejected. Delete your local tag (`git tag -d oatmakers@v5.1.0`; a
+- **Tag races happen.** Two people pick `v5.2.0`; the second `git push` of the
+  tag is rejected. Delete your local tag (`git tag -d oatmakers@v5.2.0`; a
   plain `git fetch --tags` will not overwrite it), fetch the tags and take
   the next number.
-- **A tag contains everything merged before it.** If someone pins `v5.2.0`
-  while your `v5.1.0` waits, check whether yours is inside theirs before you
+- **A tag contains everything merged before it.** If someone pins `v5.3.0`
+  while your `v5.2.0` waits, check whether yours is inside theirs before you
   pin anything:
 
   ```bash
-  git merge-base --is-ancestor oatmakers@v5.1.0 oatmakers@v5.2.0 && echo "already included"
+  git merge-base --is-ancestor oatmakers@v5.2.0 oatmakers@v5.3.0 && echo "already included"
   ```
 
   Already included: you are live, done. Never pin a lower version over a
