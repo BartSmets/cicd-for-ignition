@@ -44,7 +44,7 @@ The offline copy is the same deck: open it from your clone if the link doesn't l
 # Fork + clone once for the whole course (skip if you already have it):
 #   mkdir -p ~/mustry-academy && cd ~/mustry-academy && gh repo fork Mustry-Academy/cicd-for-ignition --clone
 cd ~/mustry-academy/cicd-for-ignition/labs/04-ignition-file-based-deploy
-cp -n .env.example .env   # no-op if course-setup.sh already created it
+[ -f .env ] || cp .env.example .env   # no-op if course-setup.sh already created it
 scripts/setup.sh    # brings up the stack, waits for all three gateways, prints credentials
 ```
 

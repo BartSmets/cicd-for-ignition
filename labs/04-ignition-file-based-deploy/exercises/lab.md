@@ -22,7 +22,7 @@ You should leave this lab able to:
 
 ```bash
 cd ~/mustry-academy/cicd-for-ignition/labs/04-ignition-file-based-deploy
-cp -n .env.example .env   # no-op if course-setup.sh already created it
+[ -f .env ] || cp .env.example .env   # no-op if course-setup.sh already created it
 scripts/setup.sh    # idempotent — brings up the stack and waits for all three gateways
 # When it finishes:
 curl -fsS http://localhost:8088/StatusPing
