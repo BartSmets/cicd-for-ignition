@@ -756,28 +756,6 @@ svg text.lname:not([fill]){fill:var(--muted)}
   </p></div>
 </section>
 
-<!-- THE PLAN -->
-<section class="slide" data-ctrl="reveal">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">06</span><h2 class="title">The plan: four days, four chapters</h2></div>
-  <div class="body">
-    <ol class="track">
-      <li class="reveal" data-step="1"><small>Day 1 · Labs 01 + 02</small><b>Foundations and the Git mindset</b><span>Git internals, branching strategies, pull requests, everyday workflows. The v2.0 plus hotfix week, done right.</span></li>
-      <li class="reveal" data-step="2"><small>Day 2 · Labs 03 + 04</small><b>Collaboration and automation</b><span>Linters and validation as a safety net, GitHub Actions, self-hosted runners, the Ignition 8.3 file structure and the first file-based deploy.</span></li>
-      <li class="reveal" data-step="3"><small>Day 3 · Lab 05</small><b>Ignition-specific deployments</b><span>Image-based deploys: project, config and modules baked into one versioned image, promoted from test to production.</span></li>
-      <li class="reveal" data-step="4"><small>Day 4 · Labs 06 + 07</small><b>Ignition in the real world</b><span>Secrets, database migrations, modules and JARs. Then Lab 07: multi-gateway deploys, the whole cohort on one shared repo.</span></li>
-    </ol>
-    <p class="statement reveal" data-step="4" style="margin-top:1rem">Each day ends with the same map of Oatmakers. <em>Watch it heal.</em></p>
-  </div>
-  <div class="controls"><p class="step-note">
-    <span data-at="0">Mustry gets the call. We take the job. Four days, seven labs, one company to fix.</span>
-    <span data-at="1">Day 1: get the history and the branching right. The hotfix week, replayed calmly.</span>
-    <span data-at="2">Day 2: automate the checking. A robot reviews every change before a human does.</span>
-    <span data-at="3">Day 3: automate the shipping, the Ignition way.</span>
-    <span data-at="4">Day 4: promote through environments, fan out to all eight sites, and cap it off yourself.</span>
-  </p></div>
-</section>
-
 <!-- DAY 1 -->
 <section class="slide" data-ctrl="day1">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
@@ -817,7 +795,7 @@ svg text.lname:not([fill]){fill:var(--muted)}
 <!-- FINALE -->
 <section class="slide" data-ctrl="finale">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">07</span><h2 class="title">Where you will end up on Friday</h2></div>
+  <div class="sechead"><span class="num">06</span><h2 class="title">Where Oatmakers ends up after four days</h2></div>
   <div class="viz" id="viz-finale"></div>
   <div class="ba reveal" id="ba-strip">
     <div><span>Deploy to 8 sites</span><s>3 weeks</s><b>20 minutes</b></div>
@@ -1524,7 +1502,7 @@ worldCtrl('usb','viz-usb',['hq','sites'],[
 
 /* ---------- the four chapters ---------- */
 worldCtrl('day1','viz-day1',['hq','sites'],[
-  {badges:'usbEnd',t:'Where we left Oatmakers.'},
+  {badges:'usbEnd',t:'Mustry gets the call and takes the job: four days, one chapter per day. Watch the map heal.'},
   {add:['repo','gwbk','gwbkx'],t:'Day 1: every change gets a home. One shared history, with an author and a reason for every change.'},
   {add:['repograph'],t:'Branches make parallel work safe. v2.0 builds on its own lane while production stays shippable.'},
   {add:['hotfix'],t:'And the 3 AM scenario gets a calm answer: a fix branched off v1.2, one reviewed PR, merged and tagged v1.2.1. You do this with your own hands in Lab 02.'},
@@ -1542,9 +1520,9 @@ worldCtrl('day2','viz-day2',['hq','sites','repo','repograph','hotfix'],[
 const DAY3_BASE=['hq','sites','repo','repograph','hotfix','ci','cistrip','runner','check'];
 worldCtrl('day3','viz-day3',DAY3_BASE,[
   {badges:'usbEnd',t:'Proven changes, still delivered by hand.'},
-  {add:['art','routes'],t:'Day 3: two ways to deliver an Ignition project, file-based or image-based, and when to use which.'},
+  {add:['art','routes'],t:'Day 3: an Ignition project ships as files (Lab 04) or as one versioned image (Lab 05).'},
   {add:['sidecars'],t:'Everything the project needs rides in the same delivery: database migrations, third-party modules, external JARs.'},
-  {badges:'day3',t:'The first automated deploy. No USB. No prayer. Seven sites to go.'}
+  {badges:'day3',t:'Delivered by a pipeline, not a USB stick. Seven sites to go.'}
 ],(s,last,W)=>{
   chip('chips-day3-a',s>=3);
   if(s<3){reveal(W.dot,false);return;}
@@ -1564,7 +1542,7 @@ worldCtrl('day4','viz-day4',DAY4_BASE,[
 /* ---------- finale ---------- */
 const FINALE_BASE=DAY4_BASE.concat(['ladder','vault','fan']);
 worldCtrl('finale','viz-finale',FINALE_BASE,[
-  {badges:'final',t:'Friday afternoon at Oatmakers.'},
+  {badges:'final',t:'Oatmakers after day 4.'},
   {badges:'v21',badgeOpts:{stagger:110},t:'A change merged at 9:00 is at every site by 9:20. Reviewed, tested, versioned, reversible.'},
   {t:'That is what this week builds. Now let us build it.'}
 ],(s,last,W)=>{

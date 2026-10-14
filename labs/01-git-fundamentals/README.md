@@ -1,10 +1,10 @@
-# Lab 01 — Git Fundamentals
+# Lab 01: Git Fundamentals
 
 Day 1 of the *CI/CD for Ignition* masterclass.
 
 > Build a working mental model of Git, and learn to operate confidently with branches, commits, merges, and rebases.
 
-This is the first lab in the course. We deliberately stay out of Ignition territory for now — the only subject of our Git exercises is a tiny generic Python app in [`sample-app/`](./sample-app/). Ignition-specific deployments arrive later in the series.
+This is the first lab in the course. The subject of the Git exercises is a tiny Python app in [`sample-app/`](./sample-app/); Ignition projects arrive from Lab 02 on.
 
 ## Slides
 
@@ -21,39 +21,27 @@ The offline copy is the same deck: open it from your clone if the link doesn't l
 
 ## Prerequisites
 
-- Work in **WSL2 (Windows), Linux, or macOS** — run all lab commands there, not in PowerShell or Git Bash (see the platform notes in your welcome package)
-- Pass the [preflight](../../preflight/)
-- **Fork the course repo** to your own GitHub account and clone *your fork* before the live session — you fork once, and every lab lives in it as a folder under `labs/`, so you can commit, branch and push freely
+- Work in **WSL2 (Windows), Linux, or macOS**: run all lab commands there, not in PowerShell or Git Bash, and on Windows keep the clone in your Linux home, never under `/mnt/c/` (see the platform notes in your welcome package)
+- Your fork of the course repo, cloned into `~/mustry-academy/` and set up with `./course-setup.sh` before Day 1 (steps 1 and 2 of the [course README](../../README.md)); this runs the [preflight](../../preflight/) too
 
 ## Quick start
 
 ```bash
-mkdir -p ~/mustry-academy && cd ~/mustry-academy                   # one parent folder for the course
-gh repo fork Mustry-Academy/cicd-for-ignition --clone              # fork to your account + clone your fork (once, for all labs)
-#   …or press "Fork" on github.com, then clone YOUR fork:
-#   git clone git@github.com:<your-username>/cicd-for-ignition.git
-cd cicd-for-ignition/labs/01-git-fundamentals                      # every lab command runs from here
+cd ~/mustry-academy/cicd-for-ignition/labs/01-git-fundamentals    # every lab command runs from here
+git remote -v                                                      # origin: YOUR fork
 code .                                                             # open in VS Code (WSL: opens connected to WSL)
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r sample-app/requirements.txt
-pytest sample-app/tests
 ```
-
-> **WSL2 (Windows): keep the folder in your Linux home (`~/…`), never `/mnt/c/…`.**
-> Git is far slower across the Windows boundary, line endings get messy, and from
-> Lab 02 onwards the Docker labs break outright on `/mnt/c` because file ownership
-> cannot be made to stick there. Start on the Linux side now and every later lab works.
 
 ## Lab structure
 
-One continuous ~3-hour lab (09:00–12:00) that interleaves Git's object model with everyday workflows, so the model becomes the lens for every command you run. The full walk-through lives in [`exercises/lab.md`](./exercises/lab.md):
+One ~3-hour lab that interleaves Git's object model with everyday workflows. The full walk-through lives in [`exercises/lab.md`](./exercises/lab.md):
 
-- **Introduction** — welcome to the series and how the labs work
-- **The Oatmakers story** — a fictional client (eight Ignition sites, zero CI/CD) sets the stage for why this series exists
-- **Teaching** — what Git is, the object model (blob/tree/commit/branch/HEAD), the merge · rebase · cherry-pick workflows, remotes & tags, the command vocabulary, `git blame`/`git reset`, and `.gitignore`
-- **We-do** — the instructor live-codes the moves: `add`/`commit`, `switch`, branch, merge (fast-forward vs `--no-ff`), rebase, and recovery
-- **You-do (breakout rooms)** — a guided warm-up, then a solo spelunk-then-build exercise, plus optional stretch challenges
-- **Wrap-up & questions**
+- **Introduction**: welcome to the series, your fork, how the labs work
+- **The Oatmakers story**: a fictional client (eight Ignition sites, zero CI/CD) that the whole series follows
+- **Teaching**: how Git stores your project (blobs, trees, commits, the staging area, branches, HEAD), merge, rebase, cherry-pick and conflicts, then remotes, tags, `git reset` and `.gitignore`
+- **We-do**: the instructor live-codes `add`/`commit`, `switch`, merge (fast-forward vs `--no-ff`), rebase and wrong-branch recovery
+- **You-do (breakout rooms)**: a guided warm-up, then two solo phases, plus optional stretch challenges
+- **Wrap-up and questions**
 
 ## Repo layout
 
@@ -72,7 +60,8 @@ labs/01-git-fundamentals/
 │   ├── oatmakers-story.html
 │   ├── teaching.html
 │   ├── assignment.html
-│   └── logos/
+│   ├── logos/
+│   └── deck-assets/
 ├── scripts/
 │   ├── seed-messy-state.sh       ← deterministic dirty working tree for the workflow phase
 │   └── verify-lab.sh             ← sanity-check the solo focused-commit step
@@ -87,4 +76,4 @@ labs/01-git-fundamentals/
 
 ## Licence
 
-Apache 2.0 — see [`LICENSE`](./LICENSE).
+Apache 2.0: see [`LICENSE`](./LICENSE).
