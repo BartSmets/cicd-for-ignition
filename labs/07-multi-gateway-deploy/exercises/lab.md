@@ -17,9 +17,9 @@ and again until the loop feels like muscle memory.
 
 **Duration:** ~3 hours
 
-* 60 min teaching ([`slides/teaching.html`](../slides/teaching.html))
+* 60 min teaching ([`slides/teaching.html`](https://share.mustrysolutions.com/8e1ea98f-1dc8-4972-8d59-65afb8afb879), [offline copy](../slides/teaching.html))
 * 30-45 min we-do (below, woven into the teaching)
-* 60-75 min you-do ([`slides/assignment.html`](../slides/assignment.html) mirrors this file 1:1)
+* 60-75 min you-do ([`slides/assignment.html`](https://share.mustrysolutions.com/a95c879a-d14b-4f76-8214-8f39784f09b1) mirrors this file 1:1; [offline copy](../slides/assignment.html))
 * Debrief: this is the last lab, so the debrief also closes the course
 
 The full teaching content is written out in
@@ -252,7 +252,7 @@ stack, the same move as every previous lab:
 
 ## You do (breakout rooms): four parts
 
-Follows [`slides/assignment.html`](../slides/assignment.html) 1:1.
+Follows [`slides/assignment.html`](https://share.mustrysolutions.com/a95c879a-d14b-4f76-8214-8f39784f09b1) ([offline copy](../slides/assignment.html)) 1:1.
 
 ### Part 0 (±15 min): stand up your test gateway and your runner
 
@@ -735,7 +735,7 @@ tag, one release PR at a time.
 - **`git status` shows files you never touched** (`services/modules.json`
   fingerprints, `resource.json` stamps). That is gateway churn, not your
   change: do not stage it. See
-  [`docs/resource-json-hygiene.html`](../docs/resource-json-hygiene.html).
+  [`docs/resource-json-hygiene.html`](https://share.mustrysolutions.com/cd8236d4-d050-4d49-b8c7-bbe4bfc35a0f) ([offline copy](../docs/resource-json-hygiene.html)).
   The exception: folders the gateway creates for something **you** added
   belong in your PR: `store-and-forward-engine/<name>/` and
   `tag-definition/System/Gateway/{Devices,Database,StoreAndForward}/<name>/`

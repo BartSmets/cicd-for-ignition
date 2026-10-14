@@ -32,17 +32,19 @@ Have these ready before you start:
 
 ## Labs
 
-| Lab | Folder | Day |
-|---|---|---|
-| 01 | [Git fundamentals](./labs/01-git-fundamentals/) | 1 |
-| 02 | [Branching and pull requests](./labs/02-branching-and-prs/) | 1 |
-| 03 | [GitHub Actions](./labs/03-github-actions/) | 2 |
-| 04 | [Ignition file-based deploy](./labs/04-ignition-file-based-deploy/) | 2 (afternoon) |
-| 05 | [Ignition image-based deploy](./labs/05-ignition-image-based-deploy/) | 3 |
-| 06 | [Secrets, database migrations, modules & JARs](./labs/06-secrets-db-and-modules/) | 4 (morning) |
-| 07 | [Deployments in a multi-gateway architecture](./labs/07-multi-gateway-deploy/) | 4 (afternoon) |
+| Lab | Folder | Day | Slides |
+|---|---|---|---|
+| 01 | [Git fundamentals](./labs/01-git-fundamentals/) | 1 | [introduction](https://share.mustrysolutions.com/eb94880a-c904-4cca-95c0-8b8dbbae345a) · [story](https://share.mustrysolutions.com/f50d9d30-81b9-48ae-819d-1614674534f0) · [teaching](https://share.mustrysolutions.com/0a731a79-f381-402b-9b77-16415e2ff052) · [assignment](https://share.mustrysolutions.com/23db8ac9-058f-4276-93b9-cad40372b526) |
+| 02 | [Branching and pull requests](./labs/02-branching-and-prs/) | 1 | [teaching](https://share.mustrysolutions.com/2ae84a78-da5f-42d6-8eeb-3b6415b63823) · [assignment](https://share.mustrysolutions.com/7a639346-4dc6-47d3-850b-fead0c4cb3ec) |
+| 03 | [GitHub Actions](./labs/03-github-actions/) | 2 | [teaching](https://share.mustrysolutions.com/79b83f03-daca-4e27-bcc5-e1c8fbba2b3b) · [assignment](https://share.mustrysolutions.com/9cbacc0c-958d-4b10-88cd-af223211166e) |
+| 04 | [Ignition file-based deploy](./labs/04-ignition-file-based-deploy/) | 2 (afternoon) | [teaching](https://share.mustrysolutions.com/741fe096-df6c-46f9-928e-9eeb16380ae2) · [assignment](https://share.mustrysolutions.com/ab83937e-517b-43a8-a7b1-cf7b53a6ee34) |
+| 05 | [Ignition image-based deploy](./labs/05-ignition-image-based-deploy/) | 3 | [teaching](https://share.mustrysolutions.com/f9880a04-5773-4290-be87-06d14c3b5f54) · [assignment](https://share.mustrysolutions.com/d5b9f34a-e127-42f3-ad2e-bc955cd867ff) |
+| 06 | [Secrets, database migrations, modules & JARs](./labs/06-secrets-db-and-modules/) | 4 (morning) | [teaching](https://share.mustrysolutions.com/9d789532-1459-4e18-b819-686fcc62a164) · [assignment](https://share.mustrysolutions.com/014ffcf0-71b9-4e7a-81ef-64d13ea0dbc4) |
+| 07 | [Deployments in a multi-gateway architecture](./labs/07-multi-gateway-deploy/) | 4 (afternoon) | [teaching](https://share.mustrysolutions.com/8e1ea98f-1dc8-4972-8d59-65afb8afb879) · [assignment](https://share.mustrysolutions.com/a95c879a-d14b-4f76-8214-8f39784f09b1) |
 
 Each day runs **09:00–17:15 CET**. Start every lab from its README.
+
+The slides open in your browser: click **Open document** on the first page. Every lab folder also keeps the same decks under `slides/` as an offline copy; open those from your clone if a link doesn't load.
 
 **Lab 07 is the exception.** You don't work in your fork: the whole group contributes to the public [`Mustry-Solutions/demo-oatmakers`](https://github.com/Mustry-Solutions/demo-oatmakers) repo, which deploys to Mustry's live demo gateway. Your instructor adds you as a collaborator on Day 4; clone it next to this repo in `~/mustry-academy/`. The lab folder here holds the slides, the exercise and the docs; the code lives in demo-oatmakers.
 

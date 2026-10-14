@@ -7,7 +7,7 @@ Day 3 of the [CI/CD for Ignition Masterclass](../../README.md).
 This is the companion to [Lab 04 (file-based deploy)](../04-ignition-file-based-deploy/). There you `docker cp`-ed files into a *running* gateway and triggered a hot scan — fast, great for daily project iteration, but it couldn't touch modules (a scan can't enable/disable them) and gave you no versioned, rollback-able artifact. Image-based deploy is the other half: the deployable state becomes an immutable image. Most mature Ignition workflows use **both** — file-based for the inner loop, image-based for releases.
 
 
-> **How resource.json stays clean:** Ignition restamps these manifests constantly. [`docs/resource-json-hygiene.html`](./docs/resource-json-hygiene.html) explains what the junk is, the two tools that deal with it, and why an empty `git diff` does not mean a clean file.
+> **How resource.json stays clean:** Ignition restamps these manifests constantly. [`docs/resource-json-hygiene.html`](https://share.mustrysolutions.com/37202f9a-4e70-4f81-bce4-79519f520bda) ([offline copy](./docs/resource-json-hygiene.html)) explains what the junk is, the two tools that deal with it, and why an empty `git diff` does not mean a clean file.
 
 ## What changes from Lab 04
 
@@ -21,6 +21,17 @@ This is the companion to [Lab 04 (file-based deploy)](../04-ignition-file-based-
 | Where it shines | Active development | Immutable releases |
 
 The local → test → production story is the same; only the test/production **delivery mechanism** changes.
+
+## Slides
+
+The decks open in your browser; click **Open document** on the first page.
+
+| Deck | Online | Offline copy |
+|---|---|---|
+| Teaching | [open in your browser](https://share.mustrysolutions.com/f9880a04-5773-4290-be87-06d14c3b5f54) | [`slides/teaching.html`](./slides/teaching.html) |
+| Assignment | [open in your browser](https://share.mustrysolutions.com/d5b9f34a-e127-42f3-ad2e-bc955cd867ff) | [`slides/assignment.html`](./slides/assignment.html) |
+
+The offline copy is the same deck: open it from your clone if the link doesn't load.
 
 ## Prerequisites
 

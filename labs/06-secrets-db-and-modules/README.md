@@ -7,7 +7,18 @@ Day 4 (morning) of the [CI/CD for Ignition Masterclass](../../README.md).
 This lab reuses Lab 04's file-based deploy stack (three gateways, bundled self-hosted runner, `docker cp` + hot scan). What's new is everything the config files *can't* say: password values, schema state, module binaries.
 
 
-> **How resource.json stays clean:** Ignition restamps these manifests constantly. [`docs/resource-json-hygiene.html`](./docs/resource-json-hygiene.html) explains what the junk is, the two tools that deal with it, and why an empty `git diff` does not mean a clean file.
+> **How resource.json stays clean:** Ignition restamps these manifests constantly. [`docs/resource-json-hygiene.html`](https://share.mustrysolutions.com/f9afd6c9-5b62-4f28-9ae4-abb3933208cf) ([offline copy](./docs/resource-json-hygiene.html)) explains what the junk is, the two tools that deal with it, and why an empty `git diff` does not mean a clean file.
+
+## Slides
+
+The decks open in your browser; click **Open document** on the first page.
+
+| Deck | Online | Offline copy |
+|---|---|---|
+| Teaching | [open in your browser](https://share.mustrysolutions.com/9d789532-1459-4e18-b819-686fcc62a164) | [`slides/teaching.html`](./slides/teaching.html) |
+| Assignment | [open in your browser](https://share.mustrysolutions.com/014ffcf0-71b9-4e7a-81ef-64d13ea0dbc4) | [`slides/assignment.html`](./slides/assignment.html) |
+
+The offline copy is the same deck: open it from your clone if the link doesn't load.
 
 ## Prerequisites
 
@@ -55,7 +66,7 @@ Ports taken on your machine? Set `GATEWAY_PORT`, `TEST_GATEWAY_PORT`, `PRODUCTIO
 
 ## Lab structure
 
-The lab is a warm-up plus three parts — [`exercises/lab.md`](./exercises/lab.md) is the source of truth, [`slides/assignment.html`](./slides/assignment.html) mirrors it:
+The lab is a warm-up plus three parts — [`exercises/lab.md`](./exercises/lab.md) is the source of truth, [`slides/assignment.html`](https://share.mustrysolutions.com/014ffcf0-71b9-4e7a-81ef-64d13ea0dbc4) ([offline copy](./slides/assignment.html)) mirrors it:
 
 | Part | Topic | Gate |
 |---|---|---|

@@ -18,6 +18,17 @@ modules, databases, deploys) is deliberately **abstracted away** — the repo tr
 never commit). How those project files are structured, and how to deploy them properly,
 is the subject of [Lab 04](../04-ignition-file-based-deploy/).
 
+## Slides
+
+The decks open in your browser; click **Open document** on the first page.
+
+| Deck | Online | Offline copy |
+|---|---|---|
+| Teaching | [open in your browser](https://share.mustrysolutions.com/79b83f03-daca-4e27-bcc5-e1c8fbba2b3b) | [`slides/teaching.html`](./slides/teaching.html) |
+| Assignment | [open in your browser](https://share.mustrysolutions.com/9cbacc0c-958d-4b10-88cd-af223211166e) | [`slides/assignment.html`](./slides/assignment.html) |
+
+The offline copy is the same deck: open it from your clone if the link doesn't load.
+
 ## Prerequisites
 
 - Completed [Lab 02](../02-branching-and-prs/)

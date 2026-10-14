@@ -58,7 +58,7 @@ cp .env.example .env   # Part 0: LAB_USER + the runner token from the Zoom chat
 ## Lab structure
 
 [`exercises/lab.md`](./exercises/lab.md) is the source of truth;
-[`slides/assignment.html`](./slides/assignment.html) mirrors it 1:1:
+[`slides/assignment.html`](https://share.mustrysolutions.com/a95c879a-d14b-4f76-8214-8f39784f09b1) ([offline copy](./slides/assignment.html)) mirrors it 1:1:
 
 | Part | Topic | Gate |
 |---|---|---|
@@ -69,14 +69,16 @@ cp .env.example .env   # Part 0: LAB_USER + the runner token from the Zoom chat
 
 ## Material
 
+The slides and the resource.json page open in your browser (click **Open document** on the first page); the offline copy next to each link is the same file in this folder.
+
 | File | What |
 |---|---|
-| [`slides/teaching.html`](./slides/teaching.html) | The teaching hour: architectures, repo layouts, release files, promotion as a PR, tag ownership, and how demo-oatmakers deploys |
-| [`slides/assignment.html`](./slides/assignment.html) | The you-do, slide by slide |
+| [`slides/teaching.html`](https://share.mustrysolutions.com/8e1ea98f-1dc8-4972-8d59-65afb8afb879) ([offline copy](./slides/teaching.html)) | The teaching hour: architectures, repo layouts, release files, promotion as a PR, tag ownership, and how demo-oatmakers deploys |
+| [`slides/assignment.html`](https://share.mustrysolutions.com/a95c879a-d14b-4f76-8214-8f39784f09b1) ([offline copy](./slides/assignment.html)) | The you-do, slide by slide |
 | [`exercises/lab.md`](./exercises/lab.md) | The exercise, including the rules for a shared live demo and troubleshooting |
 | [`docs/multi-gateway-deployments.md`](./docs/multi-gateway-deployments.md) | The teaching content written out in full |
 | [`docs/capstone-gateway.md`](./docs/capstone-gateway.md) | The production gateway: what it is, how deploys reach it, the ground rules |
-| [`docs/resource-json-hygiene.html`](./docs/resource-json-hygiene.html) | Why `resource.json` churns and the two tools in demo-oatmakers that deal with it |
+| [`docs/resource-json-hygiene.html`](https://share.mustrysolutions.com/cd8236d4-d050-4d49-b8c7-bbe4bfc35a0f) ([offline copy](./docs/resource-json-hygiene.html)) | Why `resource.json` churns and the two tools in demo-oatmakers that deal with it |
 | [`docs/wsl-setup.md`](./docs/wsl-setup.md) | Windows / WSL setup |
 | [`architectures/`](./architectures/) | The three reference architecture diagrams |
 

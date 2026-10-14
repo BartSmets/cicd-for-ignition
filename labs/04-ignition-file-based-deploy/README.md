@@ -7,7 +7,18 @@ Day 2 (afternoon) of the [CI/CD for Ignition Masterclass](../../README.md).
 This is the **first lab that opens up the Ignition gateway itself**. Labs 02–03 already worked with a real Ignition project — a Perspective HMI and a couple of Python script libraries running on a gateway you spin up — but kept the gateway's *administrative* side (config, modules, databases, deploys) deliberately abstracted away: the repo tracked only project files, and the gateway generated its own config into a volume you never touched. This lab pulls that curtain back — the `data/` file structure, gateway-level config, and how to deploy it — and points it at three real gateways that simulate a local → test → production promotion flow.
 
 
-> **How resource.json stays clean:** Ignition restamps these manifests constantly. [`docs/resource-json-hygiene.html`](./docs/resource-json-hygiene.html) explains what the junk is, the two tools that deal with it, and why an empty `git diff` does not mean a clean file.
+> **How resource.json stays clean:** Ignition restamps these manifests constantly. [`docs/resource-json-hygiene.html`](https://share.mustrysolutions.com/767798db-bc1a-4d5c-bb25-bca6c7c4a343) ([offline copy](./docs/resource-json-hygiene.html)) explains what the junk is, the two tools that deal with it, and why an empty `git diff` does not mean a clean file.
+
+## Slides
+
+The decks open in your browser; click **Open document** on the first page.
+
+| Deck | Online | Offline copy |
+|---|---|---|
+| Teaching | [open in your browser](https://share.mustrysolutions.com/741fe096-df6c-46f9-928e-9eeb16380ae2) | [`slides/teaching.html`](./slides/teaching.html) |
+| Assignment | [open in your browser](https://share.mustrysolutions.com/ab83937e-517b-43a8-a7b1-cf7b53a6ee34) | [`slides/assignment.html`](./slides/assignment.html) |
+
+The offline copy is the same deck: open it from your clone if the link doesn't load.
 
 ## Prerequisites
 

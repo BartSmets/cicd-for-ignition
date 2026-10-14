@@ -6,6 +6,19 @@ Day 1 of the *CI/CD for Ignition* masterclass.
 
 This is the first lab in the course. We deliberately stay out of Ignition territory for now — the only subject of our Git exercises is a tiny generic Python app in [`sample-app/`](./sample-app/). Ignition-specific deployments arrive later in the series.
 
+## Slides
+
+The decks open in your browser; click **Open document** on the first page.
+
+| Deck | Online | Offline copy |
+|---|---|---|
+| Introduction | [open in your browser](https://share.mustrysolutions.com/eb94880a-c904-4cca-95c0-8b8dbbae345a) | [`slides/introduction.html`](./slides/introduction.html) |
+| The Oatmakers story | [open in your browser](https://share.mustrysolutions.com/f50d9d30-81b9-48ae-819d-1614674534f0) | [`slides/oatmakers-story.html`](./slides/oatmakers-story.html) |
+| Teaching | [open in your browser](https://share.mustrysolutions.com/0a731a79-f381-402b-9b77-16415e2ff052) | [`slides/teaching.html`](./slides/teaching.html) |
+| Assignment | [open in your browser](https://share.mustrysolutions.com/23db8ac9-058f-4276-93b9-cad40372b526) | [`slides/assignment.html`](./slides/assignment.html) |
+
+The offline copy is the same deck: open it from your clone if the link doesn't load.
+
 ## Prerequisites
 
 - Work in **WSL2 (Windows), Linux, or macOS** — run all lab commands there, not in PowerShell or Git Bash (see the platform notes in your welcome package)
