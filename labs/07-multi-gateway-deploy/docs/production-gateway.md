@@ -1,8 +1,7 @@
 # The production gateway: a real, shared, public deploy target
 
-Reference reading for Lab 07. Short on purpose: this page tells you what the
-production gateway is and how your pipeline reaches it. How the server itself
-is built and operated lives with Mustry.
+Reference reading for Lab 07: what the production gateway is and how your
+pipeline reaches it.
 
 ## 1. What it is
 
@@ -38,38 +37,23 @@ The same way your lab gateways were reached, with one extra indirection:
   migrations) from the `oatmakers` pin. Migrations run first, then the files
   are copied in and the gateway is asked for an authenticated scan (the
   lab 04 mechanism). A module or JAR change restarts the gateway for a minute
-  or two. Modules and JARs land in volumes on the gateway, so they survive a
-  container recreate (an image upgrade, say) without a new release.
+  or two.
 - **What never ships:** the gateway's own identity, users and API keys. They
   belong to that one gateway and are never in the repo.
 - **Secrets:** the database password reaches the gateway as a file the
-  file secret provider reads (lab 06's ladder). Its value lives only on the
-  server: not in git, and not in a GitHub secret either.
+  file secret provider reads (lab 06). Its value lives only on the server.
 - **Rollback** is `git revert` of the release PR: the file goes back, the same
   workflow makes the old pins true again.
 
 ## 3. Ground rules
 
-- **No credentials in Git.** Same iron rule as lab 06; on a public repo a
-  leaked secret is everyone's problem the minute you push.
+- **No credentials in Git.** Same rule as lab 06, on a public repo.
 - **You do not need the admin login.** You verify through the public pages
   and the workflow logs. If something needs a gateway status page, ask: the
-  instructor shares access in the chat when it is needed. If your deploy
-  cannot do something without admin rights, that is a design signal:
-  pipelines deploy with scoped tokens, not with someone's login.
+  instructor shares access in the chat when it is needed.
 - **It is a shared, live demo.** Name your project after yourself, put your
   screens, tags and tables under your name or `Course`, and do not touch
   other people's projects or the demo's own screens.
 - **One release PR at a time**, and announce a release that restarts the
   gateway. The full etiquette is in
   [`exercises/lab.md`](../exercises/lab.md#rules-for-a-shared-live-demo).
-
-## 4. Why you cannot just log in and click (and why that is the lesson)
-
-The server accepts key-only SSH from Mustry, exposes only SSH, HTTP and HTTPS,
-and the gateway sits behind a TLS reverse proxy; it never faces the internet
-directly. The gateway's own server stack is deployed the same way you deploy
-projects: from a Git repo, through a pipeline, with secrets kept out of
-version control. The infrastructure under Lab 07 practices what the
-course preaches. Curious how it is built? Ask us for a walkthrough after the
-course.

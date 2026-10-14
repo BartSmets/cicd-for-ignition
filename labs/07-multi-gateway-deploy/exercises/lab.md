@@ -100,41 +100,12 @@ scripts/                     setup, teardown, validate, migrate, scan, reset-tri
   a public Perspective page or a workflow log. If you need a gateway status
   page, ask: the instructor shares access in the chat when it is needed.
 
-## The mental model, before you start
-
-One repository, two jobs. The seam between them is a version string:
-
-- **`projects/` and the gateway payload answer "what have we built?"**
-  A git tag like `<yourname>@v1.0.0` marks a version of one project: a
-  point in history you can deploy. Nothing gets compiled; the deploy ships
-  the files as they were at that tag. A tag that was never pushed is a
-  release that does not exist.
-- **`release.yaml` answers "what runs on production, right now?"** One
-  file, one production gateway (`oatmakers-site-7`). You change a version
-  number by PR, a deploy happens. No workflow in the repo deploys any other
-  way, and a pin may only point at a tag on a commit that is on `main`, so
-  only reviewed code ships. (Write access to a repo with a self-hosted runner
-  is still a lot of trust: a workflow file you push on a branch runs before
-  anyone reviews it. Keep that in mind for the debrief.)
-
-```yaml
-# release.yaml
-gateway: oatmakers-site-7
-projects:
-  oatmakers: v5.1.0       # ships projects/oatmakers + the gateway payload from oatmakers@v5.1.0
-```
-
-In the teaching you saw **option B**: split the infra part (release files,
-gateway config) into its own repo, owned by another team. Both are valid.
-One repo keeps this lab small.
-
 ## Rules for a shared live demo
 
 Everyone in the group, and the Mustry team, ships through the same
 `release.yaml` to the same gateway. These rules keep that civil:
 
-1. **Small PRs.** One view, one migration pair, one module. Small PRs get
-   reviewed first and conflict least.
+1. **Small PRs.** One view, one migration pair, one module.
 2. **Stage only what you changed.** `git add <your paths>`, never
    `git commit -am`. The local gateway rewrites files on its own (module
    fingerprints, resource stamps); that churn never belongs in your PR.
@@ -163,8 +134,7 @@ Everyone in the group, and the Mustry team, ships through the same
    production gateway. Say so in the chat before you merge it.
 8. **Leave the existing demo alone.** Add your screens, tags and tables
    under names that carry your name or `Course`; do not rework the demo's
-   own screens. Rollback is `git revert` of the release PR, but nobody wants
-   to need it.
+   own screens.
 
 ## Before you start
 
@@ -173,8 +143,8 @@ Everyone in the group, and the Mustry team, ships through the same
   notifications or at
   <https://github.com/Mustry-Solutions/demo-oatmakers/invitations>. No fork.
 - **Coming straight from lab 06? Shut its stack down first**
-  (`docker compose down` in `labs/06-secrets-db-and-modules/` of your fork).
-  It holds ports **8088, 8090 and 5432**, all three of which this lab needs.
+  (`docker compose down` in `labs/06-secrets-db-and-modules/` of your fork):
+  it holds ports **8088, 8090 and 5432**.
 - **Clone the repo next to the course repo** in `~/mustry-academy/`, not
   inside `cicd-for-ignition/`:
 
@@ -250,8 +220,8 @@ stack, the same move as every previous lab:
 ### Demo 3: multi-site repo layouts on screen
 
 1. Sketch option A (one repo for everything, what this lab uses) and
-   option B (splits) live, against the constraints from the teaching: the
-   vendor and the shared library.
+   option B (splits) live, against the constraints from the teaching: site
+   teams, a vendor and an infra team.
 2. Where the runners live: one per site, `runs-on: [self-hosted, site-4]`,
    inside the site network, no inbound access needed. Today: one per
    student laptop, plus one next to the production gateway.
@@ -265,9 +235,7 @@ Follows [`slides/assignment.html`](https://share.mustrysolutions.com/a95c879a-d1
 Everyone does this once, at the start, then leaves it running for the rest of the lab.
 It gives you a second local gateway that receives **every merge to
 `main`**, so you see a change land somewhere safe before it is ever tagged
-for production. It reuses building blocks you already own: a self-hosted
-runner (labs 03-06) and a push-to-main deploy workflow that ships files by
-`docker cp` and an authenticated scan (labs 04-06).
+for production.
 
 **1. Tell the stack who you are.** At the start of Part 0 the instructor
 posts **one runner registration token** in the Zoom chat. Then:
@@ -279,18 +247,8 @@ cp .env.example .env
 # leave IGNITION_API_KEY empty: setup.sh generates it
 ```
 
-About that token:
-
-- Everyone uses the same one. It can enroll any number of runners on this
-  one repo while it lives, and nothing else: it is not a login and not a
-  PAT, which is why sharing it in the chat is fine.
-- Registering a runner is a repo-admin act, and contributors are not
-  admins. That is why the token comes from the instructor instead of from a
-  settings page, like it did in your fork.
-- It expires **one hour** after it is generated. That only limits
-  registration: your runner trades it for its own credentials on the first
-  start and keeps them in a volume. Missed the window, or wiped your
-  volumes? Say so; a fresh token takes five seconds.
+Everyone uses the same token. It is valid for **one hour**; missed the
+window, or wiped your volumes? Ask for a fresh one.
 
 **2. Start the stack.**
 
@@ -302,19 +260,15 @@ About that token:
 and, because `LAB_USER` is set, the `test` compose profile: your test
 gateway `oatmakers-test-gateway` on `8090`, its own database
 `oatmakers-test-postgres` and your runner
-`oatmakers-test-runner-<yourname>`. It also generates your API key into
-`.env` and seeds it into the test gateway **before** its first boot (the
-scan API only accepts tokens the gateway has already loaded), so always use
-`setup.sh` for the first start. At the end it checks that both gateways
-accept your key. It is safe to re-run.
+`oatmakers-test-runner-<yourname>`. It also generates your API key, so
+always use `setup.sh` for the first start. It is safe to re-run.
 
 Need a new API key (it showed up on screen, say)? Empty `IGNITION_API_KEY`
 in `.env` and run `./scripts/setup.sh` again: it generates a new key, puts
 it on both gateways and your runner, and restarts each gateway that still
 holds the old one.
 
-**3. Check that your runner is online.** Contributors cannot open
-*Settings → Actions → Runners*, so look at the runner itself:
+**3. Check that your runner is online** in its log:
 
 ```bash
 docker logs oatmakers-test-runner-<yourname> 2>&1 | grep -E "Connected to GitHub|Listening for Jobs"
@@ -339,16 +293,11 @@ In the new file, replace `CHANGEME` with your name in the one line marked
 runs-on: [self-hosted, <yourname>-local]
 ```
 
-Why a file per person, with the label written out? GitHub resolves
-`runs-on` before any per-user context exists, and a repo variable has one
-value for everyone: it would route every deploy to one laptop. One file per
-person, each naming its own label, **is** the routing.
-
-What the workflow does is what the production deploy does, minus the
+The workflow does what the production deploy does, minus the
 `release.yaml` indirection: check out `main`, run the migrations against
 your test gateway's own database, `docker cp` projects and config into your
-test gateway, ship modules and JARs (restart only when they changed), then
-ask the gateway for an authenticated scan.
+test gateway, ship modules and JARs, then ask the gateway for an
+authenticated scan.
 
 **5. PR it in like anything else.**
 
@@ -373,14 +322,10 @@ your new workflow straight away:
 - From now on, every merge anyone makes runs your workflow too. Watch the
   runs pile up in the Actions tab during Part 1.
 
-- **Observe:** the runner **label** is the whole routing story. Everyone
-  has a push-to-main workflow, and each one deploys only to its owner's
+- **Observe:** the runner **label** routes the deploy. Everyone's
+  workflow runs on every merge, and each one deploys only to its owner's
   test gateway. Production uses the same mechanism:
   `runs-on: [self-hosted, demo-oatmakers]`.
-- **Observe:** your test gateway gets its files the way production does,
-  never through a bind mount of your working tree. Its database gets its
-  migrations the way production's does: from the workflow, never from
-  `scripts/migrate.sh` on your laptop.
 
 - **From now on you can also deploy a branch** to your test gateway before
   you merge it: `gh workflow run test-<yourname>.yml --ref <your-branch>`
@@ -423,23 +368,17 @@ approval. If you get review comments, fix them and push again: same PR.
 
 - **Observe:** your test gateway (and everyone else's) now serves
   `http://localhost:8090/data/perspective/client/<yourname>/`.
-- **Observe:** production did **not** change. `Deploy` did not even run:
-  `release.yaml` did not change. `main` means "reviewed and could ship",
-  not "shipped".
+- **Observe:** production did **not** change. `Deploy` did not run,
+  because `release.yaml` did not change.
 
-**5. Tag your release.** This is what makes the release *exist*. Tag the
-merged `main`, never your feature branch: a tag must point at a commit on
-`main`, so that only reviewed code can ship.
+**5. Tag your release.** Tag the merged `main`, never your feature
+branch: a tag must point at a commit on `main`.
 
 ```bash
 git switch main && git pull
 git tag <yourname>@v1.0.0
 git push origin <yourname>@v1.0.0
 ```
-
-The tag is the release: a named version of `projects/<yourname>/` that
-`release.yaml` can point at. Nothing gets built; the deploy will check out
-this tag and copy your project's files.
 
 **6. Pin it in `release.yaml`.** Check the open PRs first: one release PR
 in flight at a time. Then add one line:
@@ -576,9 +515,8 @@ the manifest alone: it shows in the gateway's module list on
   (the lab 06 env vars), so it installs headless and writes
   `certFingerprint` and `licenseAgreementHash` into your entry. Commit only
   your `modules.json` entry and the `.modl`.
-- Your test gateway and production do not have that env var: they trust the
-  module because of the two values in your entry. Your test gateway proves
-  that before production does.
+- Your test gateway and production trust the module through the two
+  values in your entry.
 - Build a Perspective screen with a chart from the module on it.
 - This release restarts production: announce it in the chat before you
   merge the pin.
@@ -589,19 +527,13 @@ the manifest alone: it shows in the gateway's module list on
 - Download `fastcsv-4.4.0.jar` from Maven Central
   (<https://repo1.maven.org/maven2/de/siegmar/fastcsv/4.4.0/fastcsv-4.4.0.jar>)
   into `jar-files/jar/` and add its row (source and sha256) to
-  `jar-files/jar/README.md`, the lab 06 move. FastCSV on purpose: the
-  gateway does not bundle it, so the import fails until the JAR is really
-  there. (Importing commons-lang3 and friends proves nothing: the image
-  already has them.)
+  `jar-files/jar/README.md`, the lab 06 move.
 - Make your local gateway load it. It bind-mounts `jar-files/jar/` into
   its JAR directory, and JARs load at boot, so a restart is all it takes:
 
   ```bash
   docker compose restart gateway
   ```
-
-  Your test gateway and production keep the JARs their deploy ships in a
-  volume, so the JAR survives a container recreate there too.
 
 - Add a project script, for example `course/<yourname>/recipe`, with a
   function that parses a CSV line of ingredients:
@@ -628,12 +560,10 @@ the manifest alone: it shows in the gateway's module list on
   and on production). Username: the plain string `ignition`. Password: the
   **referenced secret** `POSTGRES_PASSWORD` from the file secret provider
   named `environment` that is already in the gateway config. You reference
-  it; you never see the value. Lab 06's secrets ladder, for real. (Ignition
-  only references a secret for the password field; the username stays a
-  plain setting.)
+  it; you never see the value.
 - The gateway creates a **store-and-forward engine** with the same name
   along with the connection, plus its status tags. Stage them with your
-  connection, so nobody else's gateway shows them as stray files:
+  connection:
   `services/config/resources/core/ignition/database-connection/Course_<yourname>/`,
   `.../store-and-forward-engine/Course_<yourname>/`,
   `.../tag-definition/System/Gateway/Database/Course_<yourname>/` and
@@ -647,17 +577,12 @@ the manifest alone: it shows in the gateway's module list on
   scripts/migrate.sh up
   ```
 
-  That is your local database. Your test gateway has its own, which only
-  your test workflow migrates, so trying a migration locally never breaks
-  your test runs. Your local database does remember it: run
-  `scripts/migrate.sh down 1` before you switch branches or renumber, and
-  `up` again after your PR merges. Pick a number higher than any on `main`
-  at merge time, not just a free one: a lower number merged after a higher
-  one already ran is silently skipped. If `main` already has your number
-  when you rebase, renumber yours.
+  That is your local database; your test gateway has its own. Run
+  `scripts/migrate.sh down 1` before you switch branches or renumber. Pick a
+  number higher than any on `main` at merge time. If `main` already has
+  your number when you rebase, renumber yours.
 - Build a Perspective view that queries the seeded rows.
-- Verify on production: your page shows the rows (so the connection is
-  valid and the migration ran before the screen arrived).
+- Verify on production: your page shows the rows.
 
 **Challenge 4: a simulator device with tags and live values**
 
@@ -678,8 +603,7 @@ the manifest alone: it shows in the gateway's module list on
   (OPC server `Ignition OPC UA Server`, item paths `ns=1;s=[CourseSim]Ramp`
   and `ns=1;s=[CourseSim]Sine`, data type Float8) and use them on a
   Perspective screen.
-- The device config and the tags live in `services/config/`: they travel
-  with the pipeline like everything else. Stage your device
+- Stage your device
   (`.../com.inductiveautomation.opcua/device/CourseSim/`), your tag folder
   (`.../tag-definition/default/Course/`) and the status tags the gateway
   creates for the device (`.../tag-definition/System/Gateway/Devices/CourseSim/`).
@@ -688,10 +612,9 @@ the manifest alone: it shows in the gateway's module list on
 
 **Challenge 5: historize the live tags and build a dashboard**
 
-- The **TimescaleDB-Historian** module (Mustry's own) already ships in
+- The **TimescaleDB-Historian** module already ships in
   `third-party-modules/` and is registered in `services/modules.json`: you
-  build on it, you do not install it. It runs in trial mode unless a
-  licence is installed; `scripts/reset-trial.sh` resets your local trial.
+  build on it, you do not install it.
 - Create a historian named `CourseHistorian` of the module's TimescaleDB
   type that stores into the same plant database challenge 3's connection
   reads (`jdbc:postgresql://postgres:5432/ignition`, username `ignition`).
@@ -700,11 +623,11 @@ the manifest alone: it shows in the gateway's module list on
   the same name. Stage `.../store-and-forward-engine/CourseHistorian/` and
   `.../tag-definition/System/Gateway/StoreAndForward/coursehistorian/` with
   it. Never give a historian the name of a connection: they would share
-  one engine, and removing either one deletes it and stops the other.
+  one engine.
 - Enable **tag history** on challenge 4's tags, pointed at your historian.
 - Build a dashboard view that charts that history.
 - You will be merging into files the others just changed. **Merge
-  conflicts are part of the challenge**, not an accident.
+  conflicts are part of the challenge.**
 - Verify on production: the chart fills up with history from the live tags.
 
 **Part 2 gate:** your challenge live on production through a reviewed PR,
@@ -727,16 +650,13 @@ tag, one release PR at a time.
   `<yourname>@v1.1.0` and pin that too. Inheritance is two fields in
   `project.json`: `"inheritable": true` in `course-lib`, and
   `"parent": "course-lib"` in yours (or set both in the gateway's project
-  settings); `scripts/scan.sh` loads the change. The parent has to be on the gateway
-  before (or together with) the child that inherits from it: the teaching's
-  "parent pinned alongside", in one flat release file.
+  settings); `scripts/scan.sh` loads the change. Pin the parent before, or
+  together with, the child that inherits from it.
 - **Cross the challenges.** Historize more tags, add a migration on top of
   someone else's tables, put an Embr chart on the seeded data, call the
   recipe function from your own view. Or rebuild something that looks like
   another challenge, purely to train the move you want more reps on.
-- **Stay current.** Pull `main` often and rebase your branch. Most merge
-  conflicts die before they are born; the ones that do happen are the
-  pipeline making a collision visible *before* production.
+- **Stay current.** Pull `main` often and rebase your branch.
 
 ---
 
@@ -774,9 +694,8 @@ tag, one release PR at a time.
   `no migration found for version N`.** The same, in your local database:
   on that branch, `scripts/migrate.sh down 1`.
 - **Your test run says `Still not authorized`.** Your test gateway and your
-  runner hold different API keys (the key in `.env` changed without a
-  `setup.sh` run). Run `./scripts/setup.sh`: it puts the key from `.env` on
-  both and restarts the gateway. Then re-run the failed run.
+  runner hold different API keys. Run `./scripts/setup.sh`, then re-run the
+  failed run.
 - **`CI OK` is red on a release PR.** Open the failing job: most often the
   pin points at a tag that was never pushed (`git push origin <tag>`), a
   tag on a commit that is not on `main` (tag `main` after your PR merged),
@@ -786,8 +705,7 @@ tag, one release PR at a time.
 - **`Deploy` is red, or production looks wrong after your release.** Say so
   in the chat straight away. The fix is a revert of the release PR (the
   **Revert** button on the merged PR, then review and merge as usual); the
-  instructor handles anything a revert cannot undo, such as a migration
-  that already ran.
+  instructor handles anything a revert cannot undo.
 
 ## Definition of done
 
@@ -810,14 +728,14 @@ nothing needs your laptop.
 Bring answers:
 
 - One repo carried the whole group to one production gateway today. When
-  would you split it, like the teaching's option B, and which part would you
-  split off first?
+  would you split it, like option B, and which part would you split off
+  first?
 - Who may merge what at your plant, and who approves a production release?
 - What does "only reviewed commits reach main" mean in your organisation,
   and what enforces it?
 - Two people cut a tag at the same time today. How would your plant keep
   one version stream sane with ten engineers on it?
-- Who is the master of tags at your plant today (teaching Part 4), and does
+- Who owns the tags at your plant today (teaching Part 4), and does
   anything enforce it?
 - And the course-closing question: **what will you build first, back at
   your own plant?**

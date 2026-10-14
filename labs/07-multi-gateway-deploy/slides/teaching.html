@@ -560,13 +560,12 @@ a{color:var(--primary-deep)}
 .tile.soaked .soak{opacity:1}
 .tile.devt{border-style:dashed;border-color:var(--teal)}
 
-/* option B: four splits, each with what its pipeline deploys where */
+/* option B: three splits, each with what its pipeline deploys where */
 .splits{display:flex;flex-direction:column}
-.splitrow{display:grid;grid-template-columns:17rem 1fr 23rem;gap:2rem;align-items:center;padding:.7rem 0;border-top:1px solid var(--line-2)}
+.splitrow{display:grid;grid-template-columns:30rem 1fr;gap:3rem;align-items:center;padding:1.1rem 0;border-top:1px solid var(--line-2)}
 .splitrow:last-child{border-bottom:1px solid var(--line-2)}
 .splitrow h4{font-size:var(--text-lg);font-weight:800;line-height:1.25;color:var(--ink-strong)}
 .splitrow .rn{font-family:var(--font-mono);font-size:var(--text-sm);color:var(--primary-deep);margin-top:.3rem}
-.splitrow p{font-size:var(--text-base);color:var(--muted);line-height:1.4}
 .wires{display:flex;flex-direction:column;gap:.45rem}
 .wire{display:flex;align-items:center;gap:.5rem;min-width:0}
 .wire .pkt{white-space:nowrap}
@@ -575,8 +574,6 @@ a{color:var(--primary-deep)}
 .pkt.tgt{background:hsl(var(--chart-4-light) / .12);color:var(--teal)}
 .wire>i{flex:1;min-width:1.5rem;height:2px;background:var(--primary);position:relative}
 .wire>i::after{content:"";position:absolute;right:-1px;top:-4px;border-left:7px solid var(--primary);border-top:5px solid transparent;border-bottom:5px solid transparent}
-.wire.pin>i{background:repeating-linear-gradient(90deg,var(--violet) 0 6px,transparent 6px 11px)}
-.wire.pin>i::after{border-left-color:var(--violet)}
 
 /* tag ownership */
 .compare>.amber{border-top-color:var(--amber)}
@@ -646,35 +643,15 @@ a{color:var(--primary-deep)}
 <!-- FRAMING -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">01</span><h2 class="title">Every situation is different: this session gives you options, not one answer</h2></div>
+  <div class="sechead"><span class="num">01</span><h2 class="title">The five parts of this lab: from gateway architectures to deploying on demo-oatmakers</h2></div>
   <div class="body">
     <ol class="track">
       <li><small>Part 1</small><b>Architectures</b><span>standalone, frontend-backend, multi-site</span></li>
       <li><small>Part 2</small><b>Repos and pipelines</b><span>how a repository maps onto each shape</span></li>
       <li><small>Part 3</small><b>The deploy mechanism</b><span>a releases folder, promotion by PR, multi-site options</span></li>
-      <li><small>Part 4</small><b>Tag ownership</b><span>who is the master of tags</span></li>
+      <li><small>Part 4</small><b>Tag ownership</b><span>who may change tags where</span></li>
       <li class="now"><small>Part 5</small><b>This lab's repo</b><span>demo-oatmakers, on a live gateway</span></li>
     </ol>
-    <div class="cols2" style="margin-top:1rem">
-      <div>
-        <h3 class="col-head">You already own every building block</h3>
-        <ul class="dots sm">
-          <li>Pipelines and self-hosted runners (labs 03 to 06)</li>
-          <li>File-based and image-based deploys</li>
-          <li>Secrets and db-migrations</li>
-          <li>Nothing today needs a new tool</li>
-        </ul>
-      </div>
-      <div>
-        <h3 class="col-head">More gateways change the routing, not the deploy</h3>
-        <ul class="dots sm">
-          <li>Which files go to which gateway?</li>
-          <li>Triggered by what, in which order?</li>
-          <li>Who is allowed to decide?</li>
-        </ul>
-      </div>
-    </div>
-    <div class="aside"><span class="label">Where the course left us</span>One repository, one site, one logical gateway in three environments (local, test, production). Every slide today is a controlled change to that picture. You get the menu, not a prescription: pick what fits your plant, and defend the pick.</div>
   </div>
 </section>
 
@@ -721,7 +698,7 @@ a{color:var(--primary-deep)}
         <div class="layer"><span class="ln">Frontend</span><span class="lt">The Perspective sessions. Both talk over the gateway network.</span></div>
         <div class="layer"><span class="ln">Why split</span><span class="lt">Client sessions can no longer starve device polling; restart visualization without touching data collection.</span></div>
         <div class="layer"><span class="ln">It scales</span><span class="lt">More frontends behind a load balancer, more backends per device group.</span></div>
-        <div class="layer"><span class="ln">CI/CD view</span><span class="lt">One plant, <b>several deploy targets with different content</b>: projects mostly to the frontend, device and tag config to the backends. <b>The pipeline has to route</b>: the new skill of this lab.</span></div>
+        <div class="layer"><span class="ln">CI/CD view</span><span class="lt">One plant, <b>several deploy targets with different content</b>: projects mostly to the frontend, device and tag config to the backends. <b>The pipeline has to route.</b></span></div>
       </div>
     </div>
   </div>
@@ -738,7 +715,7 @@ a{color:var(--primary-deep)}
         <div class="layer"><span class="ln">Sites</span><span class="lt">Edge or standard gateways collect and buffer at the plant; local clients keep working when the WAN link drops.</span></div>
         <div class="layer"><span class="ln">Center</span><span class="lt">A central database service, enterprise reporting, corporate clients through load-balanced frontends.</span></div>
         <div class="layer"><span class="ln">Oatmakers</span><span class="lt">Eight sites: this is where Oatmakers is heading.</span></div>
-        <div class="layer"><span class="ln">CI/CD view</span><span class="lt">Many targets in <b>different networks</b>: a self-hosted runner per site deploys inside each network, and "which version runs where" becomes real bookkeeping. Both get solved this hour.</span></div>
+        <div class="layer"><span class="ln">CI/CD view</span><span class="lt">Many targets in <b>different networks</b>: a self-hosted runner per site deploys inside each network, and "which version runs where" becomes real bookkeeping. Part 3 solves both.</span></div>
       </div>
     </div>
   </div>
@@ -793,15 +770,13 @@ a{color:var(--primary-deep)}
         </div>
       </div>
     </div>
-    <div class="aside reveal" data-step="5"><span class="label">Times three</span>This whole picture exists <b>three times on your machine</b>: local (every clone works), test (every merge to main) and production (a version tag). The same files, promoted in stages.</div>
   </div>
   <div class="controls"><p class="step-note">
-    <span data-at="0">The baseline as one picture: everything after this slide is a controlled change to it.</span>
+    <span data-at="0">One repository, one pipeline, one gateway, in local, test and production.</span>
     <span data-at="1"><b>The plant</b>, the drawing from Part 1: PLCs, one Ignition gateway, the database and the Perspective clients.</span>
     <span data-at="2"><b>One repository</b> holds everything that gateway runs: projects, gateway config, migrations and the workflow.</span>
     <span data-at="3"><b>One pipeline:</b> a push to main runs validate, then <code>deploy.yml</code>.</span>
     <span data-at="4">The <b>self-hosted runner</b> ships projects and config into the gateway and runs the migrations straight against the database.</span>
-    <span data-at="5">Three times over: local, test, production. The question for the rest of the lab: <b>what changes when the plant side grows?</b></span>
   </p></div>
 </section>
 
@@ -843,15 +818,13 @@ a{color:var(--primary-deep)}
         </div>
       </div>
     </div>
-    <div class="aside good reveal" data-step="5"><span class="label">The payoff of one repo</span>A screen change and its tag change are <b>one PR</b>: reviewed together, deployed together, to two different gateways.</div>
   </div>
   <div class="controls"><p class="step-note">
     <span data-at="0">Two gateways do not mean two repositories: one repo holds all projects and all gateway config.</span>
     <span data-at="1">Still <b>one repository</b>, and still one <code>deploy.yml</code>.</span>
     <span data-at="2"><code>projects/</code> holds both HMI projects, <b>each with its own parent project</b> it inherits from.</span>
     <span data-at="3"><b>A config folder per gateway:</b> devices and tag providers in the backend folder, sessions and auth in the frontend one.</span>
-    <span data-at="4"><b>The pipeline routes:</b> HMI projects, parents and frontend config to the front-end gateway, backend config to the back-end gateways.</span>
-    <span data-at="5">One PR can now change two gateways at once, safely.</span>
+    <span data-at="4"><b>The pipeline routes:</b> HMI projects, parents and frontend config to the front-end gateway, backend config to the back-end gateways. A screen change and its tag change are one PR.</span>
   </p></div>
 </section>
 
@@ -889,7 +862,6 @@ projects:
   oatmakers-packaging:
     version: <span class="cmd2">v1.4.0</span>
     shared:  <span class="cmd2">v1.2.0</span></pre></div>
-        <div class="aside reveal" data-step="3"><span class="label">The file is the state</span>Plain text under version control, so the fleet's state has a <b>git log</b>. Change the file, and the pipeline makes it true.</div>
       </div>
     </div>
   </div>
@@ -897,7 +869,7 @@ projects:
     <span data-at="0">The bookkeeping that survives any repository layout, usually in its own small repository.</span>
     <span data-at="1"><b>One folder per environment:</b> test, staging, production. Deploy state lives apart from the code that produces it.</span>
     <span data-at="2"><b>One file per gateway:</b> every site pair and <code>gw-central</code>. If a gateway exists, it has a file.</span>
-    <span data-at="3"><b>Each project pinned to a version, its parent pinned with it:</b> the record of what runs on <code>gw-site4-frontend</code>.</span>
+    <span data-at="3"><b>Each project pinned to a version, its parent pinned with it.</b> Change the file, and the pipeline makes it true.</span>
     <span data-at="4"><b>Test tracks main, automatically.</b> Pinning starts where humans need control: staging and production.</span>
   </p></div>
 </section>
@@ -915,7 +887,7 @@ projects:
  oatmakers:
 <span class="red">-   version: v2.0.0</span>
 <span class="grn">+   version: v2.0.1</span></pre></div>
-        <div class="aside reveal" data-step="2"><span class="label">Review is the approval gate</span>The reviewer approves a <b>promotion</b>, not code. <b>Merge is the trigger</b>; nobody logs into a gateway.</div>
+        <div class="aside reveal" data-step="2"><span class="label">Merge is the trigger</span>The reviewer approves a <b>promotion</b>, not code. Nobody logs into a gateway.</div>
         <div class="aside good reveal" data-step="6"><span class="label">Rollback is git revert</span>Revert the release PR and the pipeline makes the old pins true again: <b>the file is the state</b>.</div>
       </div>
       <div>
@@ -982,7 +954,6 @@ projects:
             </svg>
           </div>
         </div>
-        <div class="aside reveal" data-step="5"><span class="label">One discipline</span>Keep <b>one version of each parent per environment</b>, so the pair you tested together is the pair that ships together. Stricter: record the tested parent version in a manifest next to the project, and let the deploy refuse untested pairs.</div>
       </div>
     </div>
   </div>
@@ -992,53 +963,41 @@ projects:
     <span data-at="2"><b>Site 4's release file</b> pins the project at its own tag, and <b>its parent alongside</b>: the HMI inherits from it.</span>
     <span data-at="3"><b>The deploy reads that one file</b> and ships the project and its parent to site 4's gateway, and nowhere else.</span>
     <span data-at="4"><b>Nothing else moves:</b> site 2 and central keep their pins until their own file changes, through the same PR machinery.</span>
-    <span data-at="5">The pair you tested is the pair that ships.</span>
   </p></div>
 </section>
 
 <!-- MULTI-SITE OPTION B (interactive) -->
 <section class="slide" data-ctrl="reveal">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">10</span><h2 class="title">Multi-site option B: splitting into multiple repositories</h2></div>
+  <div class="sechead"><span class="num">10</span><h2 class="title">Multi-site option B: several repositories, each deploying its own part</h2></div>
   <div class="body">
     <div class="splits">
       <div class="splitrow reveal" data-step="1">
         <div><h4>A repository per site, plus one for the enterprise level</h4><div class="rn">oatmakers-site1 … site8 · oatmakers-enterprise</div></div>
-        <p>Each site team owns its repo and its pipeline to its own gateways; the enterprise repo deploys <code>gw-central</code>. <b>Cost:</b> a change every site needs is eight PRs, and sites can drift apart.</p>
-        <div class="wires"><div class="wire"><span class="pkt">oatmakers-site4</span><i></i><span class="pkt tgt">site 4 gateways only</span></div></div>
+        <div class="wires"><div class="wire"><span class="pkt">oatmakers-site4</span><i></i><span class="pkt tgt">site 4 gateways only</span></div><div class="wire"><span class="pkt">oatmakers-enterprise</span><i></i><span class="pkt tgt">gw-central</span></div></div>
       </div>
       <div class="splitrow reveal" data-step="2">
         <div><h4>A repository per vendor project</h4><div class="rn">palletizer-vendor</div></div>
-        <p>One project, nothing else. The vendor's pipeline deploys <b>only that project</b> to your gateways, alongside your own deploys; they never see the rest of the plant. Project-level deploys (lab 04) make this safe.</p>
         <div class="wires"><div class="wire"><span class="pkt">palletizer project</span><i></i><span class="pkt tgt">gw-site2 · gw-site7</span></div></div>
       </div>
       <div class="splitrow reveal" data-step="3">
         <div><h4>Config repositories separate from one projects repository</h4><div class="rn">oatmakers-projects · oatmakers-config-site1 …</div></div>
-        <p><b>All projects in one repo</b> keeps the shared library and cross-project review easy; gateway config per site lives in repos the infra team owns. <b>Cost:</b> a feature that needs both takes two PRs.</p>
         <div class="wires"><div class="wire"><span class="pkt">all projects</span><i></i><span class="pkt tgt">every gateway</span></div><div class="wire"><span class="pkt">site config repo</span><i></i><span class="pkt tgt">that site's gateways</span></div></div>
       </div>
-      <div class="splitrow reveal" data-step="4">
-        <div><h4>The shared library across repositories: git submodules</h4><div class="rn">oatmakers-shared · pinned per repo</div></div>
-        <p>If projects live in several repos, <code>oatmakers-shared</code> can be a <b>git submodule</b>: each repo pins a commit of it and upgrades deliberately. The pin is a version choice, and it shows up in the diff.</p>
-        <div class="wires"><div class="wire pin"><span class="pkt">oatmakers-shared</span><i></i><span class="pkt tgt">pinned into each site repo</span></div></div>
-      </div>
     </div>
-    <div class="aside reveal" data-step="5"><span class="label">Mix them freely</span>Each split answers a different question: team boundaries, vendor access, infra ownership, shared code. Pick the fewest repositories that answer yours.</div>
   </div>
   <div class="controls"><p class="step-note">
-    <span data-at="0">Four splits you can make; each wire shows what that repository's pipeline deploys where.</span>
-    <span data-at="1"><b>Per site:</b> each site team's wire only ever reaches its own site's gateways. Cross-site changes become N PRs.</span>
-    <span data-at="2"><b>Per vendor:</b> the wire carries only the palletizer project, to exactly two gateways.</span>
+    <span data-at="0">Three splits you can make and mix; each wire shows what that repository's pipeline deploys where.</span>
+    <span data-at="1"><b>Per site:</b> each site team's repo only reaches its own site's gateways; the enterprise repo deploys <code>gw-central</code>.</span>
+    <span data-at="2"><b>Per vendor:</b> the vendor's repo carries only the palletizer project, to exactly two gateways.</span>
     <span data-at="3"><b>Config split from projects:</b> infra owns the config repos, the app team owns the projects repo.</span>
-    <span data-at="4"><b>A submodule's wire is a pin, not a deploy:</b> each site repo ships the pinned commit with its own deploys.</span>
-    <span data-at="5">Team boundaries, NDAs, infra ownership, shared code: mix the splits to answer yours.</span>
   </p></div>
 </section>
 
 <!-- TRADE-OFFS TABLE -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">11</span><h2 class="title">Choosing a repository layout: the trade-offs side by side</h2></div>
+  <div class="sechead"><span class="num">11</span><h2 class="title">Choosing a repository layout: pick the fewest repositories that answer your questions</h2></div>
   <div class="body">
     <table class="table">
       <tr><th style="width:24%">Layout</th><th style="width:40%">Strongest when</th><th>Watch out for</th></tr>
@@ -1047,7 +1006,6 @@ projects:
       <tr><td>Vendor repository per project</td><td>External parties contribute <b>without seeing the plant</b>.</td><td>Needs disciplined project-level deploys and a clear interface contract (which tags and queries the project may expect).</td></tr>
       <tr><td>Config repos + one projects repo</td><td>Infra and application are different teams; all projects together keep the shared library easy.</td><td>One feature can need two PRs in two repos, in the right order.</td></tr>
     </table>
-    <div class="aside"><span class="label">Whatever you pick</span>Pick the <b>fewest repositories that answer your actual questions</b>: who may see what, who owns what, how shared code travels. More repos and more gateways all raise one question, <b>which version runs where?</b>, and the releases folder answers it for every layout here.</div>
   </div>
 </section>
 
@@ -1056,7 +1014,7 @@ projects:
   <div class="glow ambient" aria-hidden="true"></div>
   <header class="topbar"><img class="logo" src="logos/OriginalLight.png" alt="Mustry Solutions"></header>
   <div class="divider-body">
-    <h2 class="divider-title">Tag management: who is the <em>master</em> of tags?</h2>
+    <h2 class="divider-title">Tag management: decide who <em>owns</em> the tags</h2>
     <ol class="flow nonum" style="max-width:60rem">
       <li><b>Everything else</b><span>changes in Git, flows to production</span></li>
       <li class="on"><b>Tags</b><span>change on production, against the deploy direction</span></li>
@@ -1079,17 +1037,15 @@ projects:
         <div class="blue reveal" data-step="4"><small>MODEL 2</small><h3>Production is master</h3><p>Tags are exported <b>from production into the repo</b> on a schedule; the deploy never touches the provider. Test refreshes from those exports, so scenario 2's tags reach test too.</p><span class="fits">Fits when engineers and operators live in the tag browser</span></div>
         <div class="blue reveal" data-step="5"><small>MODEL 3</small><h3>Split ownership</h3><p>Test owns <b>structure</b> (UDT definitions, folders, new tags); production owns <b>values</b> (setpoints, alarm limits). The deploy ships definitions and <b>never writes values</b>, or you split by provider or folder.</p><span class="fits">Fits most plants, if the split is written down and enforced</span></div>
       </div>
-      <div class="aside warn reveal" data-step="6"><span class="label">The rule</span>No universal answer, but there must be <b>an</b> answer, decided before your first multi-gateway deploy: written down, agreed with operations, enforced by the pipeline (what a deploy may overwrite, must merge, must never touch).</div>
     </div>
   </div>
   <div class="controls"><p class="step-note">
-    <span data-at="0">Tags are the one data stream that changes on production; decide who owns them before the first overwritten setpoint.</span>
+    <span data-at="0">Tags also change on production: decide who owns them, write it down and let the pipeline enforce it.</span>
     <span data-at="1"><b>Scenario 1:</b> an alarm limit trimmed at 03:00, silently put back by Saturday's deploy.</span>
     <span data-at="2"><b>Scenario 2:</b> production has tags the test gateway has never seen.</span>
     <span data-at="3"><b>Model 1:</b> all tag changes travel through the repo; the deploy may overwrite the provider.</span>
     <span data-at="4"><b>Model 2:</b> tags flow from production into the repo; the deploy never touches the provider.</span>
     <span data-at="5"><b>Model 3:</b> test owns structure, production owns values; the deploy never writes values.</span>
-    <span data-at="6">Whichever you pick, <b>your pipeline must enforce it</b>.</span>
   </p></div>
 </section>
 
@@ -1124,7 +1080,7 @@ projects:
             <span class="pkt">merge to main</span>
             <div class="via"><span>test-&lt;you&gt;.yml</span><i></i></div>
             <div class="target test"><b>your test gateway</b><span class="addr">localhost:8090 · one per student</span>
-              <p><code>runs-on: [self-hosted, &lt;you&gt;-local]</code>: a runner on your laptop, registered with a one-hour token we post in the chat. Its own database, migrated only by this workflow.</p></div>
+              <p><code>runs-on: [self-hosted, &lt;you&gt;-local]</code>: a runner on your laptop, registered with a token we post in the chat. Its own database.</p></div>
           </div>
           <div class="route reveal" data-step="3">
             <span class="pkt">release.yaml changed</span>
@@ -1157,8 +1113,8 @@ projects:
   </div>
   <div class="controls"><p class="step-note">
     <span data-at="0">One repo, two ways out of it: the runner label decides where each job runs.</span>
-    <span data-at="1"><b>The repo:</b> projects, the gateway payload, <code>release.yaml</code> and the workflows. You copy a template into <code>test-&lt;you&gt;.yml</code> in Part 0.</span>
-    <span data-at="2"><b>Test tracks main:</b> one file per person, because <code>runs-on</code> is resolved before any per-user context exists. Registering a runner is a repo-admin act, hence our token.</span>
+    <span data-at="1"><b>The repo:</b> projects, the gateway payload, <code>release.yaml</code> and the workflows.</span>
+    <span data-at="2"><b>Test tracks main:</b> one workflow file per person, each naming its own runner label.</span>
     <span data-at="3"><b>Production is pinned:</b> only a merged change to <code>release.yaml</code> starts Deploy. Started by hand from another branch, it refuses.</span>
     <span data-at="4"><b>The production deploy is wide:</b> every pinned project from its own tag, the whole gateway payload from the <code>oatmakers</code> pin.</span>
     <span data-at="5"><b>You cannot approve your own PR:</b> the instructor or a fellow student does.</span>
@@ -1168,7 +1124,7 @@ projects:
 <!-- TAG BEFORE PIN (interactive) -->
 <section class="slide" data-ctrl="reveal">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">14</span><h2 class="title">A release is a prefixed tag, and the tag must exist before release.yaml points at it</h2></div>
+  <div class="sechead"><span class="num">14</span><h2 class="title">Release a project: tag the merged main, then pin that tag in release.yaml</h2></div>
   <div class="body">
     <div class="pair">
       <div class="code"><pre><span class="l reveal" data-step="1"><span class="cm"># 1 · your feature PR merged: main moved, production did not</span></span>
@@ -1190,13 +1146,13 @@ projects:
    oatmakers:  <span class="cmd2">v5.1.0</span>
 <span class="grn">+  &lt;yourname&gt;: v1.0.0</span></pre></div>
         <div class="aside bad reveal" data-step="4"><span class="label">CI checks every pin</span>Pin a tag nobody pushed, or a tag on a branch that never merged, and <b><code>CI OK</code> goes red</b>. Pushed the tag afterwards? A tag push does not start CI: <b>Re-run failed jobs</b>.</div>
-        <div class="aside good reveal" data-step="5"><span class="label">Merge is the trigger</span>One approval, merge, and <b>Deploy</b> runs on the <code>demo-oatmakers</code> runner: it checks out the pinned tags and copies the files in. Nothing is compiled.</div>
+        <div class="aside good reveal" data-step="5"><span class="label">Merge is the trigger</span>One approval, merge, and <b>Deploy</b> ships the files of the pinned tags from the <code>demo-oatmakers</code> runner.</div>
         <div class="aside reveal" data-step="6"><span class="label">Rollback is git revert</span>The <b>Revert</b> button on the merged release PR opens a PR that puts the old pins back. It re-ships old files; it does <b>not</b> undo a migration that already ran.</div>
       </div>
     </div>
   </div>
   <div class="controls"><p class="step-note">
-    <span data-at="0">The releases folder shrunk to one file: each line pins a project to a tag <code>&lt;project&gt;@vX.Y.Z</code>. Merging deploys nothing; tagging and pinning do.</span>
+    <span data-at="0">The releases folder as one file: each line pins a project to a tag <code>&lt;project&gt;@vX.Y.Z</code>.</span>
     <span data-at="1"><b>Your feature PR merged:</b> every test gateway has it, production does not. Deploy did not even run.</span>
     <span data-at="2"><b>Tag the merged main:</b> the prefix names the project, the version names the point in history. Now the release exists.</span>
     <span data-at="3"><b>Pin it on a branch, by PR:</b> one line in <code>release.yaml</code>, and you stage only that file.</span>
@@ -1209,7 +1165,7 @@ projects:
 <!-- ONE VERSION STREAM (interactive) -->
 <section class="slide" data-ctrl="reveal">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">15</span><h2 class="title">Sharing one version stream: the next free tag, tag races and checking what a tag contains</h2></div>
+  <div class="sechead"><span class="num">15</span><h2 class="title">Take the next free oatmakers@ tag, and check whether a higher pin already contains yours</h2></div>
   <div class="body">
     <div class="pair alt">
       <div class="filecard">
@@ -1243,15 +1199,15 @@ git merge-base --is-ancestor \
 <!-- RELEASE-FILE ETIQUETTE -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">16</span><h2 class="title">Release-file etiquette when everyone ships to one live gateway</h2></div>
+  <div class="sechead"><span class="num">16</span><h2 class="title">Rules for shipping together to one live gateway</h2></div>
   <div class="body">
     <div class="etiq">
       <ul class="checks">
-        <li><b>Small PRs.</b> One view, one migration pair, one module: reviewed first, conflict least.</li>
-        <li><b>Stage only what you changed.</b> The gateway rewrites files on its own; that churn never belongs in your PR. <code>git add &lt;your paths&gt;</code>, never <code>git commit -am</code>.</li>
-        <li><b>One release PR in flight at a time.</b> Check the open PRs, say in the chat when you start, wait for the <b>Deploy</b> run to go green before the next one merges.</li>
+        <li><b>Small PRs.</b> One view, one migration pair, one module.</li>
+        <li><b>Stage only what you changed:</b> <code>git add &lt;your paths&gt;</code>, never <code>git commit -am</code>.</li>
+        <li><b>One release PR in flight at a time.</b> Say in the chat when you start, wait for <b>Deploy</b> to go green.</li>
         <li class="warn"><b>Never lower a pin; a pushed tag is permanent.</b> Made a mistake? Fix it on main and cut the next number.</li>
-        <li class="warn"><b>Announce restarts.</b> A release that adds a module or a JAR restarts the production gateway for a minute or two.</li>
+        <li class="warn"><b>Announce restarts:</b> a module or a JAR restarts the production gateway.</li>
         <li><b>Leave the existing demo alone.</b> Your screens, tags and tables carry your name or <code>Course</code>.</li>
       </ul>
       <div class="stack" style="gap:1.25rem">
@@ -1262,7 +1218,6 @@ git rebase origin/main
 git add release.yaml
 git rebase --continue
 git push --force-with-lease</pre></div>
-        <div class="aside"><span class="label">Why a rebase and not a merge</span>Your release PR stays <b>one readable diff</b>: the one line you changed. <code>--force-with-lease</code> refuses to overwrite a branch someone else pushed to in the meantime.</div>
       </div>
     </div>
   </div>
@@ -1271,7 +1226,7 @@ git push --force-with-lease</pre></div>
 <!-- THE CHALLENGES -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">17</span><h2 class="title">The five challenges reuse moves from labs 04 to 06, now on one shared project</h2></div>
+  <div class="sechead"><span class="num">17</span><h2 class="title">The five challenges: where each lives in demo-oatmakers and how it reaches production</h2></div>
   <div class="body">
     <table class="table">
       <tr><th style="width:19%">Challenge</th><th style="width:35%">Where it lives in demo-oatmakers</th><th style="width:15%">Taught in</th><th>Reaches production with a new <code>oatmakers@</code> pin</th></tr>
@@ -1281,22 +1236,21 @@ git push --force-with-lease</pre></div>
       <tr><td>Simulator device + tags</td><td>the device and tag definitions in <code>services/config/</code></td><td>lab 04: config is files</td><td>hot scan, no restart</td></tr>
       <tr><td>History</td><td>a historian from the <b>TimescaleDB-Historian</b> module (already in the repo) + history enabled on the tags</td><td>lab 06: modules as data</td><td>hot scan, no restart</td></tr>
     </table>
-    <div class="aside good"><span class="label">Your test gateway first</span>Every merge lands on <b>your test gateway</b> before anyone tags it; a branch gets there first with <code>gh workflow run</code>. Not working on <code>localhost:8090</code>? Then not on production either. The gateway payload always rides the <code>oatmakers</code> pin.</div>
   </div>
 </section>
 
 <!-- GATEWAY DETAILS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">18</span><h2 class="title">Three gateway details the challenges rely on: module trust, store-and-forward engines, simulator programs</h2></div>
+  <div class="sechead"><span class="num">18</span><h2 class="title">Three gateway features the challenges use: module trust, store-and-forward engines, simulator programs</h2></div>
   <div class="body">
     <div class="cols3 details">
       <div>
         <h3 class="col-head">A new module: who trusts it</h3>
         <ul class="dots sm">
-          <li>Your <b>local</b> gateway accepts it headless through the lab 06 env vars in <code>docker-compose.yaml</code>: <code>ACCEPT_MODULE_LICENSES</code> and <code>ACCEPT_MODULE_CERTS</code> (one line, comma-separated, no spaces).</li>
-          <li>Env vars reach a container when it is <b>created</b>: <code>docker compose up -d --force-recreate gateway</code>, not a restart.</li>
-          <li>The gateway writes <code>certFingerprint</code> and <code>licenseAgreementHash</code> into your <code>modules.json</code> entry. <b>Test and production trust the module through those two values</b>, without any env var.</li>
+          <li>Your <b>local</b> gateway accepts it through <code>ACCEPT_MODULE_LICENSES</code> and <code>ACCEPT_MODULE_CERTS</code> in <code>docker-compose.yaml</code> (lab 06).</li>
+          <li>Recreate, not restart: <code>docker compose up -d --force-recreate gateway</code>.</li>
+          <li>The gateway writes <code>certFingerprint</code> and <code>licenseAgreementHash</code> into your <code>modules.json</code> entry: <b>test and production trust the module through those two values</b>.</li>
         </ul>
       </div>
       <div>
@@ -1304,7 +1258,7 @@ git push --force-with-lease</pre></div>
         <ul class="dots sm">
           <li>Every <b>database connection</b> and every <b>historian</b> comes with an engine <b>of the same name</b>: <code>store-and-forward-engine/&lt;name&gt;/</code>.</li>
           <li>Plus status tags under <code>tag-definition/System/Gateway/</code>: <code>Database/</code>, <code>StoreAndForward/</code> (and <code>Devices/</code> for a device).</li>
-          <li>Stage them with what you added. Never give a connection and a historian <b>the same name</b>: they share one engine, and removing either deletes it.</li>
+          <li>Stage them with what you added. Never give a connection and a historian <b>the same name</b>: they would share one engine.</li>
         </ul>
       </div>
       <div class="stack">
@@ -1326,31 +1280,26 @@ git push --force-with-lease</pre></div>
 <!-- WORKFLOW DETAILS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">19</span><h2 class="title">Four workflow details: test a branch, re-run CI after a tag, keep migrations in step, inherit from a parent</h2></div>
+  <div class="sechead"><span class="num">19</span><h2 class="title">Test a branch on your test gateway, keep migrations in step, inherit from a parent project</h2></div>
   <div class="body">
     <div class="pair">
       <div class="code"><pre><span class="cm"># 1 · your branch on your test gateway, before the merge</span>
 gh workflow run test-<span class="cmd2">&lt;you&gt;</span>.yml --ref <span class="cmd2">&lt;your-branch&gt;</span>
 <span class="cm">#     the next push to main puts main back</span>
 
-<span class="cm"># 2 · pushed the tag after opening the release PR?</span>
-<span class="cm">#     a tag push does not start CI again</span>
-gh run rerun <span class="cmd2">&lt;run-id&gt;</span> --failed   <span class="cm"># or Checks → Re-run</span>
-
-<span class="cm"># 3 · your LOCAL database remembers branch migrations</span>
+<span class="cm"># 2 · migrations: a number higher than any on main</span>
+scripts/migrate.sh up       <span class="cm"># try it on your local database</span>
 scripts/migrate.sh down 1   <span class="cm"># before you switch branches</span>
-scripts/migrate.sh up       <span class="cm"># after your PR merged</span>
 <span class="cm">#     a branch you deployed with step 1 left its</span>
 <span class="cm">#     migration in your TEST database: on that branch</span>
 scripts/migrate.sh --test down 1</pre></div>
       <div class="stack" style="gap:1.25rem">
-        <div class="code"><pre><span class="cm"># 4 · inheritance is two fields in project.json</span>
+        <div class="code"><pre><span class="cm"># 3 · inheritance is two fields in project.json</span>
 <span class="cm"># projects/course-lib/project.json</span>
 "inheritable": <span class="grn">true</span>
 <span class="cm"># projects/&lt;you&gt;/project.json</span>
 "parent": <span class="grn">"course-lib"</span>
 scripts/scan.sh</pre></div>
-        <div class="aside"><span class="label">Migration numbers</span>Your test gateway has <b>its own database</b>, migrated only by your test workflow: what you try locally never breaks a test run. A database that ran a migration <code>main</code> does not have fails with <code>no migration found for version N</code> until you step it down. Pick a number <b>higher than any on main at merge time</b>: a lower number merged after a higher one already ran is silently skipped.</div>
       </div>
     </div>
   </div>

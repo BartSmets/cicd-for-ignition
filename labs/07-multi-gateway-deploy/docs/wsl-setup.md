@@ -115,15 +115,11 @@ scripts/setup.sh                       # must run without sudo
 git status                             # must be clean, no permission errors
 ```
 
-## Why the gateway no longer runs as root
+## File permissions on the bind-mounted folders
 
-Earlier versions ran the Ignition container as `root`, so every file it wrote
-into `projects/` and `services/config/` was root-owned and you needed `sudo` to
-edit your own project files.
-
-The container now runs as the image's own user (uid 2003) with your group added,
-and `setup.sh` makes the bind-mounted directories group-writable. Files the
-gateway writes stay editable by you.
+The gateway container runs as the image's own user (uid 2003) with your group
+added, and `setup.sh` makes the bind-mounted directories group-writable. Files
+the gateway writes stay editable by you, without `sudo`.
 
 If a plain `docker compose up -d` from a fresh terminal ever leaves you with
 files you cannot edit, re-run `scripts/setup.sh`: it puts the permissions
