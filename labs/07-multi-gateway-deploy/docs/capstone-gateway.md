@@ -38,7 +38,8 @@ The same way your lab gateways were reached, with one extra indirection:
   migrations) from the `oatmakers` pin. Migrations run first, then the files
   are copied in and the gateway is asked for an authenticated scan (the
   lab 04 mechanism). A module or JAR change restarts the gateway for a minute
-  or two.
+  or two. Modules and JARs land in volumes on the gateway, so they survive a
+  container recreate (an image upgrade, say) without a new release.
 - **What never ships:** the gateway's own identity, users and API keys. They
   belong to that one gateway and are never in the repo.
 - **Secrets:** the database password reaches the gateway as a file the

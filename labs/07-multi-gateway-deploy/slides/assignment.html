@@ -476,7 +476,7 @@ cd demo-oatmakers</pre></div>
     <div class="cols2">
       <div class="steps">
         <div class="step"><div class="ix t">1</div><div class="tx"><b>Tell the stack who you are.</b> We post <b>one runner registration token</b> in the Zoom chat at the start of Part 0. Copy <code>.env.example</code> to <code>.env</code>, set <code>LAB_USER</code> (lowercase, no spaces) and <code>RUNNER_TOKEN</code>. Leave <code>IGNITION_API_KEY</code> empty.</div></div>
-        <div class="step"><div class="ix t">2</div><div class="tx"><b>Start the stack:</b> <code>./scripts/setup.sh</code>. It starts the local stack and, because <code>LAB_USER</code> is set, the <code>test</code> profile: your test gateway on <code>8090</code> and your runner. It also generates your API key and seeds it into the test gateway before its first boot, so always use <code>setup.sh</code> for the first start.</div></div>
+        <div class="step"><div class="ix t">2</div><div class="tx"><b>Start the stack:</b> <code>./scripts/setup.sh</code>. It starts the local stack and, because <code>LAB_USER</code> is set, the <code>test</code> profile: your test gateway on <code>8090</code>, its own database and your runner. It also generates your API key, seeds it into the test gateway before its first boot and checks that both gateways accept it, so always use <code>setup.sh</code> for the first start.</div></div>
         <div class="step"><div class="ix t">3</div><div class="tx"><b>Check your runner is online.</b> Contributors cannot open <i>Settings → Actions → Runners</i>, so read the runner's own log: <code>Listening for Jobs</code> means it is registered and waiting.</div></div>
       </div>
       <div>
@@ -664,6 +664,7 @@ git merge-base --is-ancestor \
 docker compose up -d --force-recreate gateway
 git diff services/modules.json   <span class="cm"># the two values appeared</span></pre></div>
         <div class="obs"><span class="ob">Observe</span><p>Your <b>test gateway</b> has no env var for this module. If it installs there from your merged entry, production will too.</p></div>
+        <div class="obs"><span class="ob">Already on main?</span><p>Embr Charts stays on production once a group installed it. If <code>services/modules.json</code> on <code>main</code> already has the entry, skip the module steps: check it runs on your test gateway, then build the chart screen.</p></div>
       </div>
     </div>
   </div>
@@ -684,14 +685,12 @@ git diff services/modules.json   <span class="cm"># the two values appeared</spa
         <ul>
           <li><span class="d"></span><span>Download <code>fastcsv-4.4.0.jar</code> from Maven Central into <code>jar-files/jar/</code> and add its row (source, sha256) to <code>jar-files/jar/README.md</code>: the lab 06 move.<br><a href="https://repo1.maven.org/maven2/de/siegmar/fastcsv/4.4.0/fastcsv-4.4.0.jar" style="font-family:'IBM Plex Mono';font-size:11px;color:var(--blue-d);word-break:break-all">repo1.maven.org/maven2/de/siegmar/fastcsv/4.4.0/fastcsv-4.4.0.jar</a></span></li>
           <li><span class="d"></span><span>FastCSV on purpose: the gateway does not bundle it, so the import fails until the JAR is really there.</span></li>
-          <li><span class="d"></span><span>Load it locally: <code>lib/core/gateway</code> is not bind-mounted.</span></li>
+          <li><span class="d"></span><span>Load it locally: your gateway bind-mounts <code>jar-files/jar/</code> into its JAR directory, so a <b>restart</b> loads it. Test and production keep shipped JARs in a volume.</span></li>
           <li><span class="d"></span><span>A project script <code>course/&lt;yourname&gt;/recipe</code>, and a Perspective screen that <b>calls it</b> and shows <b>oats | water | salt</b>, live on production.</span></li>
         </ul>
       </div>
       <div>
-        <div class="code" style="margin-top:0"><pre style="font-size:12px">docker cp jar-files/jar/fastcsv-4.4.0.jar \
-  oatmakers-gateway:/usr/local/bin/ignition/lib/core/gateway/
-docker restart oatmakers-gateway
+        <div class="code" style="margin-top:0"><pre style="font-size:12px">docker compose restart gateway   <span class="cm"># JARs load at boot</span>
 
 <span class="cm"># project script course/&lt;yourname&gt;/recipe</span>
 from de.siegmar.fastcsv.reader <span class="cmd2">import</span> CsvReader
@@ -735,7 +734,7 @@ tag-definition/System/Gateway/StoreAndForward/course_&lt;yourname&gt;/
 
 scripts/migrate.sh up       <span class="cm"># test it locally</span>
 scripts/migrate.sh down 1   <span class="cm"># before you switch branches</span></pre></div>
-        <div class="obs"><span class="ob">Careful</span><p>Your test workflow migrates this <b>same local database</b>: leave it migrated on a branch and every test run on <code>main</code> fails with <code>no migration found for version N</code>. Pick a number <b>higher than any on main at merge time</b>: a lower number merged after a higher one ran is silently skipped. Same number as someone else after a rebase? Renumber yours.</p></div>
+        <div class="obs"><span class="ob">Careful</span><p>That is your <b>local</b> database; your test gateway has its own, migrated only by your test workflow. Your local one remembers the branch: step it down before you switch, or <code>migrate.sh up</code> on <code>main</code> fails with <code>no migration found for version N</code>. Pick a number <b>higher than any on main at merge time</b>: a lower number merged after a higher one ran is silently skipped. Same number as someone else after a rebase? Renumber yours.</p></div>
       </div>
     </div>
   </div>
@@ -873,8 +872,8 @@ ignition/tag-definition/System/Gateway/Devices/CourseSim/</pre></div>
       <tr><td><b>The runner log says the token is invalid or expired</b></td><td>Ask for a fresh token in the chat, put it in <code>.env</code> as <code>RUNNER_TOKEN</code>, re-run <code>./scripts/setup.sh</code>.</td></tr>
       <tr><td><b>Blank Perspective pages, Designer disconnects, a deploy that worked fails</b></td><td>The trial lapsed: <code>scripts/reset-trial.sh</code>.</td></tr>
       <tr><td><b><code>git status</code> shows files you never touched</b></td><td>Gateway churn (module fingerprints, <code>resource.json</code> stamps), not your change: do not stage it. See <code>docs/resource-json-hygiene.html</code>. Except <code>store-and-forward-engine/&lt;name&gt;/</code> and <code>tag-definition/System/Gateway/{Devices,Database,StoreAndForward}/&lt;name&gt;/</code> for a device, connection or historian <b>you</b> added: stage those with it.</td></tr>
-      <tr><td><b>Test run fails: <code>no migration found for version N</code></b></td><td>Your local database ran a migration from a branch <code>main</code> does not have. On that branch: <code>scripts/migrate.sh down 1</code>, then re-run.</td></tr>
-      <tr><td><b>Test run says <code>Still not authorized</code></b></td><td>Your test gateway holds an older API token than your <code>.env</code>. <code>docker compose --profile test rm -sf test-gateway test-runner &amp;&amp; docker volume rm oatmakers_test-gateway-data &amp;&amp; ./scripts/setup.sh</code>, then re-run.</td></tr>
+      <tr><td><b>Test run fails: <code>no migration found for version N</code></b></td><td>A branch you deployed with <code>gh workflow run</code> left its migration in your test database, and <code>main</code> does not have it. On that branch: <code>scripts/migrate.sh --test down 1</code>, then re-run. (The same message from <code>setup.sh</code> or <code>migrate.sh up</code>: your local database, <code>scripts/migrate.sh down 1</code> on that branch.)</td></tr>
+      <tr><td><b>Test run says <code>Still not authorized</code></b></td><td>Your test gateway and your runner hold different API keys (the key in <code>.env</code> changed). Run <code>./scripts/setup.sh</code>: it puts the key on both and restarts the gateway. Then re-run.</td></tr>
       <tr><td><b><code>CI OK</code> is red on a release PR</b></td><td>Open the failing job. Most often the pin points at a tag that was never pushed (<code>git push origin &lt;tag&gt;</code>) or not on <code>main</code>, or the YAML lost a line in a rebase. After pushing a tag: <b>Checks → Re-run failed jobs</b> (<code>gh run rerun &lt;id&gt; --failed</code>).</td></tr>
       <tr><td><b><b>Deploy</b> is red, or production looks wrong after your release</b></td><td>Say so in the chat straight away. The fix is the <b>Revert</b> button on the merged release PR, reviewed and merged as usual. Anything a revert cannot undo, such as a migration that already ran, we handle.</td></tr>
     </table>

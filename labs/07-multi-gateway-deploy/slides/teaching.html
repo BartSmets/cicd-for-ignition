@@ -1104,7 +1104,7 @@ projects:
             <div class="wirewrap"><span class="wlab">test-&lt;you&gt;.yml</span><div class="wire"></div></div>
             <div class="node fe">
               <div class="nh"><span class="nt">your test gateway</span><span class="nd">localhost:8090 · one per student</span></div>
-              <div class="np"><span class="mono">runs-on: [self-hosted, &lt;you&gt;-local]</span>: a runner on your laptop, registered with a one-hour token we post in the chat.</div>
+              <div class="np"><span class="mono">runs-on: [self-hosted, &lt;you&gt;-local]</span>: a runner on your laptop, registered with a one-hour token we post in the chat. The test gateway has its own database, migrated only by this workflow.</div>
             </div>
           </div>
           <div class="route reveal" data-step="3">
@@ -1302,7 +1302,7 @@ git push --force-with-lease</pre></div>
     <table class="tbl">
       <tr><th style="width:20%">Challenge</th><th style="width:34%">Where it lives in demo-oatmakers</th><th style="width:16%">Taught in</th><th>How it reaches production</th></tr>
       <tr><td><b>Third-party module</b></td><td><code>third-party-modules/</code> + an entry in <code>services/modules.json</code></td><td>lab 06</td><td><code>oatmakers@</code> pin; the gateway <b>restarts</b> to load it</td></tr>
-      <tr><td><b>Library JAR</b></td><td><code>jar-files/jar/</code></td><td>lab 06</td><td><code>oatmakers@</code> pin; copied to <code>lib/core/gateway</code>, gateway <b>restarts</b></td></tr>
+      <tr><td><b>Library JAR</b></td><td><code>jar-files/jar/</code></td><td>lab 06</td><td><code>oatmakers@</code> pin; copied to the gateway's JAR volume (on its classpath), gateway <b>restarts</b></td></tr>
       <tr><td><b>Migration + referenced secret</b></td><td>an up/down pair in <code>db-migration/migrate/</code>; a connection whose password references <code>POSTGRES_PASSWORD</code></td><td>lab 06</td><td><code>oatmakers@</code> pin; migrations run <b>before</b> anything ships</td></tr>
       <tr><td><b>Simulator device + tags</b></td><td>the device and tag definitions in <code>services/config/</code></td><td>lab 04: config is files</td><td><code>oatmakers@</code> pin; hot scan, no restart</td></tr>
       <tr><td><b>History</b></td><td>a historian from the <b>TimescaleDB-Historian</b> module (already in the repo) + history enabled on the tags</td><td>lab 06: modules as data</td><td><code>oatmakers@</code> pin; hot scan, no restart</td></tr>
@@ -1391,9 +1391,12 @@ gh workflow run test-<span class="cmd2">&lt;you&gt;</span>.yml --ref <span class
 <span class="cm">#     a tag push does not start CI again</span>
 gh run rerun <span class="cmd2">&lt;run-id&gt;</span> --failed   <span class="cm"># or Checks → Re-run</span>
 
-<span class="cm"># 3 · your test workflow migrates the same local DB</span>
+<span class="cm"># 3 · your LOCAL database remembers branch migrations</span>
 scripts/migrate.sh down 1   <span class="cm"># before you switch branches</span>
-scripts/migrate.sh up       <span class="cm"># after your PR merged</span></pre></div>
+scripts/migrate.sh up       <span class="cm"># after your PR merged</span>
+<span class="cm">#     a branch you deployed with step 1 left its</span>
+<span class="cm">#     migration in your TEST database: on that branch</span>
+scripts/migrate.sh --test down 1</pre></div>
       </div>
       <div>
         <div class="code" style="margin-top:0"><pre><span class="cm"># 4 · inheritance is two fields in project.json</span>
@@ -1404,7 +1407,7 @@ scripts/migrate.sh up       <span class="cm"># after your PR merged</span></pre>
 scripts/scan.sh</pre></div>
         <div class="callout" style="margin-top:12px">
           <div class="lab" style="color:var(--blue)">Migration numbers</div>
-          <p>Without step 3, every test run on <code>main</code> fails with <code>no migration found for version N</code>. And pick a number <b>higher than any on main at merge time</b>: a lower number merged after a higher one already ran is silently skipped.</p>
+          <p>Your test gateway has <b>its own database</b>, which only your test workflow migrates: what you try locally never breaks a test run. A database that ran a migration <code>main</code> does not have fails with <code>no migration found for version N</code> until you step it down. And pick a number <b>higher than any on main at merge time</b>: a lower number merged after a higher one already ran is silently skipped.</p>
         </div>
       </div>
     </div>
