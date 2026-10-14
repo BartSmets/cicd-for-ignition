@@ -981,7 +981,7 @@ data/modules/
     <div class="compare">
       <div class="blue">
         <h3>Not shipped</h3>
-        <p class="t-md muted">Module enablement lives in <code>services/modules.json</code>, a <i>sibling</i> of <code>services/config/</code>. Both workflows copy <code>./services/config/.</code>, so it is not shipped; here it is bind-mounted into all three gateways. Open <code>lab04-deploy.yml</code> and confirm the <code>docker cp</code> targets.</p>
+        <p class="t-md muted">Module enablement lives in <code>services/modules.json</code>, a <i>sibling</i> of <code>services/config/</code>. Both workflows copy <code>./services/config/.</code>, so it is not shipped. Local mounts <code>services/modules.json</code>; test and production boot from their own copy in <code>gateways/&lt;gw&gt;/</code>, seeded once by <code>setup.sh</code>. Open <code>lab04-deploy.yml</code> and confirm the <code>docker cp</code> targets.</p>
       </div>
       <div class="bad">
         <h3>Not applied by a scan</h3>

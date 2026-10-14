@@ -153,6 +153,13 @@ seed_gateway_state() {
     local gw
     for gw in test production; do
         mkdir -p "$PROJECT_ROOT/gateways/$gw/projects" "$PROJECT_ROOT/gateways/$gw/config"
+        # Per-gateway module manifest (see docker-compose.yaml): seed it from
+        # the repo's manifest so the first boot has one; from then on only
+        # that gateway writes it. Must exist before compose up, or Docker
+        # turns the single-file bind mount into an empty directory.
+        if [ ! -f "$PROJECT_ROOT/gateways/$gw/modules.json" ]; then
+            cp "$PROJECT_ROOT/services/modules.json" "$PROJECT_ROOT/gateways/$gw/modules.json"
+        fi
     done
     "$SCRIPT_DIR/generate-api-keys.sh"
     # Everything created above is born AFTER lab_preflight's chmod pass, which

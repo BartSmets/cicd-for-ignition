@@ -108,11 +108,11 @@ labs/04-ignition-file-based-deploy/
 ├── projects/                           ← project content (bind-mounted into `local` only)
 │   ├── example-project/                ← a real Perspective project (views, templates)
 │   └── packaging-site/                 ← a second project; proves one deploy ships every project under projects/
-├── gateways/                           ← test/production gateway state (gitignored; bind-mounted projects/ + config/)
+├── gateways/                           ← test/production gateway state (gitignored; bind-mounted projects/ + config/ + modules.json)
 ├── services/
 │   ├── config/                         ← gateway-level config (bind-mounted into `local`)
 │   │   └── resources/                  ← <scope>/<module-id>/<resource-type>/<name>/{config.json,resource.json}
-│   └── modules.json                    ← module enablement (shared by all three gateways)
+│   └── modules.json                    ← module enablement (bind-mounted into `local`; test/production boot from their own copy in gateways/)
 ├── third-party-modules/                ← bundled .modl binaries the gateways install at startup
 └── tests/                              ← validation scaffold (see scripts/validate.sh)
 ```
@@ -131,7 +131,7 @@ The workflows live at the repo root, because GitHub only runs workflows from the
 Three Ignition 8.3 gateways + one TimescaleDB. The three gateways simulate the classic local → test → production promotion:
 
 - **`ignition-local`** bind-mounts `./projects/` and `./services/config/` from the host. Anything you write into those paths on your laptop is *immediately on disk* inside the local gateway. Hit `scripts/scan.sh` to make the gateway notice. That's the tight inner feedback loop.
-- **`ignition-test`** bind-mounts its `projects/` and `config/` from `./gateways/test/` (gitignored — this is the *gateway's* state, not the repo's). It starts empty; the deploy workflow (`lab04-deploy.yml`) `docker cp`s the working tree into the container and triggers a scan. Because the target dirs are bind mounts, you can verify a deploy landed straight from your laptop: `ls gateways/test/projects`. Mirrors how a real shared test environment gets fed by CI.
+- **`ignition-test`** bind-mounts its `projects/` and `config/` from `./gateways/test/` (gitignored — this is the *gateway's* state, not the repo's). It starts empty; the deploy workflow (`lab04-deploy.yml`) `docker cp`s the working tree into the container and triggers a scan. Because the target dirs are bind mounts, you can verify a deploy landed straight from your laptop: `ls gateways/test/projects`. Its module manifest is its own copy too, `./gateways/test/modules.json`, seeded from `services/modules.json` by `setup.sh`: the deploy workflows do not ship it (that is the `modules.json` stretch). Mirrors how a real shared test environment gets fed by CI.
 - **`ignition-production`** is the same shape as test, populated by the release workflow (`lab04-release.yml`) when you push a tag.
 
 The single TimescaleDB hosts three logical databases (`ignition_local_development`, `ignition_test`, `ignition_production`) so each gateway can have its own historian data without crosstalk.

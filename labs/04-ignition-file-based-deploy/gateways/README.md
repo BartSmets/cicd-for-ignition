@@ -6,12 +6,21 @@ directories, bind-mounted into their containers (see `docker-compose.yaml`):
 ```
 gateways/
 ├── test/
-│   ├── projects/   ← what lab04-deploy.yml shipped (push to main)
-│   └── config/     ← gateway config, incl. what the deploy copied
+│   ├── projects/      ← what lab04-deploy.yml shipped (push to main)
+│   ├── config/        ← gateway config, incl. what the deploy copied
+│   └── modules.json   ← this gateway's module manifest (what it last booted with)
 └── production/
-    ├── projects/   ← what lab04-release.yml shipped (tag push lab04-v*)
-    └── config/
+    ├── projects/      ← what lab04-release.yml shipped (tag push lab04-v*)
+    ├── config/
+    └── modules.json
 ```
+
+The `modules.json` copies are deliberately separate from the repo's
+`services/modules.json` (which only the **local** gateway mounts): each gateway
+rewrites its own manifest at boot, and a bad rewrite on one gateway must not
+reach the others. `scripts/setup.sh` seeds them from `services/modules.json`;
+the Lab 04 workflows do not ship `modules.json` (that is the stretch in
+`exercises/lab.md`).
 
 `scripts/setup.sh` creates these subdirectories (and pre-seeds the `cicd` API
 token) before the gateways' first boot. Everything except this README is

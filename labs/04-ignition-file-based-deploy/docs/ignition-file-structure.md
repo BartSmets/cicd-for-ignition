@@ -151,7 +151,9 @@ baking an image (Lab 05).
 
 Gateway-level. A list of which modules to enable. In this repo the source of truth is
 [`services/modules.json`](../services/modules.json), bind-mounted to `data/modules.json` on the
-`local` gateway.
+`local` gateway. Test and production each mount their own copy (`gateways/<gw>/modules.json`,
+seeded from the repo file by `scripts/setup.sh`), because the gateway rewrites its manifest at
+boot and one gateway's rewrite must not change what the others boot with.
 
 ```json
 {"modules": ["com.inductiveautomation.perspective", "..."]}
