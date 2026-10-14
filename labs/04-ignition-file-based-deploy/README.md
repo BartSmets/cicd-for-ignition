@@ -22,10 +22,10 @@ The offline copy is the same deck: open it from your clone if the link doesn't l
 
 ## Prerequisites
 
-- Your fork of the course repo, `<you>/cicd-for-ignition`, with Actions enabled (the self-hosted runner registers against your fork, not the upstream)
+- Actions enabled on your fork (`<you>/cicd-for-ignition`): the self-hosted runner registers against your fork, not the course repo
 - A GitHub Personal Access Token with `repo` scope — the bundled runner uses it to auto-register against your fork. Create it at [github.com/settings/tokens](https://github.com/settings/tokens) (Generate new token → classic → tick `repo`) and put it in `.env` as `RUNNER_GITHUB_PAT` (the root `course-setup.sh` asks for it once and writes it there for you). You make it once here; **Lab 06 reuses the same token** (Lab 05 has no runner). It never leaves `.env`.
 - On your fork, *Settings → Actions → General → Approval for running fork pull request workflows from contributors* set to **Require approval for all external contributors**. Your fork is public and the bundled runner holds the Docker socket, so no outside PR may start a job on it without your approval (see [`exercises/lab.md`](./exercises/lab.md), Pre-flight).
-- The [GitHub CLI](https://cli.github.com/) (`gh`), authenticated (`gh auth status`) — used to fork and clone the course repo
+- The [GitHub CLI](https://cli.github.com/) (`gh`), authenticated (`gh auth status`) and pointed at your fork (`gh repo set-default <you>/cicd-for-ignition`): used for the PR, the environments and their secrets
 - **≥ 8 GB free RAM for Docker** — three Ignition gateways (1 GB heap each, capped at 1.5 GB), plus TimescaleDB, the runner, and the usual Docker Desktop overhead
 - _Optional but recommended:_ pass the [preflight](../../preflight/) checks so unrelated env issues don't bite you mid-lab
 - _Background reading:_ [Lab 03](../03-github-actions/) covers the GitHub Actions fundamentals this lab builds on, but this lab stands alone — the self-hosted runner ships in `docker-compose.yaml`, no manual `docker run` of `myoung34/github-runner` required
@@ -41,8 +41,6 @@ The offline copy is the same deck: open it from your clone if the link doesn't l
 ## Quick start
 
 ```bash
-# Fork + clone once for the whole course (skip if you already have it):
-#   mkdir -p ~/mustry-academy && cd ~/mustry-academy && gh repo fork Mustry-Academy/cicd-for-ignition --clone
 cd ~/mustry-academy/cicd-for-ignition/labs/04-ignition-file-based-deploy
 [ -f .env ] || cp .env.example .env   # no-op if course-setup.sh already created it
 scripts/setup.sh    # brings up the stack, waits for all three gateways, prints credentials
