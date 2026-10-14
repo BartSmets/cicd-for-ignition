@@ -3,6 +3,8 @@
 Source for the Mustry Academy welcome package handed to attendees of *CI/CD for Ignition* before Day 1.
 Renders to a print-ready A4 PDF, styled to match the [mustrysolutions.com](https://mustrysolutions.com/) brand.
 
+The same page is online on Mustry Share: [https://share.mustrysolutions.com/040ca767-f8fc-43bb-9949-e0f8402a43f7](https://share.mustrysolutions.com/040ca767-f8fc-43bb-9949-e0f8402a43f7). Students open it there with one click on **Open document**, and the viewer offers the PDF as a download.
+
 It lives in the `welcome-package/` folder of the course monorepo, [`cicd-for-ignition`](../README.md), next to
 the [preflight](../preflight/) and the labs. It is instructor-facing: students get the PDF, not this folder.
 Run `./build.sh` from here (or by path from anywhere); everything it reads and writes is relative to this folder.
@@ -55,10 +57,16 @@ CHROME="/path/to/chrome" ./build.sh
    Fails loudly on any placeholder it doesn't know.
 4. Renders that copy to PDF with headless Chrome (`@page` CSS handles A4), then deletes it.
 
+`./build.sh --site DIR` stops after step 3 and writes the filled page as `DIR/index.html`,
+with `assets/`, `qr/` and a copy of the brand fonts next to it (mustrysolutions.com serves
+them without a CORS header, so another domain can't load them from there). The instructor
+repo's `scripts/publish-slides.sh` uses it to publish the package online.
+
 ## Spinning up a new cohort
 
 Nothing in the package is tied to a specific cohort: dates and start times live in the
-calendar invite, not here. Check the three links in `links.conf` and rebuild. The Discord
+calendar invite, not here. Check the three links in `links.conf`, rebuild, and re-publish the online copy
+(`instructor/scripts/publish-slides.sh welcome-package/welcome-package.html`, same link). The Discord
 link is the general public invite: this repo is public, so never put a cohort invite that
 grants a role in `links.conf`. Hand out cohort roles in Discord itself.
 

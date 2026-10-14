@@ -607,6 +607,21 @@
     min-width: 32mm;
   }
   .contact-qr img { width: 24mm; height: 24mm; display: block; }
+  /* ---- In a browser, show every page as an A4 sheet. Print (the PDF) keeps
+     the @page layout above. ---- */
+  @media screen {
+    body { background: #e6e9f0; padding: 24px 0; }
+    .cover, .page {
+      width: 210mm;
+      margin: 0 auto 24px;
+      box-shadow: 0 2px 12px rgba(16,23,42,0.18);
+    }
+    .page {
+      background: #fff;
+      min-height: 297mm;
+      padding: 20mm 18mm 18mm;
+    }
+  }
 </style>
 </head>
 <body>

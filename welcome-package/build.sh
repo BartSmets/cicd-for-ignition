@@ -10,6 +10,8 @@
 # Usage:
 #   ./build.sh                 # writes welcome-package.pdf next to the HTML
 #   ./build.sh out.pdf         # writes to a custom path
+#   ./build.sh --site DIR      # writes the filled page as DIR/index.html plus
+#                              # assets/ and qr/, for publishing it online
 #   CHROME=/path/to/chrome ./build.sh   # override browser autodetect
 #
 # Dependencies (macOS via Homebrew):
@@ -23,6 +25,11 @@ HTML_SRC="$SCRIPT_DIR/welcome-package.html"
 HTML_BUILT="$SCRIPT_DIR/welcome-package.built.html"
 LINKS_CONF="$SCRIPT_DIR/links.conf"
 QR_DIR="$SCRIPT_DIR/qr"
+SITE_DIR=""
+if [ "${1:-}" = "--site" ]; then
+  SITE_DIR="${2:?usage: ./build.sh --site DIR}"
+  shift 2
+fi
 PDF="${1:-$SCRIPT_DIR/welcome-package.pdf}"
 
 # --- 0. preflight ------------------------------------------------------
@@ -80,6 +87,25 @@ if grep -qE '\{\{[A-Z_]+\}\}' "$HTML_BUILT"; then
   echo "error: unknown placeholders in $HTML_SRC:" >&2
   grep -oE '\{\{[A-Z_]+\}\}' "$HTML_BUILT" | sort -u >&2
   exit 1
+fi
+
+if [ -n "$SITE_DIR" ]; then
+  mkdir -p "$SITE_DIR"
+  cp "$HTML_BUILT" "$SITE_DIR/index.html"
+  cp -R "$SCRIPT_DIR/assets" "$QR_DIR" "$SITE_DIR/"
+  rm -f "$SITE_DIR"/assets/*.orig.jpg
+  # mustrysolutions.com serves the brand fonts without a CORS header, so a page
+  # on another domain can't use them: copy them in and point the @import there.
+  for css in visby/visby.css baton/baton.css; do
+    mkdir -p "$SITE_DIR/fonts/$(dirname "$css")"
+    curl -fsS "https://mustrysolutions.com/fonts/$css" -o "$SITE_DIR/fonts/$css"
+    for font in $(grep -oE "url\('\./[^']+'\)" "$SITE_DIR/fonts/$css" | sed -E "s/url\('\.\/(.*)'\)/\1/"); do
+      curl -fsS "https://mustrysolutions.com/fonts/$(dirname "$css")/$font" -o "$SITE_DIR/fonts/$(dirname "$css")/$font"
+    done
+  done
+  perl -pi -e 's#https://mustrysolutions\.com/fonts/#fonts/#g' "$SITE_DIR/index.html"
+  echo "done: $SITE_DIR/index.html"
+  exit 0
 fi
 
 # --- 4. render PDF -----------------------------------------------------
