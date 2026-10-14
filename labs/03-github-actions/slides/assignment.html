@@ -949,7 +949,7 @@ git commit -am <span class="cmd2">"feat: reword overview subtitle"</span>
 git push -u origin fix/proper-route
 gh pr create --fill
 <span class="cm"># checks take a few seconds to register</span>
-sleep 15 &amp;&amp; gh pr checks --watch &amp;&amp; gh pr merge --merge
+sleep 15 &amp;&amp; gh pr checks --watch &amp;&amp; gh pr merge --merge --delete-branch
 git switch main &amp;&amp; git pull</pre></div>
     </div>
   </div>
@@ -979,7 +979,7 @@ gh pr create --fill
 sleep 15 &amp;&amp; gh pr checks --watch   <span class="red"># lint fails, merge blocked</span>
 <span class="cm"># edit the Clock binding → now(1500), then:</span>
 git commit -am <span class="cmd2">"fix: poll the clock at 1500 ms"</span> &amp;&amp; git push
-sleep 15 &amp;&amp; gh pr checks --watch &amp;&amp; gh pr merge --merge
+sleep 15 &amp;&amp; gh pr checks --watch &amp;&amp; gh pr merge --merge --delete-branch
 git switch main &amp;&amp; git pull
 
 <span class="cm"># 4 · diff your workflow against the reference</span>
@@ -1148,7 +1148,7 @@ git commit -am <span class="cmd2">"test: should be blocked"</span>
     <div class="work">
       <div class="side">
         <ol class="steps">
-          <li data-n="A"><b>Add the manual Run button:</b> <code>workflow_dispatch:</code> under <code>on:</code>, push. The Actions tab grows a <b>Run workflow</b> button.</li>
+          <li data-n="A"><b>Add the manual Run button:</b> <code>workflow_dispatch:</code> under <code>on:</code>, merged to <code>main</code> through a PR. The Actions tab grows a <b>Run workflow</b> button.</li>
           <li data-n="B"><b>Watch GitHub censor a secret</b> in your fork: create <code>EXAMPLE_SECRET</code> (the <code>-R</code> names your fork: two remotes), echo it in a step, read <code>***</code> in the log. Delete the echo step afterwards.</li>
           <li data-n="C"><b>Cancel superseded runs:</b> add the <code>concurrency</code> group, push two commits quickly, watch the first run flip to <b>cancelled</b>.</li>
         </ol>
