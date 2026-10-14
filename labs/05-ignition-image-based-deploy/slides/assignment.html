@@ -559,38 +559,30 @@ a{color:var(--primary-deep)}
 <!-- SETUP -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num warm">SETUP</span><h2 class="title">Your course fork, this lab's folder, the stack up</h2></div>
+  <div class="sechead"><span class="num warm">SETUP</span><h2 class="title">Go to this lab's folder and bring the stack up</h2></div>
   <div class="body">
     <div class="work dense">
       <ol class="steps alt">
-        <li><b>Fork and clone, once per course.</b> Done in an earlier lab? Skip it. <code>gh repo fork … --clone</code> forks to <b>your</b> account and clones your fork; or press <b>Fork</b> on github.com and <code>git clone</code> your fork.</li>
         <li><b>Go to this lab's folder.</b> On WSL2 the clone lives in your <b>Linux home</b> (<code>~/…</code>), never <code>/mnt/c/…</code>: bind mounts get far slower and line endings messy.</li>
         <li><b>Copy the env file and change nothing:</b> the admin logins work as shipped, and <code>setup.sh</code> generates a unique API key per gateway into <code>.env</code>. No PAT today.</li>
         <li><b>Check the remotes:</b> <code>origin</code> must show <b>your username</b>. <code>gh repo set-default</code> points <code>gh</code> at <b>your fork</b> for the PRs in Parts 1.2 and 2.2 (once per clone).</li>
         <li><b>Bring the stack up:</b> local (:8088, bind-mounted), test (:8089) and production (:8090), both empty until their first image deploy, plus TimescaleDB. No runner: today <b>you</b> are the last mile.</li>
       </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># 1: once per course: fork to your account + clone your fork</span>
-mkdir -p ~/mustry-academy &amp;&amp; cd ~/mustry-academy
-gh repo fork Mustry-Academy/cicd-for-ignition --clone
-<span class="cm">#    …or press "Fork" on github.com, then clone YOUR fork:</span>
-<span class="cm">#    git clone git@github.com:&lt;your-username&gt;/cicd-for-ignition.git</span>
-
-<span class="cm"># 2: this lab's folder (stop the previous lab's stack first:</span>
+        <div class="code"><pre><span class="cm"># 1: this lab's folder (stop the previous lab's stack first:</span>
 <span class="cm">#    docker compose down in its folder)</span>
 cd ~/mustry-academy/cicd-for-ignition/labs/05-ignition-image-based-deploy
 
-<span class="cm"># 3: copy the env file, change NOTHING today</span>
+<span class="cm"># 2: copy the env file, change NOTHING today</span>
 cp .env.example .env
 
-<span class="cm"># 4: origin → YOUR username? good. Point gh at your fork</span>
+<span class="cm"># 3: origin → YOUR username? good. Point gh at your fork</span>
 git remote -v
 gh repo set-default <span class="cmd2">&lt;you&gt;</span>/cicd-for-ignition
 
-<span class="cm"># 5: open VS Code, then bring the stack up</span>
+<span class="cm"># 4: open VS Code, then bring the stack up</span>
 code .
 scripts/setup.sh          <span class="cm"># 3 gateways + TimescaleDB</span></pre></div>
-        <div class="aside"><span class="label">Why a fork</span>It is <b>your</b> copy of the whole course. Your PRs run <code>lab05-ci.yml</code> and your merges <code>lab05-deploy.yml</code> there, pushing images to <b>your own</b> GHCR namespace; only the stretch uses them.</div>
       </div>
     </div>
   </div>

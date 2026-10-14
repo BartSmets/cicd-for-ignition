@@ -613,34 +613,27 @@ a{color:var(--primary-deep)}
   <div class="body">
     <div class="work">
       <ol class="steps alt">
-        <li>Go back to the <b>parent folder from Lab 01</b>: <code>~/mustry-academy/</code>. Your clone lives here, one folder per lab under <code>labs/</code>.</li>
-        <li><b>Fork and clone, once per course.</b> Did it in Lab 01? Skip to the <code>cd</code>. Otherwise <code>gh repo fork … --clone</code> forks and clones in one go. Forked on github.com? Then <code>git clone</code> your fork.</li>
-        <li><b>Check the remotes:</b> <code>origin</code> must show <b>your username</b>. The <code>gh</code> route also adds <code>upstream</code>; you don't need it today.</li>
+        <li>Go to <b>your fork's clone</b>: <code>~/mustry-academy/cicd-for-ignition</code>, one folder per lab under <code>labs/</code>.</li>
+        <li><b>Check the remotes:</b> <code>origin</code> must show <b>your username</b>. <code>upstream</code> is the course repo; you don't need it today.</li>
         <li><b>Point <code>gh</code> at your fork:</b> <code>gh repo set-default --view</code> must print <b>your fork</b> (<code>course-setup.sh</code> sets this). If not, set it.</li>
         <li>From <code>labs/02-branching-and-prs</code>, run <code>code .</code> and work from its terminal (<code>Ctrl+`</code>).</li>
       </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># 1: the parent folder from Lab 01</span>
-cd ~/mustry-academy
+        <div class="code"><pre><span class="cm"># 1: your fork's clone</span>
+cd ~/mustry-academy/cicd-for-ignition
 
-<span class="cm"># 2: once per course: fork to your account + clone your fork</span>
-gh repo fork Mustry-Academy/cicd-for-ignition --clone
-<span class="cm">#    …or press "Fork" on github.com, then clone YOUR fork:</span>
-git clone git@github.com:&lt;your-username&gt;/cicd-for-ignition.git
-cd cicd-for-ignition
-
-<span class="cm"># 3: origin → YOUR username? good.</span>
+<span class="cm"># 2: origin → YOUR username? good.</span>
 git remote -v
 
-<span class="cm"># 4: where do gh's PRs go? must print YOUR fork</span>
+<span class="cm"># 3: where do gh's PRs go? must print YOUR fork</span>
 gh repo set-default --view
 <span class="cm"># if not:</span>
 gh repo set-default &lt;your-username&gt;/cicd-for-ignition
 
-<span class="cm"># 5: open VS Code on this lab's folder</span>
+<span class="cm"># 4: open VS Code on this lab's folder</span>
 cd labs/02-branching-and-prs
 code .</pre></div>
-        <div class="aside warn"><span class="label">WSL2</span>Clone into your <b>Linux home</b> (<code>~/…</code>), never <code>/mnt/c/…</code>: there three different owners break file ownership in ways <code>chown</code> cannot fix. <code>code .</code> from WSL opens a window <b>connected to WSL</b>.</div>
+        <div class="aside warn"><span class="label">WSL2</span>Your clone lives in your <b>Linux home</b> (<code>~/…</code>), never <code>/mnt/c/…</code>: there three different owners break file ownership in ways <code>chown</code> cannot fix. <code>code .</code> from WSL opens a window <b>connected to WSL</b>.</div>
       </div>
     </div>
   </div>
