@@ -1,11 +1,9 @@
 # Lab 02: Branching and Pull Requests
 
-One **we-do / you-do** covering two linked topics:
-how a team *branches*, and how changes flow through *pull requests*. They're one
-story. A branching strategy is the plan; a pull request is where the plan meets
-reality, where your branch naming, your review habits, and your merge-style rules
-actually get used. So you'll learn both, then live them: you'll run the release-week
-hotfix scenario through GitHub Flow on a real Ignition project, end to end.
+One **we-do / you-do** covering two linked topics: how the team *branches* (GitHub
+Flow, the course's strategy), and how changes flow through *pull requests*. You
+learn both, then live them: you run the release-week hotfix scenario through GitHub
+Flow on a real Ignition project, end to end.
 
 ## What you're working on
 
@@ -15,12 +13,22 @@ oat-line overview, the client from Lab 01) and two Python script libraries. You 
 gateway's admin complexity is abstracted away, and what you edit is approachable (a
 small Python function, or a new view). The lab is about the **Git workflow** around
 those files: how you branch, how you open and review a PR, how you merge. Gateway
-config, modules, and deploys are deliberately out of scope; they arrive in Lab 04.
+config, modules, and deploys are out of scope; they arrive in Lab 04.
 
-## Setup (optional but recommended)
+## Setup
+
+Go to this lab's folder in your fork and check where `gh` opens PRs:
+
+```bash
+cd ~/mustry-academy/cicd-for-ignition/labs/02-branching-and-prs
+gh repo set-default --view        # must print YOUR fork
+gh repo set-default <your-username>/cicd-for-ignition   # if not
+code .
+```
 
 You can do every exercise from the files alone. But spinning up the gateway once
-makes the project tangible, and lets you see your new v2.0 view go live:
+makes the project tangible, and lets you see your new v2.0 view go live (optional
+but recommended):
 
 ```bash
 cp .env.example .env
@@ -30,6 +38,9 @@ scripts/setup.sh          # boots one Ignition gateway, waits for RUNNING
 
 Port 8088 already in use on your machine? Set `GATEWAY_PORT` in `.env` and use that
 port in every `localhost:8088` URL below. See [`docs/TROUBLESHOOTING.md`](../docs/TROUBLESHOOTING.md).
+
+A running gateway does not pick up file edits by itself: run `docker compose restart`,
+or `scripts/scan.sh` once you've set up the API key described in `.env.example`.
 
 Before opening any PR, run the validator. It's the green/red signal this lab uses
 in place of a test suite:
@@ -42,13 +53,12 @@ scripts/validate.sh       # checks every project file is valid JSON / parses as 
 
 By the end of this lab you should be able to:
 
-- Describe **Git Flow**, **GitHub Flow**, and **trunk-based development**, and pick one that fits a team
-- Run a **GitHub Flow release week** end to end: a feature and a P1 fix through PRs into `main`, released in the right order with version tags — and know when a team needs more (Git Flow's double-merge, in the stretch)
+- Run a **GitHub Flow release week** end to end: a feature and a P1 fix through PRs into `main`, released in the right order with version tags
 - Open a PR a reviewer enjoys reading: small, scoped, with a clear what / why / how-to-test
-- Review someone else's PR with feedback that helps, and choose between approve, request-changes, and comment-only
+- Review someone else's PR with feedback that helps, and choose between approve, request-changes, and comment
 - Merge cleanly and in the right order when approved
 
-Read-ahead: [`docs/branching-strategies.md`](../docs/branching-strategies.md) covers the three strategies, with diagrams. Optional deep-dive on review craft: [`docs/pr-review-style.md`](../docs/pr-review-style.md).
+Read-ahead: [`docs/github-flow.md`](../docs/github-flow.md) walks through the scenario in GitHub Flow. Optional deep-dive on review craft: [`docs/pr-review-style.md`](../docs/pr-review-style.md).
 
 ---
 
@@ -58,10 +68,9 @@ Parts A and B are an **instructor demo**: the tutor walks through them on screen
 you watch and ask questions. Nothing to type yet; your hands-on work starts in the
 You-do.
 
-### Part A: from strategy to pull request
+### Part A: what a good pull request looks like
 
-A branching strategy only comes to life through pull requests, so here is what a
-good one looks like. Two PRs side by side on the projector:
+Two PRs side by side on the projector:
 
 | Bad PR | Good PR |
 |---|---|
@@ -78,25 +87,24 @@ the PR.
 
 ### Part B: leaving review feedback
 
-You don't need a formal system, just prefix each comment with what kind it is, so
-the author knows how to react. Three labels cover almost everything:
+Prefix each comment with what kind it is, so the author knows how to react. Three
+labels cover almost everything:
 
 - `praise:` something genuinely good. "praise: nicely focused diff, easy to review."
 - `suggestion:` a specific, optional improvement. "suggestion: collapse these two ifs into one."
 - `issue:` something that should change before merge. "issue: this still throws on a null reading; `format_reading(None, '°C')` errors instead of showing a placeholder."
 
-That's enough to review well today. If you want the fuller toolkit (more labels,
-tone, and handling disagreement) it's in the optional
+The fuller toolkit (more labels, tone, and handling disagreement) is in the optional
 [`docs/pr-review-style.md`](../docs/pr-review-style.md).
 
 ---
 
 ## You do
 
-You'll live the release-week scenario from the teaching deck, for real, on your own
+You live the release-week scenario from the teaching deck, for real, on your own
 fork. Ship a v2.0 feature, get ambushed by a P1 bug in production, and thread both
-through **GitHub Flow** — the course's strategy — exactly the way Chapter 1 drew it.
-Then your peers review your PRs and you merge in release order.
+through **GitHub Flow**, exactly the way the teaching deck drew it. Then your peers
+review your PRs and you merge in release order.
 
 Do the whole thing in your breakout room, sharing your screen. Open PRs early, and
 invite your reviewer early: add a peer from your room or one of the tutors as a
@@ -105,34 +113,19 @@ their review on each PR. The review step needs a peer's PR to exist, and merging
 needs a peer to have reviewed yours.
 
 > Careful when opening PRs on a fork: GitHub's "Compare & pull request" banner
-> defaults the **base repo** to the upstream course repo — switch it to **your
-> fork** every time. `gh pr create` may default to the course repo too. Check with
-> `gh repo set-default --view`: it must print your fork (`course-setup.sh` sets
-> this). If not, run `gh repo set-default <your-username>/cicd-for-ignition`.
+> defaults the **base repo** to the upstream course repo. Switch it to **your
+> fork** every time. `gh pr create` uses the repo `gh repo set-default --view`
+> prints, which must be your fork (see Setup).
 
-### Part 1: discuss which strategy fits your team (breakout room)
-
-Talk it through out loud, no writing. Each person sketches their own team or
-project (release cadence, regulatory constraints, team size, how often production
-ships), and the room argues which of Git Flow, GitHub Flow, or trunk-based fits
-**their** reality, and why. Disagreement is the point.
-
-You'll run Part 2 in **GitHub Flow** regardless: it's the course's strategy.
-Knowing which one you'd actually pick is what makes feeling the difference land
-in the stretch.
-
-> Never worked on a multi-engineer team? Argue it for an Ignition team you've
-> consulted with, or use the scenario in `docs/branching-strategies.md` as a stand-in.
-
-### Part 2: run the release-week scenario in GitHub Flow
+### Part 1: run the release-week scenario in GitHub Flow
 
 `v1.2` is live in production. You start the v2.0 feature, and mid-work a P1 bug in
 production ambushes you. You thread both through GitHub Flow.
 
-**Step 1: set the GitHub Flow stage.** One long-lived branch — `main` — and a tag
-marking what's in production. In GitHub Flow, tags carry the release history. Tag
-what's live as `v1.2` on `main` and push the tag. Your fork hosts every lab of the
-course, so this lab's tags carry a `lab02-` prefix: the release is v1.2, the tag is
+**Step 1: tag what is live.** One long-lived branch, `main`, and a tag marking
+what's in production: in GitHub Flow, tags carry the release history. Tag what's
+live as `v1.2` on `main` and push the tag. Your fork hosts every lab of the course,
+so this lab's tags carry a `lab02-` prefix: the release is v1.2, the tag is
 `lab02-v1.2.0` (every lab tags `labNN-vX.Y.Z`). Use an **annotated** tag (`-a`), as
 Lab 01 taught for releases: it records who tagged, when, and why.
 
@@ -151,27 +144,20 @@ git tag -a lab02-v1.2.0 -m "Release 1.2.0"
 git push origin lab02-v1.2.0      # "production" is v1.2
 ```
 
-Mental model: `main` = the one shared line of development, `lab02-v1.2.0` = the exact
-commit customers are running, releasing = merging to `main` and tagging. Every
+`main` is the one shared line of development, `lab02-v1.2.0` is the exact commit
+customers are running, and releasing means merging to `main` and tagging. Every
 branch you cut next is short-lived: off `main`, back to `main` through a PR.
 
-> **Two commands graduate from "named" to "used" today.** `git tag -a lab02-v1.2.0` pins a
-> permanent, human-readable name to the exact commit you're on; unlike a branch, a
-> tag never moves — that's what makes it a release marker. `git push` uploads your
-> local commits and refs to a remote (`origin` = your fork on GitHub; in Lab 01
-> everything stayed local). Two habits that trip people up: tags don't ride along
-> with a normal push, so `git push origin lab02-v1.2.0` sends one explicitly — and a *new*
-> branch needs `git push -u origin <branch>` once, where `-u` links it to your
-> fork so every later push is just `git push`.
+> Tags don't ride along with a normal push, so `git push origin lab02-v1.2.0` sends
+> one explicitly. A *new* branch needs `git push -u origin <branch>` once, where
+> `-u` links it to your fork so every later push is just `git push`.
 
 **Step 2: ship the v2.0 feature (the silo detail view).** Oatmakers' v2.0 scope
-starts with a **silo detail view**: that's your feature. Branch off `main` (in
-GitHub Flow every branch starts at `main` and returns to it through a PR):
-`feature/v2-silo-detail`. The easiest path to the view itself:
-copy the `overview` resource folder to `silo-detail` under `views/pages/`, edit
-the `Subtitle` label's `text` in its `view.json`, and register the `/silo-detail`
-page in `page-config/config.json` so it's reachable (give the page its own `title`
-there):
+starts with a **silo detail view**: that's your feature. Branch off `main`:
+`feature/v2-silo-detail`. The easiest path to the view itself: copy the `overview`
+resource folder to `silo-detail` under `views/pages/`, edit the `Subtitle` label's
+`text` in its `view.json`, and register the `/silo-detail` page in
+`page-config/config.json` so it's reachable (give the page its own `title` there):
 
 ```json
     "/silo-detail": {
@@ -206,8 +192,7 @@ gh pr create                        # or the "Compare & pull request" banner: ba
 
 > Gateway up? `scripts/scan.sh` (or `docker compose restart`), then open
 > `http://localhost:8088/data/perspective/client/lab-project/silo-detail` (your
-> `GATEWAY_PORT` instead of 8088 if you changed it). Your new page is there. That's
-> the "it goes live" moment.
+> `GATEWAY_PORT` instead of 8088 if you changed it). Your new page is there.
 
 **Step 3: the P1 ambush, fixed the GitHub Flow way.** Your feature is still open when
 a customer hits the null-reading crash in v1.2, live. It can't wait for v2.0.
@@ -225,23 +210,23 @@ a customer hits the null-reading crash in v1.2, live. It can't wait for v2.0.
    normal numeric formatting. Remember `0` is a valid reading and must still format as
    `"0.0 °C"`. Run `scripts/validate.sh` (green), then run the function itself (see
    "Test the function" below) and paste its output into the PR's **How to test**.
-3. **One PR into `main`.** That's the whole GitHub Flow ceremony: no `develop`, no
-   double-merge. **Don't merge yet**: your peers review first, and the merging
-   (plus the `lab02-v1.2.1` tag) happens in release order in Part 3.
-4. That's **two PRs open** (feature → `main`, fix → `main`): your reviewer
+3. **One PR into `main`**, your reviewer requested. **Don't merge yet**: your peers
+   review first, and the merging (plus the `lab02-v1.2.1` tag) happens in release
+   order in Part 2.
+4. That's **two PRs open** (feature → `main`, fix → `main`), your reviewer
    requested on each. **Merge order is the lesson now**: the fix must land (and
-   `lab02-v1.2.1` be tagged) *before* the feature merges — in GitHub Flow, merging is
-   releasing.
+   `lab02-v1.2.1` be tagged) *before* the feature merges. In GitHub Flow, merging is
+   releasing: whatever is on `main` when you tag `lab02-v1.2.1` ships in v1.2.1.
 
 ```bash
-# the fix branches off main — which IS v1.2, because the feature hasn't merged yet
+# the fix branches off main, which IS v1.2, because the feature hasn't merged yet
 git switch main
 git switch -c fix/null-reading
 # fix format_reading(), then:
 scripts/validate.sh
 git commit -am "fix(display): placeholder for null readings"
 git push -u origin fix/null-reading
-gh pr create      # ONE PR: fix -> main (reviewed, merged first, then tagged v1.2.1 in Part 3)
+gh pr create      # ONE PR: fix -> main (reviewed, merged first, then tagged v1.2.1 in Part 2)
 ```
 
 **Test the function.** `validate.sh` only checks that the file parses, and the
@@ -258,19 +243,14 @@ for v in (162.0, 0, None): print(f(v, '°C'))"
 
 Before the fix it prints `162.0 °C` and `0.0 °C`, then fails with
 `TypeError: must be real number, not NoneType`. After the fix the third line is
-your placeholder (`-- °C`). Ignition runs Jython 2.7, but this small, pure function
-behaves the same under Python 3. One limit: code that calls another project library
+your placeholder (`-- °C`). One limit: code that calls another project library
 (for example `lab.util.to_float`) only runs on the gateway, where `lab` exists. Here
 it fails with `NameError: name 'lab' is not defined`.
 
-> The whole lesson: merging is releasing. Whatever is on `main` when you tag
-> `lab02-v1.2.1` ships in v1.2.1 — merge the feature first and your "patch" quietly
-> ships half of v2.0. Order is the one ceremony GitHub Flow kept.
-
-### Part 3: review a peer's PR, then merge yours
+### Part 2: review a peer's PR, then merge yours
 
 You each have a fix PR and a feature PR open. Pair up in your room so each PR gets
-one reviewer: the collaborator invites from Part 2 decide who reviews whom.
+one reviewer: the collaborator invites from Part 1 decide who reviews whom.
 
 1. Open the PR you were asked to review (it's in your GitHub notifications). The
    **fix** is the richest to review.
@@ -280,32 +260,31 @@ one reviewer: the collaborator invites from Part 2 decide who reviews whom.
      valid reading, not "missing"), and `None` must give the placeholder. Run it
      yourself: `gh pr checkout <number> --repo <author>/cicd-for-ignition --detach`
      puts their branch in your working tree without creating a local branch; run the
-     `python3 -c ...` command from Part 2's "Test the function", then `git switch -`
+     `python3 -c ...` command from Part 1's "Test the function", then `git switch -`
      to return to your own branch (Git warns that you leave a commit behind: that's
      the author's commit, safe to ignore).
-   - GitHub Flow check: is the fix **just the fix** (no v2.0 work riding along),
-     and is it set to merge **before** the feature? Merging is releasing.
+   - Is the fix **just the fix** (no v2.0 work riding along), and is it set to
+     merge **before** the feature?
    - Did they run `validate.sh`? Is the "How to test" something you could follow?
    For the feature PR: is the JSON well-formed, the page registered, the change scoped?
 3. Leave a few genuinely helpful comments: at minimum a `praise:` and a `suggestion:`,
-   plus an `issue:` if something is actually wrong. Quality over quantity, no quota.
+   plus an `issue:` if something is actually wrong.
 4. Submit the review. In the PR's **Files changed** tab, hover a line and click
    **+** to comment (choose **Start a review**, so your comments arrive together).
    Then click **Review changes** (top right), pick **Request changes** if you left at
    least one `issue:`, **Approve** otherwise, and **Submit review**.
 
-> Watch your tone. Conventional comments help, but they're not magic. If you
-> wouldn't say it in person, don't write it in the PR.
+> Watch your tone: if you wouldn't say it in person, don't write it in the PR.
 
 Then respond and merge, in release order:
 
-1. On your PRs, react to every comment (`+1` for praise, reply to questions, push a
+1. On your PRs, answer every comment (`+1` for praise, reply to questions, push a
    fix-up commit for what you accept, reply with reasoning for what you decline).
    Additive commits, no force-push during review. Re-request review when ready.
 2. Merge the **fix PR first** (production is on fire). Use **Create a merge
    commit** (if the green button shows Squash or Rebase, switch it in the button's
-   dropdown), so your graph matches the teaching diagram. Then tag `lab02-v1.2.1` on `main`: in
-   GitHub Flow, the tag *is* the release:
+   dropdown). Then tag `lab02-v1.2.1` on `main`: in GitHub Flow, the tag *is* the
+   release:
 
    ```bash
    git switch main && git pull
@@ -314,63 +293,21 @@ Then respond and merge, in release order:
 
    Delete the fix branch once it's merged (GitHub offers a button; take it).
 3. Now finish the feature: pull the fix down into your feature branch
-   (`git switch feature/...` then `git merge main`), push, then merge the
+   (`git switch feature/v2-silo-detail` then `git merge main`), push, then merge the
    feature PR into `main` (again **Create a merge commit**) and delete the feature
-   branch (GitHub offers a button; take it).
+   branch.
 
----
+### Done when
 
-## Stretch challenges `[OPTIONAL]`
-
-- **Now do it in Git Flow.** Same scenario, the heavyweight strategy — feel what
-  the ceremony buys (support for more than one live version) and what it costs.
-  First rewind your fork — after the scenario, `main` already has both changes.
-  This rewinds your fork's `main` for the whole course, so do it before you commit
-  other labs' work to `main`; anything after `lab02-v1.2.0` goes too:
-
-  ```bash
-  git switch main
-  git reset --hard lab02-v1.2.0
-  git push --force origin main       # your own fork: force-push is fine here
-  # GitHub's delete button only removed the remote branches; forget those, then clear
-  # the local ones too ("branch not found" just means it's already gone):
-  git fetch --prune
-  git branch -D feature/v2-silo-detail fix/null-reading
-  # and un-release the patch, so the stretch can re-tag it:
-  git tag -d lab02-v1.2.1 && git push origin --delete lab02-v1.2.1
-  ```
-
-  Then build the Git Flow world: a long-lived `develop` next to `main`
-  (`git switch -c develop && git push -u origin develop`). Rerun the two changes
-  Git Flow's way: the v2.0 view on `feature/*` **off `develop`** → PR into
-  `develop`; the null-reading fix on `hotfix/*` **off `main`** → **two PRs**, into
-  `main` (tag `lab02-v1.2.1`) **and** into `develop`. Merge the hotfix PRs first (both,
-  *then* delete the branch — deleting it between the two merges auto-closes the
-  still-open second PR), pull the hotfix into the feature (`git merge develop`),
-  then merge the feature. Notice the difference: the hotfix merges **twice** — skip
-  the `develop` merge and v2.0 regresses the fix next release. In the main scenario
-  `v1.2` lived in a tag; here a whole branch structure guards it. GitHub Flow
-  answered release week with one merge and a tag; Git Flow's double-merge is what
-  it costs to support *old* versions properly. You now know both from the inside.
-- **Protect `main` with a ruleset.** On a repo you own (your fork works):
-  **Settings → Rules → Rulesets → New ruleset → New branch ruleset**. Name it, set
-  **Enforcement status** to **Active**, leave the **Bypass list** empty (so admins,
-  you included, follow it too), and under **Target branches** add **Include default
-  branch**. Then turn on **Require a pull request before merging** with **Required
-  approvals: 1** and **Dismiss stale pull request approvals when new commits are
-  pushed**, and keep **Restrict deletions** and **Block force pushes** on. Requiring a
-  pull request is what blocks direct pushes to `main`. Screenshot the settings and
-  share it with a one-line description of what you protected against. We don't
-  require "passing CI" here because Lab 02 ships no CI: `validate.sh` is something
-  *you* run, and Lab 03 turns it into a required status check. **Temporary: delete
-  the ruleset when you're done** (Settings → Rules → Rulesets → your ruleset →
-  **Delete ruleset**). Unless a collaborator approves every PR, this blocks Labs
-  03-07, and Lab 03 adds its own ruleset on `main`.
+- Tags `lab02-v1.2.0` and `lab02-v1.2.1` are on your fork.
+- The fix PR merged **before** the feature PR, both with a merge commit, both branches deleted.
+- `lab02-v1.2.1` holds the fix and no silo-detail view.
+- Every review comment on your PRs is answered.
+- You submitted one review on a peer's PR, with a verdict.
 
 ## Debrief
 
-- Where does `v1.2` live in GitHub Flow — and when do tags stop being enough? (Stretch-doers: did the double-merge feel worth it? When does Git Flow's ceremony earn its keep, and when is it just merge work?)
-- Which of the three branching strategies surprised you? Which would you adopt tomorrow if it were up to you?
+- Where does `v1.2` live in GitHub Flow, now that `main` is v2.0?
 - One thing you saw in someone else's PR that you'll steal for your own work? One habit you want to drop?
 - When does a `request-changes` review do more harm than good?
-- For your Ignition projects specifically: what's the smallest change you could meaningfully PR? You just did one: a single script function, a single new view. (The smaller the unit, the easier review becomes. Whole-gateway-backup PRs are unreviewable, exactly the problem Lab 04 onward tackles.)
+- For your Ignition projects specifically: what's the smallest change you could meaningfully PR? You just did one: a single script function, a single new view.
