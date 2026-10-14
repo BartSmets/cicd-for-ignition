@@ -808,7 +808,7 @@ scripts/build-image.sh</pre></div>
       <ol class="steps">
         <li>Find your clean tag (or the end of your last build's output) and <b>write the <code>:sha-&lt;short&gt;</code> down</b>: your rollback point in Part 2.3.</li>
         <li><b>Before:</b> which commit does test run? A long hash that is none of yours: the base image, an empty gateway. The historian's database: <i>Did not find any relations</i>.</li>
-        <li><b>Deploy, one command,</b> with the immutable tag, never the moving <code>:local</code>. No <code>docker cp</code>, no scan call. Poll <code>/StatusPing</code> until <b>RUNNING</b>: a fresh-image boot re-commissions, so give it a few minutes.</li>
+        <li><b>Deploy, one command,</b> with the immutable tag, never the moving <code>:local</code>. No <code>docker cp</code>, no scan call. Poll <code>/StatusPing</code> until it prints <code>{"state":"RUNNING"}</code>; RUNNING with COMMISSIONING is not done yet. A fresh-image boot re-commissions, so give it a few minutes.</li>
         <li><b>Verify:</b> the revision label shows your sha. Launch <b>example-project</b> from <code>:8089/app/home/perspective/session-launcher</code>; log in at <code>:8089</code>: the Home page shows your Part 1.1 note.</li>
         <li>Run the <code>psql</code> line again: the historian's tables are there now, in TimescaleDB, not in the container.</li>
       </ol>
