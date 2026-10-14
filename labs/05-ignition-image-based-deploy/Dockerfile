@@ -14,9 +14,11 @@
 # container: no scan, no live mutation. The image you validate on the test
 # gateway is the exact image you promote to production (same digest).
 #
-# Which modules run is decided HERE, by the baked modules.json: the test and
-# production services in docker-compose.yaml deliberately do not set
-# GATEWAY_MODULES_ENABLED, because that env var overrides modules.json at boot.
+# Which modules run is decided HERE, by the baked modules.json. It is the same
+# services/modules.json the local gateway reads through its bind mount, so all
+# three gateways start the same modules. No service in docker-compose.yaml sets
+# GATEWAY_MODULES_ENABLED for a gateway that has a modules.json, because that
+# env var overrides modules.json at boot.
 #
 # Why modules belong in the image: a project scan can hot-reload views, scripts,
 # and config, but it CANNOT enable/disable modules — that needs a gateway

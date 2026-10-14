@@ -27,7 +27,7 @@ You should leave this lab able to:
 scripts/setup.sh    # safe to re-run: it keeps test/production on the image they run
 ```
 
-You'll need Docker with Compose v2 and ~8 GB free RAM. No PAT or GitHub setup is needed: both parts run entirely on your machine (the stretch uses your fork's Actions). If you'd like to read ahead: [`docs/dockerfile-anatomy.md`](../docs/dockerfile-anatomy.md).
+You'll need Docker with Compose v2 and ~8 GB free RAM. You build and deploy entirely on your machine, but your changes reach `main` the GitHub flow way, like in every lab: a feature branch, a PR into your fork, merged on GitHub, then `git pull`. So `gh` must point at your fork: `gh repo set-default <you>/cicd-for-ignition`, the one-time course setup step (check with `gh repo set-default --view`). No PAT is needed. If you'd like to read ahead: [`docs/dockerfile-anatomy.md`](../docs/dockerfile-anatomy.md).
 
 > **A bare `docker compose up -d` resets test and production.** The compose file runs the
 > base image (an empty gateway) on test/production unless `IGNITION_TEST_IMAGE` /
@@ -70,7 +70,7 @@ COPY --chown=2003:0 projects/             …/data/projects/             # proje
 
 Four things to call out on the board:
 
-1. **Where files land.** `data/projects/` and `data/config/` are the same paths Lab 04's `docker cp` targeted: Ignition scans them at startup. The difference is *when*: Lab 04 copied at deploy time into a running gateway; here they're present from the first boot.
+1. **Where files land.** `data/projects/` and `data/config/` are the same paths Lab 04's `docker cp` targeted: Ignition scans them at startup. The difference is *when*: Lab 04 copied at deploy time into a running gateway; here they're present from the first boot. `data/modules.json` is the same `services/modules.json` the local gateway reads through its bind mount: one module list, so local, test and production start the same modules.
 2. **Layer order = cache strategy.** Docker caches each layer keyed on its inputs. Order from least- to most-frequently-changed, so editing a Perspective view (bottom layer) doesn't bust the modules layer and the 5-second `RUN` above it. Rebuilds stay fast.
 3. **`--chown=2003:0`.** The gateway runs as the image's own `ignition` user (uid 2003), not root. A plain `COPY` bakes files root-owned and the gateway FAULTs at boot because it cannot write under `config/`. Ownership is part of what you bake.
 4. **The OPC UA `RUN`.** Every tag reads through the OPC UA server's loopback connection, which logs in with an `opcua-module` user source. That user source holds a password hash, so it is never committed or baked. The module only creates it when its one-time flag says it hasn't yet; the `sed` re-arms that flag in the image, so every gateway built from it creates its own login at first boot. Without it, the gateway logs `User Source "opcua-module" not found` and every OPC tag reads bad.
@@ -191,10 +191,11 @@ Together, build and dissect the image.
 ## You do (20 min)
 
 Your turn: change what goes into the image, rebuild, and prove the change from the image
-itself, using the commands from the we-do. Work on a branch:
+itself, using the commands from the we-do. Work on a branch off an up-to-date `main`:
 
 ```bash
-git checkout -b feature/bake-a-change
+git switch main && git pull
+git switch -c feature/bake-a-change
 ```
 
 ### Part 1.1: Bake a config change (10 min)
@@ -234,16 +235,22 @@ around in it:
    Rebuild and run the same `find`: the file is gone from the image, although it's still on
    your disk.
 4. Delete the stray file (`rm projects/old-backup.gwbk`), check `git status` shows only your
-   two edits, commit them and merge the branch into your local `main`:
+   two edits, and ship them the GitHub flow way: commit, push, open a PR into your fork's
+   `main`, let `lab05-ci.yml` go green, merge on GitHub, then pull `main` and rebuild:
    ```bash
    git add .dockerignore services/config/resources/core/ignition/system-properties/config.json
    git commit -m "Bake a homepage note and keep gateway backups out of the image"
-   git checkout main && git merge feature/bake-a-change
+   git push -u origin feature/bake-a-change
+   gh pr create --fill
+   sleep 15 && gh pr checks --watch && gh pr merge --merge   # checks take a few seconds to register
+   git switch main && git pull
    scripts/build-image.sh
    ```
-   The local merge stands in for merging a PR on GitHub. **Don't push this `main`**: your
-   fork's `main` only moves through PRs. The new tag reads `sha-<short>` without `-dirty`:
-   that clean image is the one you deploy in Part 2.
+   The new tag reads `sha-<short>` without `-dirty`, and `<short>` is the merge commit
+   GitHub just made: that clean image is the one you deploy in Part 2. On your fork the
+   merge also fires `lab05-deploy.yml`, which builds the same commit on a GitHub-hosted
+   runner and pushes it to your GHCR. You don't need that image today (the stretch uses
+   it); a red or missing run there doesn't block this lab.
 
 ## Definition of done (part 1)
 
@@ -279,14 +286,16 @@ You're finished with part 1 when:
 
 **Timing:** 15 min instructor demo · 40 min you-do · 10 min debrief
 
-Everything in this part runs on your own machine, **and you type the deploy
+Every deploy in this part runs on your own machine, **and you type the deploy
 commands yourself, no script**. In a real setup this part is automated by the
 same GitHub Actions you built in Lab 04: a merge to `main` fires `lab05-deploy.yml`,
 a tag fires `lab05-release.yml`; only the steps inside the jobs change (build + push +
-pull + recreate instead of copy + scan). We skip GitHub today because a gateway
-image is ~2 GB, and uploading that from a course laptop is not a good use of
-your hour: the transport isn't the lesson. Every command below is a line the
-workflow would run; your local Docker image store plays the role of the
+pull + recreate instead of copy + scan). Your merges do reach GitHub (GitHub flow,
+as in Part 1), so `lab05-deploy.yml` builds each of them on your fork too, but
+you deploy your own local build of the same commit. We don't push images from your
+laptop: a gateway image is ~2 GB, and uploading that from a course laptop is not a
+good use of your hour, the transport isn't the lesson. Every command below is a line
+the workflow would run; your local Docker image store plays the role of the
 registry.
 
 ## Pre-flight
@@ -346,15 +355,16 @@ gets its own immutable `:sha` tag: the one you wrote down in Part 2.1 is your
 rollback point in Part 2.3.
 
 1. Edit a Perspective view under `projects/example-project/com.inductiveautomation.perspective/views/`: make it visibly different (a title text in `pages/overview/view.json` works well).
-2. Commit on a feature branch and merge to your local `main`:
+2. Ship it the GitHub flow way, as in Part 1.2: feature branch, PR, merge on GitHub, pull:
    ```bash
-   git checkout -b feature/tweak-view
+   git switch -c feature/tweak-view
    git status                     # only your view should show up
    git add projects/ && git commit -m "Change overview title"
-   git checkout main && git merge feature/tweak-view
+   git push -u origin feature/tweak-view
+   gh pr create --fill
+   sleep 15 && gh pr checks --watch && gh pr merge --merge
+   git switch main && git pull
    ```
-   As in Part 1, the local merge stands in for merging the PR on GitHub (GitHub flow, like
-   every lab). Don't push this `main`.
 3. Rebuild + redeploy, with the new tag `build-image.sh` prints:
    ```bash
    scripts/build-image.sh
@@ -394,10 +404,8 @@ Three directions, pick by appetite:
    by hand. The workflows in this repo move the **build** half to CI, GitHub flow:
    merge to `main` → an image is built and pushed, tag → that image is promoted.
    The deploy half stays manual, exactly like you did it. Needs your fork
-   with Actions enabled, and `gh` pointed at your fork:
-   `gh repo set-default <you>/cicd-for-ignition` (you ran this once when you
-   forked the course repo; it's stored per clone, so every lab shares it).
-   Also a great take-home.
+   with Actions enabled (its *Actions* tab lists the workflows). Also a great
+   take-home.
    0. **Can Docker pull from your GHCR?** The first push creates the package
       `cicd-lab-05-ignition` under your account, linked to your fork. From a public fork it is
       normally public, and the pull in step 2 needs no login. If that pull says `denied` (a
@@ -410,13 +418,15 @@ Three directions, pick by appetite:
       ```
       (Or make the package public: your GitHub profile → *Packages* →
       `cicd-lab-05-ignition` → *Package settings* → *Change visibility*.)
-   1. Start a branch from GitHub's `main`, not your local one (which holds the merges you
-      never pushed): `git fetch origin && git checkout -b feature/ci-build origin/main`.
-      Open a PR with a small project change: `lab05-ci.yml` validates it (including a
-      no-push image build). Merge it on GitHub → `lab05-deploy.yml` builds on a free
-      GitHub-hosted runner and pushes to **your** GHCR namespace. Wait for that
-      run to go green before the next step: there is no image to pull until
+   1. Your merges already did the CI half. Each PR you opened ran `lab05-ci.yml` (including
+      a no-push image build), and each merge fired `lab05-deploy.yml`, which built that
+      commit on a free GitHub-hosted runner and pushed it to **your** GHCR namespace. Find
+      the run for your Part 2.2 merge (the newest one, on your fork's *Actions* tab or with
+      the command below) and wait for it to go green: there is no image to pull until
       `lab05-deploy.yml` has finished.
+      ```bash
+      gh run list --workflow lab05-deploy.yml --limit 3   # newest first; wait for ✓
+      ```
    2. Open the run's summary page. It prints the image name it just built. Pull it
       and point test at it: the same two commands you used all through part 2, only
       the image name is longer:
@@ -425,10 +435,11 @@ Three directions, pick by appetite:
       IGNITION_TEST_IMAGE=ghcr.io/<your-user>/cicd-lab-05-ignition:sha-<short> \
         docker compose up -d ignition-test
       ```
-   3. Tag the latest `main` on GitHub (again not your local `main`) and push the tag:
+   3. Tag the latest `main` and push the tag (pull first, so the tag lands on the commit
+      `lab05-deploy.yml` just built):
       ```bash
-      git fetch origin
-      git tag lab05-v0.1.0 origin/main && git push origin lab05-v0.1.0
+      git switch main && git pull
+      git tag lab05-v0.1.0 && git push origin lab05-v0.1.0
       ```
       `lab05-release.yml` checks that `:test` was built from that commit, then re-tags it to
       `:v0.1.0` + `:production`: **no rebuild**. (The `lab05-` prefix keeps the tag from firing
@@ -456,7 +467,11 @@ Three directions, pick by appetite:
      keeps it off. Set `com.inductiveautomation.sfc` to `"onStartup": "enabled"`, rebuild,
      deploy to test, and find it running under *Platform → Modules*. That works because
      test runs whatever modules the baked `modules.json` enables; a scan in Lab 04 could
-     never do this.
+     never do this. The local gateway reads the same file through its bind mount: restart
+     it (`docker compose restart ignition-local`, modules only load at boot) and SFC runs
+     there too. It also writes SFC's default settings under
+     `services/config/resources/core/com.inductiveautomation.sfc/`: commit them together
+     with `modules.json`, so the image carries the same settings local runs with.
    - **A migrations folder:** create
      `db-migrations/0001_create_downtime_log.up.sql` with a simple
      `CREATE TABLE`, add a `COPY db-migrations/ /db-migrations/` layer, rebuild,

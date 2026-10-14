@@ -107,6 +107,19 @@ but the gateway only loads them when told where they are. Add
 `-Dignition.gateway.externalModulesFolder=/third-party-modules` after the `--`, like the command
 `scripts/build-image.sh` prints. The compose services already pass it.
 
+## A module you enabled in `services/modules.json` doesn't run
+
+`services/modules.json` is the one module list for all three gateways, but modules only load at
+boot:
+
+- **Local** reads the file through its bind mount. Restart it: `docker compose restart ignition-local`.
+- **Test/production** read the copy baked into the image. Commit, rebuild and deploy the new image.
+- **Test/production before their first deploy** run the plain base image, which has no
+  `modules.json`. They start the list `scripts/setup.sh` recorded in `.env` as
+  `LAB_MODULES_ENABLED`; re-run `scripts/setup.sh` after you change `modules.json`. Without that
+  line (an `.env` from before this lab version, or no setup run yet) the base image starts every
+  module Ignition ships, which costs memory but breaks nothing.
+
 ## GHCR push/pull fails (401 / 403 / denied)
 
 The images publish to **your own fork's** GHCR namespace (`ghcr.io/<your-fork-owner>/…`), so this is
@@ -164,9 +177,9 @@ It fails when:
 - **You tagged too early.** The merge's `lab05-deploy.yml` run hadn't finished, so `:test` is still
   the previous build. Wait for it to go green, delete the tag and push it again:
   `git push origin :refs/tags/lab05-vX.Y.Z && git push origin lab05-vX.Y.Z`.
-- **You tagged the wrong commit,** e.g. your local `main`, which holds merges you never pushed.
-  Tag GitHub's `main` instead: `git fetch origin && git tag -f lab05-vX.Y.Z origin/main`, then
-  delete and push the tag as above.
+- **You tagged the wrong commit,** e.g. a feature branch, or a `main` you hadn't pulled since
+  the merge. Tag GitHub's `main` instead: `git fetch origin && git tag -f lab05-vX.Y.Z origin/main`,
+  then delete and push the tag as above.
 
 ## `no matching manifest for linux/arm64/v8` on pull (Apple Silicon)
 
