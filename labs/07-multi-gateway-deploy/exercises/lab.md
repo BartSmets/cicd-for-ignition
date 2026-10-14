@@ -1,6 +1,6 @@
 # Lab 07: Deployments in a multi-gateway architecture
 
-**Day 4 · afternoon session.** For once, you do not work in your fork of the
+**Day 4.** For once, you do not work in your fork of the
 course repo. Everyone works as a **contributor** on one real, public
 repository: [`Mustry-Solutions/demo-oatmakers`](https://github.com/Mustry-Solutions/demo-oatmakers),
 the repo behind Mustry's live Oatmakers demo at
@@ -11,7 +11,7 @@ gateway, then bring a project with your own name live, then land one of
 five challenges on the shared oatmakers project, then build on each other's
 work. Real reviews, real deploys, real merge conflicts.
 
-The point of the afternoon: **use everything we learned and get some reps
+The point of this lab: **use everything we learned and get some reps
 in**: feature branch, commits, PR, review, tag, release pin, deploy, again
 and again until the loop feels like muscle memory.
 
@@ -262,7 +262,7 @@ Follows [`slides/assignment.html`](https://share.mustrysolutions.com/a95c879a-d1
 
 ### Part 0 (±15 min): stand up your test gateway and your runner
 
-Everyone does this once, at the start, then leaves it running all afternoon.
+Everyone does this once, at the start, then leaves it running for the rest of the lab.
 It gives you a second local gateway that receives **every merge to
 `main`**, so you see a change land somewhere safe before it is ever tagged
 for production. It reuses building blocks you already own: a self-hosted

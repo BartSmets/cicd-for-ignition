@@ -281,7 +281,7 @@ Start from a clean tree (Part 1 fixes applied, `.yamllint.yml` in place).
 > is change the trigger from "you remembering" to "a pull request", and move the steps into
 > `lab03-ci.yml`. Same steps, same pass/fail, different trigger. When you build the workflow below,
 > notice you're not writing new *checks*, you're just wrapping the ones you already ran. (And
-> this afternoon in Lab 04, a *deploy* is the same shape again: trigger, steps, pass/fail, where
+> in Lab 04, a *deploy* is the same shape again: trigger, steps, pass/fail, where
 > the steps ship files to a gateway.)
 
 ```

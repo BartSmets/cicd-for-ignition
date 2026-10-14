@@ -381,7 +381,7 @@ rollback point in Part 2.3.
    IGNITION_TEST_IMAGE=cicd-lab-05-ignition:sha-<the-old-short-sha> docker compose up -d ignition-test
    ```
 3. Verify at :8089: the view is back to its previous state, and the revision label shows the old sha.
-4. Count the irreversible steps you just took. (Zero: both versions still exist, and you can flip between them all afternoon.)
+4. Count the irreversible steps you just took. (Zero: both versions still exist, and you can flip between them as often as you like.)
 
 ## Definition of done (part 2)
 

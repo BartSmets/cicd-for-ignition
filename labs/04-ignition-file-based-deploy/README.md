@@ -1,6 +1,6 @@
 # Lab 04 — Ignition file-based deploy
 
-Day 2 (afternoon) of the [CI/CD for Ignition Masterclass](../../README.md).
+Day 2 of the [CI/CD for Ignition Masterclass](../../README.md).
 
 > Decode the Ignition 8.3 file structure, then build a file-based deploy pipeline that promotes project changes from a local working gateway, through a test environment on push to `main`, to a production environment on a tag release cut from `main` — all with a hot scan, no gateway restarts. The pipeline follows **GitHub Flow**.
 

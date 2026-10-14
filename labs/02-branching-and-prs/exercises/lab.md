@@ -158,7 +158,7 @@ branch you cut next is short-lived: off `main`, back to `main` through a PR.
 > **Two commands graduate from "named" to "used" today.** `git tag -a lab02-v1.2.0` pins a
 > permanent, human-readable name to the exact commit you're on; unlike a branch, a
 > tag never moves — that's what makes it a release marker. `git push` uploads your
-> local commits and refs to a remote (`origin` = your fork on GitHub; this morning
+> local commits and refs to a remote (`origin` = your fork on GitHub; in Lab 01
 > everything stayed local). Two habits that trip people up: tags don't ride along
 > with a normal push, so `git push origin lab02-v1.2.0` sends one explicitly — and a *new*
 > branch needs `git push -u origin <branch>` once, where `-u` links it to your

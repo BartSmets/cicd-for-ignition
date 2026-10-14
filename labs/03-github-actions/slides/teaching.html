@@ -667,8 +667,8 @@ a{color:var(--primary-deep)}
   <div class="body">
     <ol class="flow">
       <li><b>Pull request</b><span>you change project files</span></li>
-      <li class="on"><b>Checks</b><span>Lab 03, this morning: broken files can't reach <code>main</code></span></li>
-      <li><b>Deploy</b><span>Lab 04, after lunch: ship the files to a separate gateway</span></li>
+      <li class="on"><b>Checks</b><span>Lab 03: broken files can't reach <code>main</code></span></li>
+      <li><b>Deploy</b><span>Lab 04: ship the files to a separate gateway</span></li>
       <li><b>Running gateway</b><span>the change is live</span></li>
     </ol>
     <div class="chap" style="margin-top:2.5rem">
@@ -676,7 +676,7 @@ a{color:var(--primary-deep)}
       <div><small>Chapter 2</small><b>GitHub Actions</b><span>Workflows, jobs and steps, triggers, the runner model and the required check.</span></div>
       <div><small>Chapter 3</small><b>Self-hosted runners</b><span>Where CI runs when GitHub-hosted can't reach your plant network.</span></div>
     </div>
-    <div class="aside"><span class="label">This morning's gateway</span>A <b>dev gateway</b>, defined in Compose, that runs the exact project files CI checks. Shipping files into a separate gateway, a real deploy, is Lab 04.</div>
+    <div class="aside"><span class="label">This lab's gateway</span>A <b>dev gateway</b>, defined in Compose, that runs the exact project files CI checks. Shipping files into a separate gateway, a real deploy, is Lab 04.</div>
   </div>
 </section>
 
@@ -937,7 +937,7 @@ pre-commit run --all-files --config .pre-commit-config.yaml</pre></div>
       <div class="h"></div><div class="h">Trigger</div><div class="h">Steps</div><div class="h">Pass or fail</div>
       <div class="k">By hand<small>Chapter 1</small></div><div>you, typing</div><div><code>scripts/validate.sh</code>, <code>ign-lint …</code></div><div>the exit code</div>
       <div class="k ci">In CI<small>lab03-ci.yml</small></div><div class="ci"><b>a pull request</b></div><div class="ci">the same commands, as <code>run:</code> steps</div><div class="ci">a check on the PR</div>
-      <div class="k">Deploy<small>Lab 04, after lunch</small></div><div>a push to <code>main</code></div><div>ship files to a gateway, then scan</div><div>the deploy job</div>
+      <div class="k">Deploy<small>Lab 04</small></div><div>a push to <code>main</code></div><div>ship files to a gateway, then scan</div><div>the deploy job</div>
     </div>
     <div class="aside"><span class="label">That's the whole leap</span>The steps and the pass or fail stay identical; only the trigger changes, from <b>you remembering</b> to <b>an event</b>. You are not writing new checks, you are wrapping the ones you already ran.</div>
   </div>

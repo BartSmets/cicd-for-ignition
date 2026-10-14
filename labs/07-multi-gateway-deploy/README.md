@@ -1,6 +1,6 @@
 # Lab 07: Deployments in a multi-gateway architecture
 
-Day 4 (afternoon) of the [CI/CD for Ignition Masterclass](https://github.com/Mustry-Academy/cicd-for-ignition).
+Day 4 of the [CI/CD for Ignition Masterclass](https://github.com/Mustry-Academy/cicd-for-ignition).
 
 > The final lab. For once you do **not** work in your fork. Everyone works as a
 > **contributor on one real, public repo**,

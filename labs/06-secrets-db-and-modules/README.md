@@ -1,6 +1,6 @@
 # Lab 06 — Secrets, database migrations, modules & JARs
 
-Day 4 (morning) of the [CI/CD for Ignition Masterclass](../../README.md).
+Day 4 of the [CI/CD for Ignition Masterclass](../../README.md).
 
 > Four things every real Ignition deployment carries that the pipeline so far doesn't handle: **secrets**, the **database schema**, **third-party modules** and **JAR files**. You move the database passwords out of Git and onto the secrets ladder (env var → file-based secret → Ignition 8.3 **referenced secret**), ship a schema change as a **golang-migrate up/down pair** the pipeline applies *before* the screens that need it, and deploy a `.modl` with headless license acceptance — so a fresh gateway boots complete with no hands on it.
 

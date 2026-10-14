@@ -1,6 +1,6 @@
 # Lab 06 — Secrets, database migrations, JAR files and third-party modules
 
-**Day 4 · morning session.** Four things every real Ignition deployment carries
+**Day 4.** Four things every real Ignition deployment carries
 that the pipeline doesn't handle yet: secrets, the database schema, third-party
 modules and JAR files. Two real production Ignition repos we maintain (one
 file-based, one image-based; shown on screen by the instructor) are the working
