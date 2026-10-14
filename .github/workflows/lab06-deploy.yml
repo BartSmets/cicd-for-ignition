@@ -189,14 +189,22 @@ jobs:
           fi
           echo "Module manifest changed — restarting $IGNITION_CONTAINER so the gateway reloads modules..."
           docker restart "$IGNITION_CONTAINER"
+          # StatusPing says {"state":"RUNNING","details":"COMMISSIONING"} while
+          # a module waits for its certificate or licence to be accepted:
+          # wait for RUNNING without COMMISSIONING.
+          state=''
           for _ in $(seq 1 60); do
-            if curl -fsS --max-time 3 "$IGNITION_URL/StatusPing" 2>/dev/null | grep -q RUNNING; then
+            state="$(curl -fsS --max-time 3 "$IGNITION_URL/StatusPing" 2>/dev/null || true)"
+            if echo "$state" | grep -q '"state":"RUNNING"' && ! echo "$state" | grep -q COMMISSIONING; then
               echo "gateway RUNNING again."
               exit 0
             fi
             sleep 5
           done
-          echo "gateway did not come back after module restart" >&2
+          if echo "$state" | grep -q COMMISSIONING; then
+            echo "::error::The gateway is stuck commissioning after the module restart: a module in the manifest is enabled but its certificate or licence is not accepted. Open the gateway's web UI to see which one."
+          fi
+          echo "gateway did not come back after module restart (last StatusPing: ${state:-no answer})" >&2
           exit 1
 
       # Stretch S4: paste the ready-made "Ship library JARs" step HERE — it
@@ -370,14 +378,18 @@ jobs:
               fi
             done
           }
+          # RUNNING without COMMISSIONING: a scan sent to a gateway that is
+          # still commissioning hits the commissioning page and fails.
           wait_for_running() {
+            local state=''
             for _ in $(seq 1 60); do
-              if curl -fsS --max-time 3 "$IGNITION_URL/StatusPing" 2>/dev/null | grep -q RUNNING; then
+              state="$(curl -fsS --max-time 3 "$IGNITION_URL/StatusPing" 2>/dev/null || true)"
+              if echo "$state" | grep -q '"state":"RUNNING"' && ! echo "$state" | grep -q COMMISSIONING; then
                 return 0
               fi
               sleep 5
             done
-            echo "gateway did not come back after restart" >&2
+            echo "gateway did not come back after restart (last StatusPing: ${state:-no answer})" >&2
             return 1
           }
 
@@ -410,12 +422,15 @@ jobs:
       - name: Smoke-check gateway health
         run: |
           set -euo pipefail
+          # Healthy = RUNNING and not stuck commissioning.
+          state=''
           for i in $(seq 1 10); do
-            if curl -fsS --max-time 3 "$IGNITION_URL/StatusPing" >/dev/null; then
+            state="$(curl -fsS --max-time 3 "$IGNITION_URL/StatusPing" 2>/dev/null || true)"
+            if echo "$state" | grep -q '"state":"RUNNING"' && ! echo "$state" | grep -q COMMISSIONING; then
               echo "gateway healthy after $((i * 2))s"
               exit 0
             fi
             sleep 2
           done
-          echo "gateway did not respond after deploy" >&2
+          echo "gateway not healthy after deploy (last StatusPing: ${state:-no answer})" >&2
           exit 1

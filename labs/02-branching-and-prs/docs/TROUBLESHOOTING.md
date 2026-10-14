@@ -35,6 +35,7 @@ scripts/setup.sh
 
 - Give it time: a cold start takes one to three minutes. `setup.sh` polls for about four.
 - Read the logs: `docker logs --tail 200 lab02-ignition`.
+- `curl -s localhost:8088/StatusPing` answers `{"state":"RUNNING","details":"COMMISSIONING"}`? The gateway is not up yet, whatever the `RUNNING` says, and `setup.sh` keeps waiting. If it stays that way, open http://localhost:8088: the gateway waits for something to be accepted.
 - Permission errors on Windows: the clone must live in your Linux home (`~/...`), never under `/mnt/c`. See [`wsl-setup.md`](./wsl-setup.md).
 - Still stuck: `scripts/teardown.sh --volumes` and `scripts/setup.sh` give you a fresh gateway (your project files are in the repo, not in the volume).
 

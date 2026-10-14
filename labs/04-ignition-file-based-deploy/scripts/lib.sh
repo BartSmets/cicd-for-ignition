@@ -69,6 +69,20 @@ gateway_container() {
   esac
 }
 
+# True once the gateway at URL $1 has finished booting. StatusPing answers
+# {"state":"RUNNING","details":"COMMISSIONING"} while the gateway still
+# commissions (its first boot, or a module waiting for its certificate or
+# licence to be accepted), so RUNNING on its own is not enough. The last
+# answer stays in GATEWAY_STATUS for error messages.
+gateway_running() {
+  GATEWAY_STATUS="$(curl -fsS -m 3 "$1/StatusPing" 2>/dev/null || true)"
+  case "$GATEWAY_STATUS" in
+    *COMMISSIONING*)       return 1 ;;
+    *'"state":"RUNNING"'*) return 0 ;;
+    *)                     return 1 ;;
+  esac
+}
+
 # Read a single KEY from a .env-style file (default: <repo>/.env).
 # Strips optional single/double quotes around the value.
 env_value() {

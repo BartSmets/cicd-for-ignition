@@ -4,7 +4,7 @@
 #   - sets the repo-wide git config (hook dispatchers, diff driver)
 #   - ensures .env is in place (copies from .env.example)
 #   - brings up the single Ignition gateway
-#   - waits for it to report RUNNING
+#   - waits for it to report RUNNING with commissioning finished
 #
 # Re-run safely — every step is idempotent.
 
@@ -70,7 +70,10 @@ echo "${GREEN}Waiting for the gateway at $URL to become RUNNING (cold start is s
 attempts=0
 max_attempts=120   # ~4 minutes
 while [ $attempts -lt $max_attempts ]; do
-  if curl -fsS "$URL/StatusPing" 2>/dev/null | grep -q RUNNING; then
+  # StatusPing says {"state":"RUNNING","details":"COMMISSIONING"} while the
+  # gateway is still commissioning: wait until RUNNING comes without it.
+  status="$(curl -fsS "$URL/StatusPing" 2>/dev/null || true)"
+  if echo "$status" | grep -q '"state":"RUNNING"' && ! echo "$status" | grep -q COMMISSIONING; then
     echo ""
     echo "${GREEN}Gateway RUNNING.${NC}"
     break

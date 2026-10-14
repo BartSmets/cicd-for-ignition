@@ -71,10 +71,11 @@ open(path, "a").write("\n")
 PYEOF
 }
 
+# RUNNING and done commissioning (gateway_running in lib.sh).
 wait_running() {
   local url="$1"
   for _ in $(seq 1 60); do
-    if curl -fsS -m 3 "$url/StatusPing" 2>/dev/null | grep -q RUNNING; then
+    if gateway_running "$url"; then
       return 0
     fi
     sleep 5
@@ -85,6 +86,13 @@ wait_running() {
 for gw in "$@"; do
   container="$(gateway_container "$gw")" || { echo "ERROR: unknown gateway: $gw" >&2; exit 2; }
   url="$(gateway_url "$gw")"
+  # Commissioning writes security-properties itself, and a restart in the
+  # middle of it can leave the gateway stuck. Only touch a finished gateway.
+  if ! wait_running "$url"; then
+    echo -e "${RED}[$gw]${NC} gateway not done booting (StatusPing: ${GATEWAY_STATUS:-no answer}); leaving it alone." >&2
+    echo "  Check: docker logs -f $container" >&2
+    exit 1
+  fi
   echo -e "${GREEN}[$gw]${NC} grafting APIToken permissions into $container..."
 
   tmp="$(mktemp)"
@@ -98,6 +106,6 @@ for gw in "$@"; do
   if wait_running "$url"; then
     echo -e "${GREEN}[$gw]${NC} gateway RUNNING — verify with: scripts/trigger-scan.sh $gw"
   else
-    echo -e "${YELLOW}[$gw]${NC} gateway not RUNNING yet; check: docker logs -f $container"
+    echo -e "${YELLOW}[$gw]${NC} gateway not done booting yet (StatusPing: ${GATEWAY_STATUS:-no answer}); check: docker logs -f $container"
   fi
 done

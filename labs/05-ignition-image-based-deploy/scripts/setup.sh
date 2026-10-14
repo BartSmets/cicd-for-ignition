@@ -11,7 +11,7 @@
 #     mount, test/production get theirs installed into the container
 #     (scripts/install-api-token.sh)
 #   - brings up the stack (three Ignition gateways + shared TimescaleDB)
-#   - waits for ALL THREE gateways to become RUNNING
+#   - waits for ALL THREE gateways to become RUNNING and finish commissioning
 #   - triggers an initial projects + config scan against the LOCAL gateway.
 #     Test and production start on the BASE image (empty gateways) by design — they get
 #     replaced by the image lab05-deploy.yml builds / lab05-release.yml promotes.
@@ -401,10 +401,10 @@ wait_for_gateway() {
     echo -e "${GREEN}Waiting for $gateway gateway at $url to become RUNNING...${NC}"
     local attempts=0
     local max_attempts=120  # ~4 minutes per gateway; cold start is slow
+    # gateway_running (lib.sh) also waits out commissioning: everything after
+    # this (restarts, permission grafts, scans) needs a gateway that is done.
     while [ $attempts -lt $max_attempts ]; do
-        local state
-        state="$(curl -fsS "${url}/StatusPing" 2>/dev/null | grep -o RUNNING || true)"
-        if [ "$state" = "RUNNING" ]; then
+        if gateway_running "$url"; then
             echo ""
             echo -e "${GREEN}  $gateway gateway RUNNING${NC}"
             return 0
@@ -416,7 +416,16 @@ wait_for_gateway() {
     echo ""
     local container
     container="$(gateway_container "$gateway")"
-    echo -e "${RED}Error: $gateway gateway did not reach RUNNING within $((max_attempts * 2))s.${NC}" >&2
+    case "$GATEWAY_STATUS" in
+        *COMMISSIONING*)
+            echo -e "${RED}Error: $gateway gateway is still commissioning after $((max_attempts * 2))s.${NC}" >&2
+            echo "  It waits for something to be accepted, usually a module certificate or" >&2
+            echo "  licence. Open $url to see what it asks for." >&2
+            ;;
+        *)
+            echo -e "${RED}Error: $gateway gateway did not reach RUNNING within $((max_attempts * 2))s.${NC}" >&2
+            ;;
+    esac
     echo "  Check logs:  docker logs --tail 200 $container" >&2
     return 1
 }

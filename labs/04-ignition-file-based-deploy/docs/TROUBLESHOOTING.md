@@ -53,6 +53,13 @@ turns CONNECTED within a minute.
   ```
 - **Trial expired.** Each gateway runs in 2-hour trial mode. After it lapses the gateway stops
   serving. Reset via *Platform → Licensing → Reset Trial* (unlimited, legal for test).
+- **Stuck commissioning.** `curl -s localhost:8089/StatusPing` keeps answering
+  `{"state":"RUNNING","details":"COMMISSIONING"}`. Despite the `RUNNING`, that gateway is not up:
+  it waits for something to be accepted, usually a module certificate or licence. `setup.sh` waits
+  for it and says "still commissioning" when it gives up. Open the gateway in your browser to see
+  what it asks for. All three gateways take their acceptance from the one `services/modules.json`,
+  so if `git diff services/modules.json` shows `certFingerprint` lines removed, restore the file and
+  restart: `git checkout -- services/modules.json && docker compose restart`.
 
 ## `git status` shows lots of `resource.json` changes
 
