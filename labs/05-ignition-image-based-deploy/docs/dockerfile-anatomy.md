@@ -9,7 +9,7 @@ The [`Dockerfile`](../Dockerfile) bakes the *deployable state* of a gateway on t
 | Build input | Lands at | Why it's in the image |
 |---|---|---|
 | `third-party-modules/*.modl` | `/third-party-modules/` | The gateway loads them via `-Dignition.gateway.externalModulesFolder`. Baking them = the module binaries ship with the artifact. |
-| `services/modules.json` | `data/modules.json` | Which modules turn on at boot. **A scan can't apply this — only a restart can.** That's the Lab 04 gap image-based closes. |
+| `services/modules.json` | `data/modules.json` | Which modules turn on at boot. **A scan can't apply this — only a restart can.** That's the Lab 04 gap image-based closes. The local gateway reads the same file through its bind mount, so local, test and production start the same modules. |
 | `services/config/` | `data/config/` | Gateway-level config (DB connections, tag providers). Scanned at startup. The scan-API token is deliberately NOT baked: a published image must never carry credentials, so deploys reinstall it into the container (`scripts/install-api-token.sh`). A `RUN sed` right after this `COPY` re-arms the OPC UA module's one-time flag, so each gateway creates its own `opcua-module` login (the user source every OPC tag reads through) at first boot. |
 | `projects/` | `data/projects/` | Project content (Perspective views, scripts, tags). Scanned at startup. |
 

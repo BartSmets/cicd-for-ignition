@@ -36,7 +36,7 @@ The offline copy is the same deck: open it from your clone if the link doesn't l
 ## Prerequisites
 
 - **≥ 8 GB free RAM for Docker** — three Ignition gateways at 1 GB each, plus TimescaleDB and Docker overhead.
-- _Optional, for the stretch challenge only:_ your fork of the course repo (`<your-username>/cicd-for-ignition`, the same fork every lab uses). The CI builds publish images to **your own** GHCR namespace (`ghcr.io/<your-fork-owner>/cicd-lab-05-ignition`) — never to Mustry's. **Enable Actions in your fork** if you haven't yet (once per fork): forks ship with workflows disabled — open the *Actions* tab and click the green "I understand my workflows, go ahead and enable them" button. The lab itself needs no fork, no PAT, and no GitHub account.
+- **Your fork of the course repo** (`<your-username>/cicd-for-ignition`, the same fork every lab uses), with `gh` pointed at it (`gh repo set-default <you>/cicd-for-ignition`). You build and deploy on your machine, but your changes reach `main` the GitHub flow way: a PR into your fork, merged on GitHub, then `git pull`. Each merge also fires `lab05-deploy.yml`, which publishes the image to **your own** GHCR namespace (`ghcr.io/<your-fork-owner>/cicd-lab-05-ignition`), never to Mustry's; only the stretch challenge pulls it. **Enable Actions in your fork** if you haven't yet (once per fork): forks ship with workflows disabled — open the *Actions* tab and click the green "I understand my workflows, go ahead and enable them" button. No PAT needed.
 - _Background:_ [Lab 04](../04-ignition-file-based-deploy/) sets up the Ignition stack and the file-based pattern this lab contrasts with. It helps but isn't required — this lab stands alone.
 - _No extra registry account:_ the CI publishes to **GitHub Container Registry (GHCR)** under your fork, authenticated with the workflow's built-in `GITHUB_TOKEN`. The **local** scripts (`build-image.sh`/`deploy-image.sh`) need no registry at all — they build and run images on your machine.
 
@@ -121,7 +121,7 @@ labs/05-ignition-image-based-deploy/
 │   └── example-project/                ← a real Perspective project (views, templates)
 ├── services/
 │   ├── config/                         ← gateway-level config (baked into the image)
-│   └── modules.json                    ← module enablement (baked into the image — this is the Lab 04 payoff)
+│   └── modules.json                    ← module enablement for all three gateways (bind-mounted into `local`, baked into the image — this is the Lab 04 payoff)
 └── third-party-modules/                ← bundled .modl binaries (baked into the image)
 ```
 
@@ -131,8 +131,8 @@ The workflows live at the course repo root (GitHub only runs workflows from ther
 
 Three Ignition 8.3 gateways + one TimescaleDB, simulating local → test → production:
 
-- **`ignition-local`** bind-mounts `./projects/` and `./services/config/`, exactly like Lab 04. This is where you **author** content. The image you ship is *built from these same files*.
-- **`ignition-test`** runs whatever image `IGNITION_TEST_IMAGE` points at (default: the base Ignition image, an empty gateway). It has **no bind mounts and no persistent data volume**: the container filesystem *is* the artifact. You deploy by setting `IGNITION_TEST_IMAGE` to a built tag and running `docker compose up -d ignition-test`, which recreates the container. Which modules run is decided by the image's baked `modules.json`: unlike `local`, test and production get no `GATEWAY_MODULES_ENABLED` override.
+- **`ignition-local`** bind-mounts `./projects/`, `./services/config/` and `./services/modules.json`, exactly like Lab 04. This is where you **author** content. The image you ship is *built from these same files*.
+- **`ignition-test`** runs whatever image `IGNITION_TEST_IMAGE` points at (default: the base Ignition image, an empty gateway). It has **no bind mounts and no persistent data volume**: the container filesystem *is* the artifact. You deploy by setting `IGNITION_TEST_IMAGE` to a built tag and running `docker compose up -d ignition-test`, which recreates the container. Which modules run is decided by the image's baked `modules.json`, the same `services/modules.json` the local gateway reads, so all three gateways start the same modules. Before your first deploy, the plain base image has no `modules.json`; `docker-compose.yaml` then hands the gateway the list `services/modules.json` enables (`LAB_MODULES_ENABLED`, which `scripts/setup.sh` writes into `.env`), so even the empty gateway doesn't start every module Ignition ships.
 - **`ignition-production`** is the same shape, fed by `IGNITION_PRODUCTION_IMAGE` with the *promoted* image (the same one the test gateway tested).
 
 The single TimescaleDB hosts `ignition_local_development`/`ignition_test`/`ignition_production`. **Historian data lives in Timescale, not in the gateway image** — which is exactly why throwing away and recreating the test/production container on every deploy is safe.
@@ -187,7 +187,7 @@ That division is the point. The build half is portable and cheap; the last mile 
   ```
 - `denied: permission_denied: write_package` on the first push means an older package with the same name (e.g. from the retired per-lab repo) isn't linked to this repo: see [`docs/TROUBLESHOOTING.md`](./docs/TROUBLESHOOTING.md).
 - If your fork lives under a GitHub **organization**, the org may restrict this: *Settings → Actions → General → Workflow permissions* must allow **read and write**, and Packages must be enabled. A 403 on push almost always traces back to one of these — see [`docs/TROUBLESHOOTING.md`](./docs/TROUBLESHOOTING.md).
-- **No GHCR needed for the lab exercises** — the local `build-image.sh`/`deploy-image.sh` flow runs entirely on your machine. GHCR only enters via the CI workflows.
+- **No GHCR needed for the lab exercises** — the local `build-image.sh`/`deploy-image.sh` flow runs entirely on your machine. GHCR only enters via the CI workflows: your merges publish there, and only the stretch pulls from it.
 
 No GitHub **environments** are needed here, since nothing deploys from CI. When you do wire up a deploy job (Lab 06/07), putting it behind an environment is what gives you per-stage history and **required reviewers** as an approval gate before production.
 

@@ -166,7 +166,7 @@ body{
   <div class="cover">
     <div class="eyebrow">The assignment · breakout rooms · 20 + 40 min</div>
     <div class="big">Build the gateway image locally, then deploy it by <em>replacing the container</em></div>
-    <div class="sub">Everything on your own machine. Together we build the gateway image and prove it's self-contained: no bind mounts, no scan call. Then you bake a change of your own into it and keep a stray file out, deploy that image to the local test gateway by recreating the container, ship a change end-to-end, and roll back by running the previous build's tag. No registry, no uploads, no PAT needed.</div>
+    <div class="sub">Everything on your own machine. Together we build the gateway image and prove it's self-contained: no bind mounts, no scan call. Then you bake a change of your own into it and keep a stray file out, deploy that image to the local test gateway by recreating the container, ship a change end-to-end, and roll back by running the previous build's tag. Your changes reach <em>main</em> through PRs on your fork, as in every lab; no image ever leaves your laptop, no PAT needed.</div>
     <div class="for">
       <span>Floating to help</span>
       <span class="pill"><b>Sam</b></span>
@@ -188,7 +188,7 @@ body{
     <div class="sechead"><span class="num">READ FIRST</span><div><div class="title">How this works</div></div></div>
     <ul class="checks" style="max-width:940px">
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Share your screen</b> in your breakout room, and we'll drop in where it's useful.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Everything runs locally today.</b> A gateway image is ~2 GB, and uploading that from a course laptop is not a good use of your hour. The registry legs of the pipeline were covered in the teaching; here you do build, tag and run.</span></li>
+      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Builds and deploys run locally today.</b> A gateway image is ~2 GB, and uploading that from a course laptop is not a good use of your hour. The registry legs of the pipeline were covered in the teaching; here you do build, tag and run. Your code still takes the <b>GitHub flow</b> route of every lab: branch, PR on your fork, merge on GitHub, <span class="inlinecode">git pull</span>.</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Stuck? </b><span class="inlinecode">docs/TROUBLESHOOTING.md</span> first; most issues are one of the first three entries.</span></li>
     </ul>
     <div class="goal good-g">
@@ -242,13 +242,13 @@ body{
     <div class="stage">Before you start · setup</div>
   </div>
   <div class="body">
-    <div class="sechead"><span class="num warm">SETUP</span><div><div class="title">First: your course fork, this lab's folder, bring the stack up</div><div class="lead">Everything runs locally today, so strictly speaking a plain clone would do, but work in your fork anyway, <b>like every previous lab</b>: the whole course lives in your own account, and the CI legs (<span class="inlinecode">lab05-deploy.yml</span> / <span class="inlinecode">lab05-release.yml</span>) are ready if you want them later.</div></div></div>
+    <div class="sechead"><span class="num warm">SETUP</span><div><div class="title">First: your course fork, this lab's folder, bring the stack up</div><div class="lead">You build and deploy locally today, but your changes reach <span class="inlinecode">main</span> through PRs on your fork, <b>like every previous lab</b>: the whole course lives in your own account, and the CI legs (<span class="inlinecode">lab05-deploy.yml</span> / <span class="inlinecode">lab05-release.yml</span>) run there too.</div></div></div>
     <div class="cols2">
       <div class="steps">
-        <div class="step"><div class="ix t">1</div><div class="tx"><b>Fork &amp; clone, once for the whole course.</b> Already did it for an earlier lab? Skip this. Otherwise <span class="inlinecode">gh repo fork … --clone</span> forks the course repo to <i>your</i> account and clones your fork in one go. Prefer the website? Press <b>Fork</b> on github.com, then <span class="inlinecode">git clone</span> your fork. Nothing in the assignment triggers a workflow; only the stretch needs Actions.</div></div>
+        <div class="step"><div class="ix t">1</div><div class="tx"><b>Fork &amp; clone, once for the whole course.</b> Already did it for an earlier lab? Skip this. Otherwise <span class="inlinecode">gh repo fork … --clone</span> forks the course repo to <i>your</i> account and clones your fork in one go. Prefer the website? Press <b>Fork</b> on github.com, then <span class="inlinecode">git clone</span> your fork. Your PRs run <span class="inlinecode">lab05-ci.yml</span> and your merges <span class="inlinecode">lab05-deploy.yml</span> on your fork; only the stretch uses what the deploy run builds.</div></div>
         <div class="step"><div class="ix t">2</div><div class="tx">Go to this lab's folder in your course clone: <span class="inlinecode">~/mustry-academy/cicd-for-ignition/labs/05-ignition-image-based-deploy</span>. <b>On WSL2, the clone lives in your Linux home</b> (<span class="inlinecode">~/…</span>), never <span class="inlinecode">/mnt/c/…</span>: the gateways' bind mounts are far slower and line endings get messy across the Windows boundary.</div></div>
         <div class="step"><div class="ix t">3</div><div class="tx"><b>Copy the env file</b> with <span class="inlinecode">cp .env.example .env</span> and, unlike Lab 04, <b>change nothing</b>: the admin logins work as shipped, and <span class="inlinecode">setup.sh</span> generates a unique API key per gateway into <span class="inlinecode">.env</span> (no key ever lives in the repo or the image). No PAT needed today.</div></div>
-        <div class="step"><div class="ix t">4</div><div class="tx"><b>Check the remotes and set the default:</b> <span class="inlinecode">git remote -v</span>: <span class="inlinecode">origin</span> must show <b>your username</b>; then <span class="inlinecode">gh repo set-default <span class="cmd2">&lt;you&gt;</span>/cicd-for-ignition</span> so <span class="inlinecode">gh</span> targets <b>your fork</b>, not the course repo. Only the stretch needs this (its PRs); it's once per clone and probably done in an earlier lab. Then <span class="inlinecode">code .</span> to open VS Code.</div></div>
+        <div class="step"><div class="ix t">4</div><div class="tx"><b>Check the remotes and set the default:</b> <span class="inlinecode">git remote -v</span>: <span class="inlinecode">origin</span> must show <b>your username</b>; then <span class="inlinecode">gh repo set-default <span class="cmd2">&lt;you&gt;</span>/cicd-for-ignition</span> so <span class="inlinecode">gh</span> targets <b>your fork</b>, not the course repo. Your PRs in Parts 1.2 and 2.2 need this; it's once per clone and probably done in an earlier lab. Then <span class="inlinecode">code .</span> to open VS Code.</div></div>
         <div class="step"><div class="ix t">5</div><div class="tx"><span class="inlinecode">scripts/setup.sh</span> brings up the stack: the <b>local</b> authoring gateway (:8088, bind-mounted), <b>test</b> (:8089) and <b>production</b> (:8090), both empty until their first image deploy, plus TimescaleDB. Four containers, no runner: today <b>you</b> are the last mile of the pipeline.</div></div>
       </div>
       <div>
@@ -265,7 +265,7 @@ cd ~/mustry-academy/cicd-for-ignition/labs/05-ignition-image-based-deploy
 <span class="cm"># 3: copy the env file, change NOTHING today</span>
 cp .env.example .env
 
-<span class="cm"># 4: origin → YOUR username? good. Point gh at your fork (stretch)</span>
+<span class="cm"># 4: origin → YOUR username? good. Point gh at your fork (your PRs)</span>
 git remote -v
 gh repo set-default <span class="cmd2">&lt;you&gt;</span>/cicd-for-ignition
 
@@ -385,7 +385,7 @@ docker stop demo</pre></div>
   <div class="body">
     <div class="eyebrow">Part 1 · solo · 20 min · exercises/lab.md</div>
     <div class="title" style="color:#fff;max-width:26ch">Change what goes into the image, and prove it from the image itself</div>
-    <p class="lead">Everything from the we-do, applied to a change of your own: edit, rebuild, read the image back with <span class="mono">--entrypoint</span>. Work on a branch: <span class="mono">git checkout -b feature/bake-a-change</span>.</p>
+    <p class="lead">Everything from the we-do, applied to a change of your own: edit, rebuild, read the image back with <span class="mono">--entrypoint</span>. Work on a branch off a freshly pulled <span class="mono">main</span>: <span class="mono">git switch main &amp;&amp; git pull &amp;&amp; git switch -c feature/bake-a-change</span>.</p>
     <ul class="checks" style="margin-top:22px;max-width:920px">
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Part 1.1:</b> bake a config change, a note on the gateway's Home page (10 min).</span></li>
       <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Part 1.2:</b> keep a stray gateway backup out of the image with <span class="mono">.dockerignore</span>, then commit and rebuild clean (10 min).</span></li>
@@ -441,8 +441,8 @@ docker run --rm --entrypoint grep \
       <div class="steps">
         <div class="step"><div class="ix">1</div><div class="tx">Simulate the stray file, rebuild, and <span class="inlinecode">find</span> it in the image. It's there.</div></div>
         <div class="step"><div class="ix">2</div><div class="tx">Add <span class="inlinecode">**/*.gwbk</span> to <span class="inlinecode">.dockerignore</span>, with a one-line comment that says why. Rebuild and run the same <span class="inlinecode">find</span>: gone from the image, still on your disk.</div></div>
-        <div class="step"><div class="ix">3</div><div class="tx">Delete the stray file. <span class="inlinecode">git status</span> must show only your two edits. Commit them and merge the branch into your local <span class="inlinecode">main</span>: that merge <b>stands in for merging a PR</b> on GitHub, so <b>don't push this <span class="inlinecode">main</span></b>.</div></div>
-        <div class="step"><div class="ix">4</div><div class="tx">Rebuild. The tag reads <span class="inlinecode">sha-&lt;short&gt;</span> without <span class="inlinecode">-dirty</span>: that clean image is what you deploy in Part 2.</div></div>
+        <div class="step"><div class="ix">3</div><div class="tx">Delete the stray file. <span class="inlinecode">git status</span> must show only your two edits. Ship them the <b>GitHub flow</b> way: commit, push, open a PR into your fork, merge it on GitHub once <span class="inlinecode">lab05-ci.yml</span> is green, then pull <span class="inlinecode">main</span>.</div></div>
+        <div class="step"><div class="ix">4</div><div class="tx">Rebuild. The tag reads <span class="inlinecode">sha-&lt;short&gt;</span> without <span class="inlinecode">-dirty</span>, and <span class="inlinecode">&lt;short&gt;</span> is GitHub's merge commit: that clean image is what you deploy in Part 2. (The merge also fired <span class="inlinecode">lab05-deploy.yml</span>; only the stretch uses its image.)</div></div>
       </div>
       <div>
         <div class="code"><pre><span class="cm"># 1: a stray backup in projects/</span>
@@ -455,11 +455,14 @@ docker run --rm --entrypoint find cicd-lab-05-ignition:local \
 <span class="hl"># Gateway backups hold the internal DB: never bake one</span>
 <span class="hl">**/*.gwbk</span>
 
-<span class="cm"># 3: clean up, commit, merge locally (no push)</span>
+<span class="cm"># 3: clean up, commit, PR, merge on GitHub, pull</span>
 rm projects/old-backup.gwbk
 git add .dockerignore services/config/resources/core/ignition/system-properties/config.json
 git commit -m "Bake a homepage note, keep backups out"
-git checkout main &amp;&amp; git merge feature/bake-a-change
+git push -u origin feature/bake-a-change
+gh pr create --fill
+sleep 15 &amp;&amp; gh pr checks --watch &amp;&amp; gh pr merge --merge
+git switch main &amp;&amp; git pull
 
 <span class="cm"># 4: the clean build Part 2 deploys</span>
 scripts/build-image.sh</pre></div>
@@ -502,8 +505,8 @@ scripts/build-image.sh</pre></div>
     <div class="sechead"><span class="num phase2">2 · READ FIRST</span><div><div class="title">Why we deploy locally today, and what GitHub Actions would do instead</div><div class="lead"><b>Nothing to type on this slide</b>: it only explains the plan. In a real setup this part is automated by <b>the same Actions you built in Lab 04</b>; today you type the workflow's commands yourself, starting on the next slide (Part 2.1).</div></div></div>
     <div class="cols2">
       <ul class="checks">
-        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Same triggers as Lab 04.</b> A merge to <span class="inlinecode">main</span> would fire <span class="inlinecode">lab05-deploy.yml</span>, a tag would fire <span class="inlinecode">lab05-release.yml</span>. Only the steps <b>inside</b> the jobs change: build + push + pull + recreate, instead of copy + scan.</span></li>
-        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Why not do that now?</b> The gateway image is <b>~2 GB</b>. Between GitHub's datacenter and a registry that upload is seconds; from ten course laptops, it's your whole hour. The transport isn't the lesson.</span></li>
+        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Same triggers as Lab 04.</b> Your merges to <span class="inlinecode">main</span> do fire <span class="inlinecode">lab05-deploy.yml</span> on your fork, a tag would fire <span class="inlinecode">lab05-release.yml</span>. Only the steps <b>inside</b> the jobs change: build + push + pull + recreate, instead of copy + scan.</span></li>
+        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Why deploy your own build?</b> The gateway image is <b>~2 GB</b>. Between GitHub's datacenter and a registry that upload is seconds; from ten course laptops, it's your whole hour. So no image ever leaves your laptop: you build the same commit locally. The transport isn't the lesson.</span></li>
         <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>So today, you are the pipeline.</b> Every command in Parts 2.1 to 2.3 is a line the workflow would run. Type them once by hand and the automation never feels like magic again.</span></li>
       </ul>
       <div>
@@ -578,17 +581,19 @@ curl -s localhost:8089/StatusPing   <span class="cm"># repeat</span>
     <div class="cols2">
       <div class="steps">
         <div class="step"><div class="ix p">1</div><div class="tx">Edit a Perspective view under <span class="inlinecode">projects/example-project/com.inductiveautomation.perspective/views/</span>: make it visibly different (a title text in <span class="inlinecode">pages/overview/view.json</span> works well).</div></div>
-        <div class="step"><div class="ix p">2</div><div class="tx"><b>Commit the change</b> on a feature branch and merge it into your local <span class="inlinecode">main</span>. As in Part 1, the merge <b>stands in for the PR merge</b> on GitHub: don't push this <span class="inlinecode">main</span>. The commit is what gives the next build a <b>new</b> <span class="inlinecode">:sha</span> tag.</div></div>
+        <div class="step"><div class="ix p">2</div><div class="tx"><b>Ship the change</b> as in Part 1.2: feature branch, PR, merge on GitHub, pull <span class="inlinecode">main</span>. The merge commit is what gives the next build a <b>new</b> <span class="inlinecode">:sha</span> tag.</div></div>
         <div class="step"><div class="ix p">3</div><div class="tx">Rebuild, then redeploy with the same one-liner from Part 2.1 and the <b>new</b> tag <span class="inlinecode">build-image.sh</span> printed.</div></div>
         <div class="step"><div class="ix p">4</div><div class="tx">Verify at :8089: your view change is live and the revision label shows the new sha. <span class="inlinecode">docker images</span> now shows <b>two</b> clean <span class="inlinecode">:sha-…</span> tags: two deployable versions, both still on your machine.</div></div>
       </div>
       <div>
-        <div class="code"><pre><span class="cm"># 2: commit so the next build gets a new sha</span>
-git checkout -b feature/tweak-view
-<span class="cm"># edit the view.json, then:</span>
+        <div class="code"><pre><span class="cm"># 2: branch, PR, merge on GitHub, pull: a new sha</span>
+git switch -c feature/tweak-view
 git status          <span class="cm"># only your view should show up</span>
 git add projects/ &amp;&amp; git commit -m "Change overview title"
-git checkout main &amp;&amp; git merge feature/tweak-view
+git push -u origin feature/tweak-view
+gh pr create --fill
+sleep 15 &amp;&amp; gh pr checks --watch &amp;&amp; gh pr merge --merge
+git switch main &amp;&amp; git pull
 
 <span class="cm"># 3: rebuild + redeploy the new tag</span>
 scripts/build-image.sh
@@ -681,9 +686,9 @@ docker inspect -f <span class="cmd2">'{{ index .Config.Labels
     <div class="cols2">
       <div class="steps">
         <div class="step"><div class="ix">0</div><div class="tx"><b>Two prerequisites.</b> Actions enabled on your fork (its Actions tab lists the workflows). And a package Docker may pull: from a public fork it is normally public. If the pull in step 2 says <i>denied</i>, it is private: log Docker in with a token that has <span class="inlinecode">read:packages</span> (or make the package public in its settings).</div></div>
-        <div class="step"><div class="ix">1</div><div class="tx"><b>Trigger <span class="inlinecode">lab05-deploy.yml</span>:</b> branch from <b>GitHub's</b> <span class="inlinecode">main</span> (your local one holds unpushed merges), open a PR with a small project change and <b>merge it on GitHub</b>. Wait until the deploy run is green: there is no image to pull before.</div></div>
+        <div class="step"><div class="ix">1</div><div class="tx"><b>Your merges already triggered <span class="inlinecode">lab05-deploy.yml</span>:</b> each one built that commit on GitHub and pushed it to your GHCR. Find the run for your Part 2.2 merge (the newest) and wait until it is green: there is no image to pull before.</div></div>
         <div class="step"><div class="ix">2</div><div class="tx"><b>Deploy it yourself:</b> the run's <b>summary page</b> prints the image name. Pull it and point test at it: the same command as part 2, longer name.</div></div>
-        <div class="step"><div class="ix">3</div><div class="tx"><b>Release:</b> tag GitHub's <span class="inlinecode">main</span> and push the tag. <span class="inlinecode">lab05-release.yml</span> checks that <span class="inlinecode">:test</span> was built from that commit, then re-tags it to <span class="inlinecode">:v0.1.0</span> + <span class="inlinecode">:production</span>: <b>no rebuild</b>. Deploy it to :8090 with <span class="inlinecode">IGNITION_PRODUCTION_IMAGE</span>.</div></div>
+        <div class="step"><div class="ix">3</div><div class="tx"><b>Release:</b> pull <span class="inlinecode">main</span>, tag it and push the tag. <span class="inlinecode">lab05-release.yml</span> checks that <span class="inlinecode">:test</span> was built from that commit, then re-tags it to <span class="inlinecode">:v0.1.0</span> + <span class="inlinecode">:production</span>: <b>no rebuild</b>. Deploy it to :8090 with <span class="inlinecode">IGNITION_PRODUCTION_IMAGE</span>.</div></div>
         <div class="step"><div class="ix">4</div><div class="tx"><b>The payoff:</b> <span class="inlinecode">{{.Image}}</span> is identical on test and production: production runs the exact bytes test validated. And you typed an image name twice: that last mile is what Labs 06 and 07 automate.</div></div>
       </div>
       <div>
@@ -691,8 +696,8 @@ docker inspect -f <span class="cmd2">'{{ index .Config.Labels
 gh auth refresh -h github.com -s read:packages
 gh auth token | docker login ghcr.io -u &lt;you&gt; --password-stdin
 
-<span class="cm"># 1: branch from GitHub's main, PR, merge on GitHub</span>
-git fetch origin &amp;&amp; git checkout -b feature/ci-build origin/main
+<span class="cm"># 1: the newest deploy run is your Part 2.2 merge</span>
+gh run list --workflow lab05-deploy.yml --limit 3
 
 <span class="cm"># 2: copy the tag from the run summary, deploy it</span>
 docker pull ghcr.io/&lt;you&gt;/cicd-lab-05-ignition:sha-&lt;short&gt;
@@ -700,8 +705,8 @@ IGNITION_TEST_IMAGE=ghcr.io/&lt;you&gt;/cicd-lab-05-ignition:sha-&lt;short&gt; \
   docker compose up -d ignition-test
 
 <span class="cm"># 3: release (checked + promoted, no rebuild), deploy to :8090</span>
-git fetch origin
-git tag lab05-v0.1.0 origin/main &amp;&amp; git push origin lab05-v0.1.0
+git switch main &amp;&amp; git pull
+git tag lab05-v0.1.0 &amp;&amp; git push origin lab05-v0.1.0
 IGNITION_PRODUCTION_IMAGE=ghcr.io/&lt;you&gt;/cicd-lab-05-ignition:v0.1.0 \
   docker compose up -d ignition-production
 

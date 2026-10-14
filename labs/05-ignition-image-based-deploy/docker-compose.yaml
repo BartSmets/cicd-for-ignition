@@ -50,48 +50,49 @@ x-ignition-env: &ignition-env
     com.mussonindustrial.embr.charts,
     com.mussonindustrial.embr.periscope,
     com.mustry.historian.timescaledb,
-    dev.bwdesigngroup.flint.FlintDesignerBridge
+    dev.bwdesigngroup.flint.FlintDesignerBridge,
+    project-scan-endpoint
   ACCEPT_MODULE_CERTS: >-
     com.mussonindustrial.embr.charts,
     com.mussonindustrial.embr.periscope,
     com.mustry.historian.timescaledb,
-    dev.bwdesigngroup.flint.FlintDesignerBridge
+    dev.bwdesigngroup.flint.FlintDesignerBridge,
+    project-scan-endpoint
   GATEWAY_RESTORE_DISABLED: "true"
   GATEWAY_NETWORK_ENABLED: "true"
   TZ: "Europe/Brussels"
+  # The modules services/modules.json enables, as one comma list. Only read
+  # by the entrypoint below, and only on a gateway that has no modules.json
+  # of its own. scripts/setup.sh writes it into .env.
+  LAB_MODULES_ENABLED: "${LAB_MODULES_ENABLED:-}"
 
-# GATEWAY_MODULES_ENABLED OVERRIDES modules.json at boot: a module that is not
-# in this list starts disabled, whatever modules.json says. Only the local
-# gateway gets it. Test and production run an image whose baked modules.json
-# is the single source of truth for which modules run, so they must not get
-# this override (it would silently undo a module you enabled in the image).
-x-local-modules: &local-modules
-  GATEWAY_MODULES_ENABLED: >-
-    com.inductiveautomation.alarm-notification,
-    com.inductiveautomation.eventstream,
-    com.inductiveautomation.historian,
-    com.inductiveautomation.connectors.kafka,
-    com.inductiveautomation.opcua.drivers.modbus,
-    com.inductiveautomation.opcua,
-    com.inductiveautomation.perspective,
-    com.inductiveautomation.reporting,
-    com.inductiveautomation.historian.sql,
-    com.inductiveautomation.symbol-factory,
-    com.inductiveautomation.opcua.drivers.tcpudp,
-    com.inductiveautomation.webdev,
-    com.inductiveautomation.jdbc.postgresql,
-    com.mussonindustrial.embr.charts,
-    com.mussonindustrial.embr.periscope,
-    com.mustry.historian.timescaledb,
-    dev.bwdesigngroup.flint.FlintDesignerBridge
-
-# Run the gateway under umask 0002. The image's default umask (022) makes
-# everything the gateway writes into the bind mounts 644/755 — group
-# read-only — so despite group_add + setgid the student cannot edit or
-# delete those files (and teardown.sh --volumes fails on them). With 0002
-# they land 664/775, group-owned by the student via the setgid dirs.
+# services/modules.json is the ONE list of modules for all three gateways.
+# The local gateway reads it through its bind mount; test and production read
+# the copy baked into the image they run. None of them sets
+# GATEWAY_MODULES_ENABLED: that variable overrides modules.json at boot and
+# rewrites it to match, so it would undo a module you enable in the file.
+#
+# The one gap: before your first deploy, test and production run the plain
+# base image, which has no modules.json, and Ignition then starts every
+# module it ships. For that case only, the entrypoint below passes the
+# modules.json list (LAB_MODULES_ENABLED) on as GATEWAY_MODULES_ENABLED. A
+# gateway that has a modules.json (local, and every image you build) never
+# gets the variable.
+#
+# It also runs the gateway under umask 0002. The image's default umask (022)
+# makes everything the gateway writes into the bind mounts 644/755, group
+# read-only, so despite group_add + setgid the student cannot edit or delete
+# those files (and teardown.sh --volumes fails on them). With 0002 they land
+# 664/775, group-owned by the student via the setgid dirs.
 x-ignition-entrypoint: &ignition-entrypoint
-  ["/bin/sh", "-c", 'umask 0002 && exec docker-entrypoint.sh "$@"', "--"]
+  - /bin/sh
+  - -c
+  - >-
+    umask 0002;
+    if [ ! -e /usr/local/bin/ignition/data/modules.json ] && [ -n "$$LAB_MODULES_ENABLED" ];
+    then export GATEWAY_MODULES_ENABLED="$$LAB_MODULES_ENABLED"; fi;
+    exec docker-entrypoint.sh "$$@"
+  - --
 
 x-ignition-resources: &ignition-resources
   deploy:
@@ -145,7 +146,7 @@ services:
       - ./services/modules.json:/usr/local/bin/ignition/data/modules.json
       - ./third-party-modules:/third-party-modules
     environment:
-      <<: [*ignition-env, *local-modules]
+      <<: *ignition-env
       GATEWAY_ADMIN_USERNAME: "${GATEWAY_ADMIN_USERNAME_LOCAL:-admin}"
       GATEWAY_ADMIN_PASSWORD: "${GATEWAY_ADMIN_PASSWORD_LOCAL:-password}"
     command: >
