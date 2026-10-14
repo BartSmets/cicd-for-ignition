@@ -179,4 +179,4 @@ Still stuck? Ask your instructor or on Discord.
 
 ## Why resource.json keeps changing on its own
 
-See [`resource-json-hygiene.html`](./resource-json-hygiene.html) for the full picture: what the junk fields are, the difference between hiding them and reverting them, and why an empty `git diff` does not mean the file on disk is clean.
+See [`resource-json-hygiene.html`](https://share.mustrysolutions.com/f9afd6c9-5b62-4f28-9ae4-abb3933208cf) ([offline copy](./resource-json-hygiene.html)) for the full picture: what the junk fields are, the difference between hiding them and reverting them, and why an empty `git diff` does not mean the file on disk is clean.

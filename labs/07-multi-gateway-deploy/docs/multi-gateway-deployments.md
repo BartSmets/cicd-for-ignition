@@ -1,7 +1,7 @@
 # Deployments in a multi-gateway architecture
 
 This document is the Lab 07 teaching hour written out in full. The slides
-([`slides/teaching.html`](../slides/teaching.html)) are the presentation; this
+([`slides/teaching.html`](https://share.mustrysolutions.com/8e1ea98f-1dc8-4972-8d59-65afb8afb879), [offline copy](../slides/teaching.html)) are the presentation; this
 is the version you can re-read.
 
 **The framing for everything below: every situation is different.** Gateway

@@ -36,12 +36,12 @@ Because this is the first class, the instructor opens with the bigger picture be
 5. **How the labs work.** Each lab follows the same rhythm: **Teaching**, **We-do** (instructor live-codes), **You-do** (breakout rooms), then a **debrief**. There are optional stretch challenges if you finish early. Notes you take in `NOTES.local.md` are gitignored and yours to keep. We have 7 labs in total, where the last one (Lab 07) is a bigger challenge: the whole cohort works on one shared repo and deploys to a real production gateway, with us there to guide you. Each lab has its own folder in the course repo, so you will always have a fresh start, even if you were not able to complete the previous lab.
 6. **Breakout room rules** Sam and Jasper will float around breakout rooms to see who could use some help. We ask everyone to share their screen at the same time in the breakout rooms, which gives us a 'look over your shoulder' kind of class. 
 7. **AI Agents** Of course, AI will probably be able to one-shot these labs, but we would challenge you to do this class as much as possible without it, so you actually get the fundamentals, and then you'll be able to steer AI much better when building this out for yourself.
-8. **The Oatmakers story.** After the introduction we walk through [`slides/oatmakers-story.html`](../slides/oatmakers-story.html): one fictional client (Oatmakers, eight Ignition sites, zero CI/CD) whose troubles set the stage for *why* CI/CD is worth adding to an Ignition workflow. The whole series follows this story; each day the map heals a little more.
+8. **The Oatmakers story.** After the introduction we walk through [`slides/oatmakers-story.html`](https://share.mustrysolutions.com/f50d9d30-81b9-48ae-819d-1614674534f0) ([offline copy](../slides/oatmakers-story.html)): one fictional client (Oatmakers, eight Ignition sites, zero CI/CD) whose troubles set the stage for *why* CI/CD is worth adding to an Ignition workflow. The whole series follows this story; each day the map heals a little more.
 
 
 ## Teaching: Introductions to git (45 min)
 
-The instructor teaches the foundations from [`slides/teaching.html`](../slides/teaching.html).
+The instructor teaches the foundations from [`slides/teaching.html`](https://share.mustrysolutions.com/0a731a79-f381-402b-9b77-16415e2ff052) ([offline copy](../slides/teaching.html)).
 This is the conceptual half — we *do* the moves in the We-do that follows.
 
 ### Setup (do this first)

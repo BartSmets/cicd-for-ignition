@@ -8,9 +8,9 @@ references throughout.
 
 **Duration:** ~3.5 hours
 
-* 60 min teaching ([`slides/teaching.html`](../slides/teaching.html))
+* 60 min teaching ([`slides/teaching.html`](https://share.mustrysolutions.com/9d789532-1459-4e18-b819-686fcc62a164), [offline copy](../slides/teaching.html))
 * 45-60 min we-do (demos below, woven into the teaching)
-* ~85 min you-do ([`slides/assignment.html`](../slides/assignment.html) mirrors this file):
+* ~85 min you-do ([`slides/assignment.html`](https://share.mustrysolutions.com/014ffcf0-71b9-4e7a-81ef-64d13ea0dbc4) mirrors this file; [offline copy](../slides/assignment.html)):
   warm-up ±10, Part 1 ±30, Part 2 ±20, Part 3 ±25
 * Debrief
 
@@ -98,7 +98,7 @@ course repo) it stops with `multiple remotes detected`. That is why every
 
 ## You do (breakout rooms)
 
-Follows [`slides/assignment.html`](../slides/assignment.html) 1:1.
+Follows [`slides/assignment.html`](https://share.mustrysolutions.com/014ffcf0-71b9-4e7a-81ef-64d13ea0dbc4) ([offline copy](../slides/assignment.html)) 1:1.
 
 ### Warm-up (together) — deploy to test and production, and check the db-connections
 Pre-flight first (`validate.sh` green). Then create the two **deploy

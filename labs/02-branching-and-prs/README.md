@@ -14,6 +14,17 @@ function, or a property on a view. The point of the lab is the **Git workflow**
 around those project files: branching, pull requests, and review. The full Ignition
 file-based deploy story arrives in [Lab 04](../04-ignition-file-based-deploy/).
 
+## Slides
+
+The decks open in your browser; click **Open document** on the first page.
+
+| Deck | Online | Offline copy |
+|---|---|---|
+| Teaching | [open in your browser](https://share.mustrysolutions.com/2ae84a78-da5f-42d6-8eeb-3b6415b63823) | [`slides/teaching.html`](./slides/teaching.html) |
+| Assignment | [open in your browser](https://share.mustrysolutions.com/7a639346-4dc6-47d3-850b-fead0c4cb3ec) | [`slides/assignment.html`](./slides/assignment.html) |
+
+The offline copy is the same deck: open it from your clone if the link doesn't load.
+
 ## Prerequisites
 
 - Work in **WSL2 (Windows), Linux, or macOS** — run all lab commands there, not in PowerShell or Git Bash (see the platform notes in your welcome package)
