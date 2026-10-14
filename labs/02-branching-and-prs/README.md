@@ -39,13 +39,10 @@ approved — so everyone needs merge rights on the repo they're PRing into. The 
 way to get that without handing a whole cohort write access to one repo: **work in
 your own fork, and open PRs inside it.**
 
-1. **Your course fork** (sets `origin` to your fork, `upstream` to the course repo).
-   You fork and clone once for the whole course: skip the `gh repo fork` line if
-   you already did that in Lab 01.
+1. **Your course fork**, the clone you made before Day 1 (`origin` is your fork,
+   `upstream` the course repo).
    ```bash
-   mkdir -p ~/mustry-academy && cd ~/mustry-academy
-   gh repo fork Mustry-Academy/cicd-for-ignition --clone             # once per course (fork + clone)
-   cd cicd-for-ignition
+   cd ~/mustry-academy/cicd-for-ignition
    gh repo set-default --view                                        # where gh's PRs go: must print YOUR fork
    gh repo set-default <your-username>/cicd-for-ignition             # if not (course-setup.sh already sets it)
    cd labs/02-branching-and-prs

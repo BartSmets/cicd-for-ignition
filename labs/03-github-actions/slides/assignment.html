@@ -569,7 +569,7 @@ a{color:var(--primary-deep)}
   <div class="body">
     <div class="work">
       <ol class="steps alt">
-        <li><b>Go to the lab folder</b> in your fork: <code>~/mustry-academy/cicd-for-ignition/labs/03-github-actions</code>. No fork yet? <code>gh repo fork … --clone</code> forks and clones it.</li>
+        <li><b>Go to the lab folder</b> in your fork: <code>~/mustry-academy/cicd-for-ignition/labs/03-github-actions</code>.</li>
         <li><b>Point <code>gh</code> at your fork</b> (once per clone) so PRs land there, not on the source repo. <code>git remote -v</code>: <code>origin</code> must show <b>your username</b>.</li>
         <li><b>Open VS Code</b> with <code>code .</code> from the lab folder and work from its terminal.</li>
         <li><b>Enable Actions on the fork</b> (once for the course): its <b>Actions</b> tab, then <i>"I understand my workflows, go ahead and enable them"</i>.</li>
@@ -577,8 +577,6 @@ a{color:var(--primary-deep)}
       <div class="side">
         <div class="code"><pre><span class="cm"># 1: into this lab's folder in your fork</span>
 cd ~/mustry-academy/cicd-for-ignition/labs/03-github-actions
-<span class="cm">#    no fork yet? from ~/mustry-academy, once:</span>
-<span class="cm">#    gh repo fork Mustry-Academy/cicd-for-ignition --clone</span>
 
 <span class="cm"># 2: make gh target YOUR fork for PRs; check the remote</span>
 gh repo set-default &lt;you&gt;/cicd-for-ignition
