@@ -83,6 +83,9 @@ venv/
 
 # Project conversion artifacts
 **/projects/conversion-report.txt
+# Migration logs: every gateway writes one into config/resources/ at
+# commissioning (for the local gateway that is services/config/resources/).
+# Nothing reads them, so they never belong in git or in a deploy.
 **/migration-log-*.md
 **/.resources/
 
