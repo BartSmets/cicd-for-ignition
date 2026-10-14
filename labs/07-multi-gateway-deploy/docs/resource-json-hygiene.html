@@ -155,18 +155,12 @@ footer{border-top:1px solid var(--line2);padding-top:18px;color:var(--txt-faint)
       it touches the resource, even when nothing about your project changed.</span></div>
     </div>
 
-    <div class="callout">
-      <div class="lbl">Scale</div>
-      <p>demo-oatmakers tracks hundreds of resource.json files, and most of them carry those junk fields. Open the Designer,
-      save a few views, and you get a pile of modified files where nothing real changed.</p>
-    </div>
   </section>
 
   <!-- 2 -->
   <section>
     <h2><span class="num">02</span>Two tools, and they are not the same thing</h2>
-    <p class="lead">This is the part that trips people up. One tool makes the junk invisible. The other one removes it.
-    They solve different halves of the problem and you need both.</p>
+    <p class="lead">One tool makes the junk invisible. The other one removes it. You need both.</p>
 
     <div class="vs">
       <div class="tool hide">
@@ -281,15 +275,6 @@ scripts/clean-ignition-resource-churn.sh <span class="hl">--apply</span>      <s
       <div class="step g"><div class="t">A real edit is present</div>
         <div class="d"><code>skip staged, has real changes:</code> the file is left completely alone. Human edits always
         win.</div></div>
-    </div>
-
-    <div class="callout warn">
-      <div class="lbl">Why the script uses --no-textconv internally</div>
-      <p>The script has to ask git whether a file is staged. That check must pass
-      <code class="i">--no-textconv</code>, otherwise git runs Tool 1 first, the junk fields are stripped, both sides
-      compare equal, and git reports the file as <b>not staged at all</b>.</p>
-      <p>Tool 1 will happily hide the junk from the code written to catch it. Same rule as before, one level deeper: an
-      empty diff never means an unchanged file.</p>
     </div>
   </section>
 
