@@ -57,10 +57,17 @@ turns CONNECTED within a minute.
   `{"state":"RUNNING","details":"COMMISSIONING"}`. Despite the `RUNNING`, that gateway is not up:
   it waits for something to be accepted, usually a module certificate or licence. `setup.sh` waits
   for it and says "still commissioning" when it gives up. Open the gateway in your browser to see
-  what it asks for. All three gateways take their acceptance from the one `services/modules.json`,
-  so if `git diff services/modules.json` shows `certFingerprint` lines removed, restore the file,
-  restart the gateways and let setup finish what it skipped:
-  `git checkout -- services/modules.json && docker compose restart && scripts/setup.sh`.
+  what it asks for. Each gateway takes its acceptance from the manifest it boots with:
+  `services/modules.json` for local, `gateways/<test|production>/modules.json` (seeded from
+  `services/modules.json` by `setup.sh`) for the others. If that file lost its `certFingerprint`
+  lines, restore it, restart only that gateway and let setup finish what it skipped:
+  ```bash
+  # local: the manifest is tracked, so git restores it
+  git checkout -- services/modules.json && docker compose restart ignition-local
+  # test or production: copy the repo's manifest over that gateway's own copy
+  cp services/modules.json gateways/test/modules.json && docker compose restart ignition-test
+  scripts/setup.sh
+  ```
 
 ## `git status` shows lots of `resource.json` changes
 
@@ -90,9 +97,9 @@ git update-index --no-skip-worktree <path>
 
 ## `services/modules.json` shows up as modified (Apple Silicon)
 
-One `modules.json` is bind-mounted into all three gateways, so whenever a gateway rewrites it
-(for example after you enable or disable a module in *Platform → Modules*) the change lands in
-your working tree. On Apple Silicon (arm64) the Ignition image ships without a few modules the
+The local gateway bind-mounts `services/modules.json`, so whenever it rewrites the file (for
+example after you enable or disable a module in *Platform → Modules*) the change lands in your
+working tree. Test and production rewrite their own copies under `gateways/`, which git ignores. On Apple Silicon (arm64) the Ignition image ships without a few modules the
 committed file lists (`com.inductiveautomation.opcua.drivers.dnp3v2`,
 `com.inductiveautomation.opcua.drivers.iec61850`, `com.inductiveautomation.phone-notification`).
 The gateway logs `The file for module ... is missing and will not be loaded` and, when it rewrites

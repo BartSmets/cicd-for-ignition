@@ -242,7 +242,7 @@ The runner topology:
                                        └────────────────────────────────┘
 ```
 
-The runner is a container, so it doesn't share the host filesystem with test/production — it reaches *inside* their containers with `docker cp` through the docker socket. But test and production bind-mount their `projects/` and `config/` to `./gateways/test/` and `./gateways/production/` on the host (gitignored, created by `setup.sh`), so **you can watch a deploy land**: `ls gateways/test/projects` shows exactly what CI shipped. Treat those dirs as read-only — editing them by hand defeats the pipeline. (Local is different again: it bind-mounts `./projects/` and `./services/config/` from the repo itself, so changes show up without any copy step.)
+The runner is a container, so it doesn't share the host filesystem with test/production — it reaches *inside* their containers with `docker cp` through the docker socket. But test and production bind-mount their `projects/`, `config/` and `modules.json` to `./gateways/test/` and `./gateways/production/` on the host (gitignored, created by `setup.sh`), so **you can watch a deploy land**: `ls gateways/test/projects` shows exactly what CI shipped. Treat those dirs as read-only — editing them by hand defeats the pipeline. (Local is different again: it bind-mounts `./projects/` and `./services/config/` from the repo itself, so changes show up without any copy step.)
 
 ## Solo: wire the flow into GitHub Actions (~40 min, plus ~5 for the optional Part 2.5)
 
@@ -328,7 +328,7 @@ For your chosen failure, write down: **symptom → state of the gateway → reco
 
 Gateway-level config (the contents of `services/config/`) ships the same way `projects/` does — both workflows `docker cp ./services/config/.`. But not every gateway change rides that path, and not every change a scan can apply:
 
-- **Module enablement** lives in `services/modules.json` — a *sibling* of `services/config/`, **not under it**. The deploy workflows copy `./services/config/.`, so `modules.json` is **not shipped** by them; in this lab it's bind-mounted into all three gateways. Open `lab04-deploy.yml` and confirm the `docker cp` targets.
+- **Module enablement** lives in `services/modules.json` — a *sibling* of `services/config/`, **not under it**. The deploy workflows copy `./services/config/.`, so `modules.json` is **not shipped** by them. Only the local gateway mounts `services/modules.json`; test and production each boot from their own copy, `gateways/test/modules.json` and `gateways/production/modules.json`, which `setup.sh` seeded once. Open `lab04-deploy.yml` and confirm the `docker cp` targets.
 - Even with a new `modules.json` on the gateway, **a scan won't apply it** — module enable/disable needs a gateway **restart** (`docker compose restart ignition-test`), unlike views/config which hot-reload on scan.
 
 So the question to chew on: why does copy + scan work beautifully for views and database connections, but not for modules? List everything else a scan could never apply (memory, Java args, module binaries…). What does that tell you about where the image-based deploy (Lab 05) earns its keep?

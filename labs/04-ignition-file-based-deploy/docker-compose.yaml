@@ -4,12 +4,12 @@
 #   ignition-local   http://localhost:8088   bind-mounts ./projects + ./services/config
 #                                            (working gateway — edits show
 #                                             up immediately on disk)
-#   ignition-test     http://localhost:8089   projects/ + config/ bind-mounted from
-#                                            ./gateways/test, populated by lab04-deploy.yml
+#   ignition-test     http://localhost:8089   projects/ + config/ + modules.json bind-mounted
+#                                            from ./gateways/test, populated by lab04-deploy.yml
 #                                            (push to main)
-#   ignition-production    http://localhost:8090   projects/ + config/ bind-mounted from
-#                                            ./gateways/production, populated by lab04-release.yml
-#                                            (tag push lab04-v*)
+#   ignition-production    http://localhost:8090   projects/ + config/ + modules.json bind-mounted
+#                                            from ./gateways/production, populated by
+#                                            lab04-release.yml (tag push lab04-v*)
 #
 #   timescaledb      localhost:5432          databases: ignition_local_development, ignition_test,
 #                                                       ignition_production (one per env)
@@ -30,6 +30,14 @@
 #   open http://localhost:8090   (production — empty until first tag push)
 
 ---
+# `name:` pins the Compose project so this stack always resolves to THESE
+# containers and volumes, whichever directory you run compose from. Without it
+# the project name comes from the folder name, so a second clone of this lab
+# (a fork next to the course repo, a scratch checkout) silently adopts the other
+# one's containers and its timescaledb volume, and db-init/, which only runs on
+# a first volume init, never runs for the new clone.
+name: cicd-lab04
+
 # YAML anchors for the bits that don't differ across the three gateways. Each
 # service merges these in and overrides the parts that do (ports, admin creds,
 # the gateway name passed to the wrapper, volumes).
@@ -180,7 +188,14 @@ services:
       # var/, certificates/) stays in the named volume above.
       - ./gateways/test/projects:/usr/local/bin/ignition/data/projects
       - ./gateways/test/config:/usr/local/bin/ignition/data/config
-      - ./services/modules.json:/usr/local/bin/ignition/data/modules.json
+      # The module manifest is a PER-GATEWAY copy (seeded by setup.sh), NOT the
+      # repo's services/modules.json, which only the local gateway mounts. The
+      # gateway rewrites its manifest at boot: with one shared file, a bad
+      # rewrite by any gateway reached all three, and a local edit leaked into
+      # test on its next restart without a deploy. The deploy workflows do not
+      # ship modules.json (see the stretch in exercises/lab.md); Lab 06 adds
+      # that step.
+      - ./gateways/test/modules.json:/usr/local/bin/ignition/data/modules.json
       - ./third-party-modules:/third-party-modules
     environment:
       <<: *ignition-env
@@ -229,7 +244,8 @@ services:
       # ./gateways/production (gitignored, created by setup.sh).
       - ./gateways/production/projects:/usr/local/bin/ignition/data/projects
       - ./gateways/production/config:/usr/local/bin/ignition/data/config
-      - ./services/modules.json:/usr/local/bin/ignition/data/modules.json
+      # Per-gateway manifest copy, same reasoning as test.
+      - ./gateways/production/modules.json:/usr/local/bin/ignition/data/modules.json
       - ./third-party-modules:/third-party-modules
     environment:
       <<: *ignition-env
