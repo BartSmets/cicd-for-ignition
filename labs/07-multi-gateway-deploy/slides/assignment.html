@@ -3,234 +3,557 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lab 07 Assignment: Contribute to demo-oatmakers and bring your work live</title>
+<title>Lab 07 · Assignment · CI/CD for Ignition</title>
 <link rel="icon" type="image/png" href="logos/favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* deck-kit:css:begin v1 */
+/* Mustry deck style, canonical CSS for the CI/CD for Ignition decks. Do not edit
+   inside the deck-kit markers: change src/ of the deck kit (instructor repo, deck-kit/) and run
+   tools/build-kit.mjs and tools/sync-kit.mjs. Sources: mustry-design-system 6cffb20 (tokens.css, components/deck), mustry-cockpit e45c5c7 (quotation cover motion, files last changed in cf79d93). */
+/* ============================================================================
+   Fonts: Geist and Geist Mono (SIL OFL 1.1, deck-assets/fonts/OFL.txt), the
+   design system's faces, bundled so the deck renders offline and in the PDF
+   renderer (no external network). Latin + latin-ext subsets of fontsource 5.3.0.
+   ========================================================================== */
+@font-face{font-family:"Geist Variable";font-style:normal;font-display:block;font-weight:100 900;src:url("deck-assets/fonts/geist-latin-wght-normal.woff2") format("woff2-variations");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Geist Variable";font-style:normal;font-display:block;font-weight:100 900;src:url("deck-assets/fonts/geist-latin-ext-wght-normal.woff2") format("woff2-variations");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Geist Mono Variable";font-style:normal;font-display:block;font-weight:100 900;src:url("deck-assets/fonts/geist-mono-latin-wght-normal.woff2") format("woff2-variations");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Geist Mono Variable";font-style:normal;font-display:block;font-weight:100 900;src:url("deck-assets/fonts/geist-mono-latin-ext-wght-normal.woff2") format("woff2-variations");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+/* ============================================================================
+   Tokens: copied from mustry-design-system src/styles/tokens.css (layer 1 and
+   the deck surface). Bare HSL triplets, used as hsl(var(--token)).
+   ========================================================================== */
 :root{
-  --navy:#0e1b2e;
-  --navy2:#15233a;
-  --blue:#2563eb;
-  --blue-d:#1d4ed8;
-  --peri:#93a9f0;
-  --peri2:#a8bef7;
-  --peri-soft:#e8eefc;
-  --bg:#eef1f6;
-  --panel:#ffffff;
-  --panel2:#f5f8fc;
-  --line:#e3e9f1;
-  --line2:#d3dcea;
-  --txt:#15233a;
-  --txt-dim:#5a6a7e;
-  --txt-faint:#94a2b4;
-  --good:#16a34a; --good-soft:#e3f6ea;
-  --warn:#d97706; --warn-soft:#fbf0db;
-  --bad:#dc2626; --bad-soft:#fdeaea;
-  --teal:#3bbdb4; --teal-l:#5fd6cd;
-  --shadow:0 1px 2px rgba(14,27,46,.05),0 10px 30px -16px rgba(14,27,46,.28);
+  --mustry-blue-50:223.3 90% 92.2%;
+  --mustry-blue-100:224.7 93.2% 88.4%;
+  --mustry-blue-200:224.5 92.1% 80.2%;
+  --mustry-blue-300:224.3 91.5% 72.2%;
+  --mustry-blue-400:224.6 92.3% 64.3%;
+  --mustry-blue-500:224.5 91.9% 56.3%;
+  --mustry-blue-600:224.5 92.2% 45.3%;
+  --mustry-blue-700:224.3 92% 34.3%;
+  --mustry-blue-800:224.6 91.6% 23.3%;
+  --mustry-blue-900:225.3 90.5% 12.4%;
+  --brand-soft:224.6 92.7% 78.6%;
+  --neutral-0:0 0% 100%;
+  --neutral-25:210 25% 98.4%;
+  --neutral-50:216 33.3% 97.1%;
+  --neutral-100:217.5 28.6% 94.5%;
+  --neutral-200:216.9 25.5% 90%;
+  --neutral-300:217.1 24.1% 82.9%;
+  --neutral-400:217.2 17% 66.5%;
+  --neutral-500:217.2 12.2% 46.5%;
+  --neutral-600:214.6 13.3% 38.4%;
+  --neutral-700:216.5 16.1% 28%;
+  --neutral-800:218.2 22.4% 19.2%;
+  --neutral-900:219 30.3% 12.9%;
+  --neutral-950:223.8 44.8% 11.4%;
+  --chart-1-light:224.5 91.9% 56.3%;
+  --chart-2-light:325.1 86.9% 48%;
+  --chart-3-light:32.1 94.6% 43.7%;
+  --chart-4-light:174.7 83.9% 31.6%;
+  --chart-5-light:262.1 83.3% 57.8%;
+  --chart-6-light:142.4 71.8% 29.2%;
+  --chart-1-dark:223.8 91.8% 66.7%;
+  --chart-2-dark:330.5 79.2% 56.7%;
+  --chart-3-dark:36.4 87.2% 42.9%;
+  --chart-4-dark:173.6 79.9% 37.1%;
+  --chart-5-dark:259.7 82.7% 66.1%;
+  --chart-6-dark:145.3 66.2% 39.4%;
+  --status-good-light:142.1 76.2% 36.3%;
+  --status-warning-light:26 90.5% 37.1%;
+  --status-serious-light:17.5 88.3% 40.4%;
+  --status-critical-light:0 72.2% 50.6%;
+  --status-good-dark:142.1 70.6% 45.3%;
+  --status-warning-dark:37 91.3% 55.1%;
+  --status-serious-dark:27 96% 61%;
+  --status-critical-dark:0 90.6% 70.8%;
+  --font-sans:"Geist Variable","Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Geist Mono Variable","Geist Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  --font-display:var(--font-sans);
+  --text-2xs:.625rem;--text-xs:.75rem;--text-sm:.875rem;--text-base:1rem;--text-lg:1.125rem;
+  --text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--text-5xl:3rem;--text-6xl:3.75rem;
+  --radius:.75rem;--radius-sm:calc(var(--radius) - 4px);--radius-md:calc(var(--radius) - 2px);--radius-lg:var(--radius);
+  --radius-xl:.75rem;--radius-2xl:1rem;--radius-3xl:1.25rem;
+  --shadow-xs:0 1px 2px rgb(16 23 42 / .05);
+  --shadow-sm:0 1px 2px rgb(16 23 42 / .05),0 2px 8px -4px rgb(16 23 42 / .12);
+  --shadow-md:0 1px 2px rgb(16 23 42 / .05),0 10px 30px -16px rgb(16 23 42 / .28);
+  --shadow-lg:0 18px 40px rgb(16 23 42 / .08),0 6px 18px rgb(16 23 42 / .05);
+  --duration-instant:75ms;--duration-fast:150ms;--duration-base:200ms;--duration-slow:300ms;
+  --duration-slower:500ms;--duration-deliberate:800ms;
+  --ease-out:cubic-bezier(.16,1,.3,1);--ease-in:cubic-bezier(.7,0,.84,0);
+  --ease-in-out:cubic-bezier(.65,0,.35,1);--ease-spring:cubic-bezier(.34,1.56,.64,1);
+  --deck-pad-x:4rem;--deck-pad-top:4rem;--deck-pad-bottom:2.5rem;--deck-gap:1.5rem;
+  --deck-gradient:radial-gradient(120% 120% at 80% -10%,hsl(var(--mustry-blue-900)) 0%,hsl(var(--neutral-950)) 55%);
+
+  /* Deck aliases (the deck surface of the design system, light). */
+  --plane:hsl(var(--neutral-100));
+  --panel:hsl(var(--neutral-0));
+  --panel-2:hsl(var(--neutral-50));
+  --ink:hsl(var(--neutral-900));
+  --ink-strong:hsl(var(--neutral-950));
+  --muted:hsl(var(--neutral-600));
+  --faint:hsl(var(--neutral-400));
+  --line:hsl(var(--neutral-200));
+  --line-2:hsl(var(--neutral-300));
+  --primary:hsl(var(--mustry-blue-500));
+  --primary-deep:hsl(var(--mustry-blue-600));
+  --primary-tint:hsl(var(--mustry-blue-500) / .1);
+  --soft:hsl(var(--brand-soft));
+  --navy:hsl(var(--neutral-950));
+  --teal:hsl(var(--chart-4-light));
+  --magenta:hsl(var(--chart-2-light));
+  --amber:hsl(var(--chart-3-light));
+  --violet:hsl(var(--chart-5-light));
+  --good:hsl(var(--status-good-light));
+  --warn:hsl(var(--status-warning-light));
+  --bad:hsl(var(--status-critical-light));
+  --code-ink:hsl(var(--neutral-200));
 }
+
+/* ============================================================================
+   Base. The root size follows the viewport (16px at 1440x900, 19.2px at
+   1920x1080) so slides use the room on a projector without a scaled stage.
+   Every size below is in rem.
+   ========================================================================== */
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{
-  background:var(--navy);
-  color:var(--txt);
-  font-family:'Libre Franklin',sans-serif;
-  -webkit-font-smoothing:antialiased;
-  overflow:hidden;
-}
-.mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+html{font-size:clamp(13px,min(calc(100vh / 56.25),calc(100vw / 90)),21px);height:100%}
+body{height:100%;background:var(--navy);color:var(--ink);font-family:var(--font-sans);font-feature-settings:"rlig" 1,"calt" 1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow:hidden;line-height:1.45}
+img,svg{display:block}
+b,strong{font-weight:700;color:var(--ink-strong)}
+em{font-style:normal;color:var(--primary-deep)}
+code,.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+:not(pre)>code{font-size:.9em;color:var(--primary-deep);background:var(--primary-tint);border-radius:var(--radius-sm);padding:.05em .3em;white-space:nowrap}
+a{color:var(--primary-deep)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
 
-/* ---- deck mechanics ---- */
-.deck{height:100vh;width:100vw;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+/* ---- deck mechanics ----------------------------------------------------- */
+.deck{height:100vh;height:100dvh;width:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth;scrollbar-width:none}
 .deck::-webkit-scrollbar{display:none}
-.slide{
-  height:100vh;width:100vw;scroll-snap-align:start;scroll-snap-stop:always;
-  display:flex;flex-direction:column;position:relative;
-  padding:64px 64px 40px;background:var(--bg);
+.slide{position:relative;isolation:isolate;display:flex;flex-direction:column;height:100vh;height:100dvh;width:100%;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always;padding:var(--deck-pad-top) var(--deck-pad-x) var(--deck-pad-bottom);background:var(--plane)}
+.slide.dark{background:var(--deck-gradient);color:hsl(var(--neutral-0))}
+
+/* ---- slide chrome ------------------------------------------------------- */
+.topbar{display:flex;align-items:center;flex:none;min-height:2.25rem;margin-bottom:2rem}
+.topbar .logo{height:1.75rem;width:auto}
+.cover-page .topbar .logo{height:2.5rem}
+.sechead{display:flex;align-items:center;gap:.875rem;flex:none;margin-bottom:1.75rem}
+.num{flex:none;font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;letter-spacing:.02em;line-height:1.4;color:hsl(var(--neutral-0));background:var(--primary);border-radius:.5rem;padding:.2rem .6rem;white-space:nowrap}
+.title{font-family:var(--font-display);font-size:var(--text-4xl);font-weight:800;line-height:1.12;letter-spacing:-.025em;color:var(--ink-strong);text-wrap:balance}
+.title code{font-size:.85em}
+.body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:var(--deck-gap)}
+.body.top{justify-content:flex-start}
+
+/* ---- cover, divider, closing (dark) ------------------------------------ */
+.cover-body,.divider-body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2rem;position:relative}
+.cover-title{font-family:var(--font-display);font-size:var(--text-6xl);font-weight:800;line-height:1.02;letter-spacing:-.03em;color:hsl(var(--neutral-0));max-width:15ch;text-wrap:balance}
+.divider-title{font-family:var(--font-display);font-size:var(--text-5xl);font-weight:800;line-height:1.05;letter-spacing:-.03em;color:hsl(var(--neutral-0));max-width:20ch;text-wrap:balance}
+.dark .title{color:hsl(var(--neutral-0))}
+.cover-title em,.divider-title em,.dark .title em{color:var(--soft)}
+.dark b,.dark strong{color:hsl(var(--neutral-0))}
+.dark em{color:var(--soft)}
+.dark :not(pre)>code{color:hsl(var(--neutral-0));background:hsl(var(--neutral-0) / .1)}
+.cover-meta{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;font-size:var(--text-base);color:hsl(var(--neutral-300))}
+.pill{display:inline-block;border:1px solid var(--line-2);border-radius:999px;padding:.3rem .85rem;font-size:var(--text-sm);font-weight:600;color:var(--ink);background:var(--panel);white-space:nowrap}
+.dark .pill{border-color:hsl(var(--neutral-0) / .18);background:hsl(var(--neutral-0) / .04);color:hsl(var(--neutral-100))}
+.pill.blue{background:var(--primary);border-color:var(--primary);color:#fff}
+
+/* A slow drifting glow behind dark dividers and closing slides. */
+.glow{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.glow::before,.glow::after{content:"";position:absolute;border-radius:50%;filter:blur(80px);opacity:.5}
+.glow::before{width:46vw;height:46vw;right:-10vw;top:-18vw;background:hsl(var(--mustry-blue-700))}
+.glow::after{width:34vw;height:34vw;right:22vw;bottom:-22vw;background:hsl(var(--mustry-blue-800))}
+.motion:not(.motion-paused) .slide.is-active .glow::before{animation:glow-a 26s var(--ease-in-out) infinite alternate}
+.motion:not(.motion-paused) .slide.is-active .glow::after{animation:glow-b 31s var(--ease-in-out) infinite alternate}
+@keyframes glow-a{to{transform:translate(-6vw,5vw) scale(1.12)}}
+@keyframes glow-b{to{transform:translate(5vw,-4vw) scale(.9)}}
+
+/* ============================================================================
+   Content components. Open, typographic layouts first; panels only to group.
+   ========================================================================== */
+.t-lg{font-size:var(--text-xl);line-height:1.45}
+.t-md{font-size:var(--text-lg);line-height:1.45}
+.t-sm{font-size:var(--text-base);line-height:1.45}
+.muted{color:var(--muted)}
+.dark .muted{color:hsl(var(--neutral-300))}
+.label{font-size:var(--text-sm);font-weight:700;color:var(--primary-deep)}
+.dark .label{color:var(--soft)}
+.statement{font-size:var(--text-3xl);font-weight:700;line-height:1.25;letter-spacing:-.02em;color:var(--ink-strong);max-width:32ch;text-wrap:balance}
+.statement em{color:var(--primary)}
+.dark .statement{color:hsl(var(--neutral-0))}
+.dark .statement em{color:var(--soft)}
+
+/* Grids. */
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:2.25rem;align-items:start}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;align-items:start}
+.split{display:grid;grid-template-columns:1.1fr 1fr;gap:2.75rem;align-items:center}
+.split-r{display:grid;grid-template-columns:1fr 1.2fr;gap:2.75rem;align-items:center}
+.stack{display:flex;flex-direction:column;gap:1rem}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem}
+.center{align-items:center}
+.stretch{align-items:stretch}
+
+/* Checks: the tick list (design system CheckList), for statements that need a sentence. */
+.checks{list-style:none;display:flex;flex-direction:column;gap:1rem}
+.checks>li{position:relative;padding-left:2.4rem;font-size:var(--text-lg);line-height:1.45;color:var(--muted)}
+.checks>li::before{content:"";position:absolute;left:0;top:.05em;width:1.5rem;height:1.5rem;border-radius:.5rem;background:var(--primary-tint)}
+.checks>li::after{content:"";position:absolute;left:.3rem;top:calc(.05em + .3rem);width:.9rem;height:.9rem;background:var(--primary);-webkit-mask:var(--i-check) center/contain no-repeat;mask:var(--i-check) center/contain no-repeat}
+.checks>li.no::before{background:hsl(var(--status-critical-light) / .1)}
+.checks>li.no::after{background:var(--bad);-webkit-mask-image:var(--i-x);mask-image:var(--i-x)}
+.checks>li.warn::before{background:hsl(var(--status-warning-light) / .12)}
+.checks>li.warn::after{background:var(--warn);-webkit-mask-image:var(--i-warn);mask-image:var(--i-warn)}
+.checks.lg>li{font-size:var(--text-xl)}
+.dark .checks>li{color:hsl(var(--neutral-300))}
+.dark .checks>li::before{background:hsl(var(--brand-soft) / .16)}
+.dark .checks>li::after{background:var(--soft)}
+:root{
+  --i-check:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E");
+  --i-x:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E");
+  --i-warn:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round'%3E%3Cpath d='M12 5v9M12 19v.5'/%3E%3C/svg%3E");
 }
-.slide.dark{background:radial-gradient(120% 120% at 80% -10%,#1c3358 0%,#0e1b2e 55%)}
 
-/* progress + nav */
-.hud{position:fixed;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.08);z-index:50}
-.hud .bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--peri));width:0;transition:width .3s}
-.pager{position:fixed;right:22px;bottom:18px;z-index:50;font-size:11px;color:var(--txt-faint);font-family:'IBM Plex Mono'}
-.pager.on-dark{color:rgba(255,255,255,.55)}
-.hint{position:fixed;left:22px;bottom:16px;z-index:50;font-size:10.5px;color:var(--txt-faint);letter-spacing:.3px}
-.hint.on-dark{color:rgba(255,255,255,.4)}
+/* Dots: a quiet bullet list (design system DoesList), for short labels. */
+.dots{list-style:none;display:flex;flex-direction:column;gap:.7rem}
+.dots>li{position:relative;padding-left:1.25rem;font-size:var(--text-lg);line-height:1.4;color:var(--ink)}
+.dots>li::before{content:"";position:absolute;left:0;top:.55em;width:.45rem;height:.45rem;border-radius:50%;background:var(--primary)}
+.dark .dots>li{color:hsl(var(--neutral-200))}
+.dark .dots>li::before{background:var(--soft)}
 
-/* ---- logo ---- */
-.brandrow{display:flex;align-items:center;gap:13px}
-.logo-img{height:30px;width:auto;display:block}
-.logo-img.logo-lg{height:44px}
+/* Flow: a left-to-right process on a line, with connectors that draw in.
+   <ol class="flow"><li><b>Teaching</b><span>concepts</span></li>...</ol>
+   Add class "on" to an li to ring it as "you are here". */
+.flow{list-style:none;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:0;counter-reset:flow;position:relative}
+.flow>li{position:relative;padding:3rem 1.25rem 0 0;counter-increment:flow;display:flex;flex-direction:column;gap:.35rem}
+.flow>li::before{content:counter(flow,decimal-leading-zero);position:absolute;left:0;top:0;width:2.25rem;height:2.25rem;border-radius:50%;display:grid;place-items:center;font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;color:var(--primary-deep);background:var(--panel);border:2px solid var(--primary);z-index:1}
+.flow>li::after{content:"";position:absolute;left:2.25rem;right:0;top:1.075rem;height:2px;background:var(--line-2);transform-origin:left center}
+.flow>li:last-child::after{display:none}
+.flow>li>b{font-size:var(--text-xl);font-weight:800;letter-spacing:-.01em;line-height:1.2}
+.flow>li>span{font-size:var(--text-base);color:var(--muted);line-height:1.4}
+.flow>li.on::before{background:var(--primary);color:#fff}
+.flow>li.on>b{color:var(--primary-deep)}
+.flow.nonum>li::before{content:"";width:1rem;height:1rem;top:.625rem}
+.flow.nonum>li::after{left:1rem;top:1.075rem}
+.dark .flow>li::before{background:var(--navy);border-color:var(--soft);color:var(--soft)}
+.dark .flow>li::after{background:hsl(var(--neutral-0) / .2)}
+.dark .flow>li>span{color:hsl(var(--neutral-300))}
+.dark .flow>li.on::before{background:var(--soft);color:var(--navy)}
+.dark .flow>li.on>b{color:var(--soft)}
+.motion:not(.motion-paused) .slide.is-active .flow>li::after{animation:draw-x var(--duration-deliberate) var(--ease-out) both;animation-delay:calc(var(--i,0) * 160ms + 200ms)}
+.flow>li:nth-child(2){--i:1}.flow>li:nth-child(3){--i:2}.flow>li:nth-child(4){--i:3}.flow>li:nth-child(5){--i:4}.flow>li:nth-child(6){--i:5}
+@keyframes draw-x{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 
-/* slide chrome */
-.eyebrow{font-size:11px;letter-spacing:2.4px;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:14px}
-.dark .eyebrow{color:var(--peri2)}
-.title{font-weight:800;font-size:38px;line-height:1.05;letter-spacing:-1px;color:var(--navy)}
-.dark .title{color:#fff}
-.lead{font-size:16px;color:var(--txt-dim);line-height:1.5;max-width:820px;margin-top:14px}
-.dark .lead{color:#c4cfde}
-.sechead{display:flex;align-items:baseline;gap:14px;margin-bottom:22px}
-.sechead .num{font-family:'IBM Plex Mono';font-size:12px;font-weight:600;color:#fff;background:var(--blue);padding:5px 11px;border-radius:8px;letter-spacing:.5px;white-space:nowrap}
-.sechead .num.phase2{background:var(--peri)}
-.sechead .num.warm{background:var(--teal)}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px}
-.topbar .stage{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt-faint);font-weight:600}
-.topbar .stage.on-dark{color:rgba(255,255,255,.5)}
+/* Layers: a stacked architecture, label column left, content right. */
+.layers{display:flex;flex-direction:column}
+.layers>.layer{display:grid;grid-template-columns:12rem 1fr;gap:1.5rem;align-items:center;padding:1rem 0;border-top:1px solid var(--line-2)}
+.layers>.layer:last-child{border-bottom:1px solid var(--line-2)}
+.layer>.ln{font-weight:800;font-size:var(--text-lg);color:var(--ink-strong)}
+.layer>.lt{font-size:var(--text-lg);color:var(--muted)}
 
-/* ---- cover ---- */
-.cover{flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px}
-.cover .big{font-weight:800;font-size:50px;line-height:1.06;letter-spacing:-1.4px;color:#fff;max-width:24ch}
-.cover .big em{font-style:normal;color:var(--peri2)}
-.cover .sub{font-size:17px;color:#aebbcd;max-width:64ch;line-height:1.55;margin-top:18px}
-.cover .for{margin-top:30px;display:flex;align-items:center;gap:14px;font-size:13px;color:#8fa0b6;flex-wrap:wrap}
-.cover .for .pill{border:1px solid rgba(255,255,255,.16);border-radius:30px;padding:7px 15px;color:#dbe4f0}
-.cover .for .pill b{color:#fff;font-weight:700}
+/* Compare: two or three open columns with a coloured rule (old .vs/.vscard). */
+.compare{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2.5rem}
+.compare>div{border-top:3px solid var(--line-2);padding-top:1rem;display:flex;flex-direction:column;gap:.75rem}
+.compare>.good{border-top-color:var(--good)}
+.compare>.bad{border-top-color:var(--bad)}
+.compare>.blue{border-top-color:var(--primary)}
+.compare h3{font-size:var(--text-xl);font-weight:800;letter-spacing:-.01em;color:var(--ink-strong)}
+.compare>.good h3{color:var(--good)}
+.compare>.bad h3{color:var(--bad)}
 
-/* ---- generic layout ---- */
-.body{flex:1;display:flex;flex-direction:column;justify-content:center}
+/* Stat: one big number with a label. */
+.stat{display:flex;flex-direction:column;gap:.25rem}
+.stat>b{font-size:var(--text-6xl);font-weight:800;letter-spacing:-.04em;line-height:1;color:var(--primary)}
+.stat>span{font-size:var(--text-lg);color:var(--muted)}
 
-/* ---- numbered task steps ---- */
-.steps{display:flex;flex-direction:column;gap:13px;margin-top:4px}
-.step{display:grid;grid-template-columns:34px 1fr;gap:15px;align-items:start}
-.step .ix{width:34px;height:34px;border-radius:10px;background:var(--peri-soft);color:var(--blue);font-weight:800;font-size:14px;display:grid;place-items:center;font-family:'IBM Plex Mono'}
-.step .ix.t{background:rgba(59,189,180,.16);color:var(--teal)}
-.step .ix.p{background:rgba(147,169,240,.22);color:var(--blue-d)}
-.step .tx{font-size:15px;color:var(--txt-dim);line-height:1.5;padding-top:5px}
-.step .tx b{color:var(--txt);font-weight:700}
-.step .tx code,.inlinecode{font-family:'IBM Plex Mono';font-size:13.5px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--blue-d)}
+/* Aside: a labelled note on the plane (old .callout and .goal). Use sparingly. */
+.aside{border-left:3px solid var(--primary);padding:.15rem 0 .15rem 1.1rem;font-size:var(--text-lg);line-height:1.45;color:var(--muted);max-width:60rem}
+.aside>.label{display:block;font-size:var(--text-base);margin-bottom:.3rem}
+.aside.warn{border-left-color:var(--warn)}.aside.warn>.label{color:var(--warn)}
+.aside.good{border-left-color:var(--good)}.aside.good>.label{color:var(--good)}
+.aside.bad{border-left-color:var(--bad)}.aside.bad>.label{color:var(--bad)}
+.dark .aside{color:hsl(var(--neutral-300));border-left-color:var(--soft)}
 
-/* observe bullets */
-.obs{display:flex;gap:11px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:10px;padding:10px 14px;margin-top:9px}
-.obs .ob{font-family:'IBM Plex Mono';font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--teal);padding-top:3px;white-space:nowrap}
-.obs p{font-size:13.5px;color:var(--txt-dim);line-height:1.45}
-.obs p b{color:var(--txt)}
-.obs p code{font-family:'IBM Plex Mono';font-size:12px;color:var(--blue-d)}
+/* Panel: a white panel on the deck plane, to group a visual. */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-2xl);box-shadow:var(--shadow-md);padding:1.5rem 1.75rem}
+.panel>h3,.col-head{font-size:var(--text-lg);font-weight:800;letter-spacing:-.01em;color:var(--ink-strong);margin-bottom:.75rem}
 
-/* code block */
-.code{background:var(--navy);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);margin-top:6px;overflow:auto}
-.code pre{font-family:'IBM Plex Mono';font-size:14px;color:#dbe6f5;line-height:1.7}
-.code .cm{color:#7d93ad}
-.code .cmd2{color:var(--peri2)}
-.code .red{color:#f08a8a}
-.code .grn{color:#7ed8a2}
+/* Code: always navy (design system CodeBlock). Commands stay exact. */
+.code{background:var(--navy);border-radius:var(--radius-xl);box-shadow:var(--shadow-md);overflow:hidden;min-width:0}
+.code>.code-title{font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;color:var(--soft);padding:.6rem 1.25rem;border-bottom:1px solid hsl(var(--neutral-0) / .1)}
+.code>pre{font-family:var(--font-mono);font-size:var(--text-base);line-height:1.6;color:var(--code-ink);padding:1rem 1.25rem;white-space:pre;overflow:hidden}
+.code.sm>pre{font-size:var(--text-sm)}
+.code .cm,.code .tok-comment{color:hsl(var(--neutral-400))}
+.code .cmd2,.code .tok-accent{color:var(--soft)}
+.code .hl{color:hsl(var(--status-warning-dark))}
+.code .grn,.code .tok-add{color:#7ED8A2}
+.code .red,.code .tok-del{color:#F08A8A}
 
-/* goal / objective banner */
-.goal{display:flex;gap:14px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--blue);border-radius:14px;padding:16px 20px;box-shadow:var(--shadow);margin-top:auto}
-.goal .badge{font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#fff;background:var(--blue);padding:5px 10px;border-radius:7px;white-space:nowrap}
-.goal p{font-size:14px;color:var(--txt-dim);line-height:1.5}
-.goal p b{color:var(--txt);font-weight:700}
-.goal.warn-g{border-left-color:var(--warn)}
-.goal.warn-g .badge{background:var(--warn)}
-.goal.good-g{border-left-color:var(--good)}
-.goal.good-g .badge{background:var(--good)}
-.goal.bad-g{border-left-color:var(--bad)}
-.goal.bad-g .badge{background:var(--bad)}
+/* File card: a file's contents, lighter than code (design system FileCard). */
+.filecard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-xl);box-shadow:var(--shadow-md);overflow:hidden}
+.filecard>.fh{font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;color:var(--primary-deep);padding:.6rem 1.1rem;border-bottom:1px solid var(--line)}
+.filecard>pre{font-family:var(--font-mono);font-size:var(--text-base);line-height:1.6;color:var(--ink);padding:.9rem 1.1rem;white-space:pre-wrap}
+.filecard .cm{color:var(--faint)}
+.filecard .hl{color:var(--primary-deep);font-weight:600}
 
-/* checklist (dark) */
-.checks{display:flex;flex-direction:column;gap:13px;margin-top:6px}
-.checks li{list-style:none;display:flex;gap:13px;align-items:flex-start;font-size:15.5px;color:var(--txt-dim);line-height:1.5}
-.checks li b{color:var(--txt);font-weight:700}
-.ck{flex:none;width:23px;height:23px;border-radius:7px;background:var(--peri-soft);display:grid;place-items:center;margin-top:1px}
-.ck svg{width:12px;height:12px;color:var(--blue)}
-.ck.bad{background:var(--bad-soft)}
-.ck.bad svg{color:var(--bad)}
-.dark .checks li{color:#c4cfde}
-.dark .checks li b{color:#fff}
-.dark .ck{background:rgba(147,169,240,.18)}
-.dark .ck svg{color:var(--peri2)}
+/* Commands: a command with its meaning, in hairline rows (old .cmds). */
+.cmds{display:grid;grid-template-columns:1fr 1fr;column-gap:3rem}
+.cmds>div{display:grid;grid-template-columns:minmax(0,auto) 1fr;gap:1rem;align-items:baseline;padding:.6rem 0;border-bottom:1px solid var(--line-2)}
+.cmds code{font-family:var(--font-mono);font-size:var(--text-base);font-weight:600;color:var(--primary-deep);background:none;padding:0;white-space:nowrap}
+.cmds span{font-size:var(--text-base);color:var(--muted);line-height:1.35}
+.cmds.one{grid-template-columns:1fr}
 
-/* phase map (cover-ish overview) */
-.pmap{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:10px}
-.pcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-.pcard:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--teal)}
-.pcard.p1:before{background:var(--blue)}
-.pcard.p2:before{background:var(--peri)}
-.pcard.p4:before{background:var(--warn)}
-.pcard .pn{font-family:'IBM Plex Mono';font-size:11px;color:var(--txt-faint);font-weight:600;letter-spacing:1px}
-.pcard h4{font-size:16.5px;font-weight:800;letter-spacing:-.3px;margin:8px 0 4px}
-.pcard p{font-size:12.5px;color:var(--txt-dim);line-height:1.5;margin-top:8px}
-.pcard .gate{font-family:'IBM Plex Mono';font-size:10.5px;color:var(--blue);font-weight:600;margin-top:12px}
+/* Table: open, hairlines only (old .tbl). */
+.table{width:100%;border-collapse:collapse;font-size:var(--text-base)}
+.table th{text-align:left;font-size:var(--text-sm);font-weight:700;color:var(--muted);padding:.55rem .9rem .55rem 0;border-bottom:2px solid var(--line-2)}
+.table td{padding:.65rem .9rem .65rem 0;border-bottom:1px solid var(--line-2);vertical-align:top;color:var(--muted);line-height:1.4}
+.table td:first-child{color:var(--ink-strong);font-weight:700}
 
-/* challenge / model panels */
-.does{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow)}
-.does .hd{font-family:'IBM Plex Mono';font-size:13px;font-weight:700;color:var(--blue-d);margin-bottom:4px}
-.does .q{font-size:17px;font-weight:800;letter-spacing:-.3px;margin-bottom:10px}
-.does ul{display:flex;flex-direction:column;gap:9px}
-.does li{list-style:none;display:flex;gap:11px;align-items:flex-start;font-size:14px;color:var(--txt-dim);line-height:1.45}
-.does li .d{flex:none;width:7px;height:7px;border-radius:50%;background:var(--blue);margin-top:7px}
-.does li b{color:var(--txt)}
-.does li code{font-family:'IBM Plex Mono';font-size:12.5px;color:var(--blue-d)}
+/* Steps: numbered instructions for We-do and You-do slides (old .steps/.step). */
+.steps{list-style:none;display:flex;flex-direction:column;gap:.85rem;counter-reset:step}
+.steps>li{position:relative;padding-left:2.6rem;font-size:var(--text-lg);line-height:1.4;color:var(--muted);counter-increment:step}
+.steps>li::before{content:attr(data-n);position:absolute;left:0;top:-.1rem;width:1.8rem;height:1.8rem;border-radius:50%;display:grid;place-items:center;font-family:var(--font-mono);font-size:var(--text-sm);font-weight:700;color:var(--primary-deep);background:var(--primary-tint)}
+.steps>li:not([data-n])::before{content:counter(step)}
+.steps.alt>li::before{color:hsl(var(--chart-4-light));background:hsl(var(--chart-4-light) / .12)}
 
-/* comparison / owner table */
-.tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);margin-top:8px}
-.tbl th{font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--txt-faint);text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel2)}
-.tbl td{font-size:13px;color:var(--txt-dim);padding:11px 16px;border-bottom:1px solid var(--line);line-height:1.45;vertical-align:top}
-.tbl tr:last-child td{border-bottom:none}
-.tbl td b{color:var(--txt)}
-.tbl td code{font-family:'IBM Plex Mono';font-size:11.5px;color:var(--blue-d)}
+/* Track: a plan on a line (old .pmap/.road), each stop a short label set. */
+.track{list-style:none;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2rem;position:relative;padding-top:2.25rem}
+.track::before{content:"";position:absolute;left:0;right:0;top:.6rem;height:2px;background:var(--line-2)}
+.track>li{position:relative;display:flex;flex-direction:column;gap:.4rem}
+.track>li::before{content:"";position:absolute;left:0;top:-2.05rem;width:1.15rem;height:1.15rem;border-radius:50%;background:var(--panel);border:3px solid var(--primary)}
+.track>li.now::before{background:var(--primary)}
+.track>li>small{font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;color:var(--primary-deep)}
+.track>li>b{font-size:var(--text-xl);font-weight:800;letter-spacing:-.01em;line-height:1.2}
+.track>li>span{font-size:var(--text-base);color:var(--muted)}
+.motion:not(.motion-paused) .slide.is-active .track::before{animation:draw-x 1.2s var(--ease-out) both;transform-origin:left center}
 
-/* two-column for parts */
-.cols2{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+/* Interactive build steps. */
+.reveal{opacity:0;transform:translateY(.6rem);transition:opacity var(--duration-slower) var(--ease-out),transform var(--duration-slower) var(--ease-out)}
+.reveal.show{opacity:1;transform:none}
+.vshow{opacity:0;transition:opacity .55s ease}
+.vshow.on{opacity:1}
+.vpop{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(.5);transition:opacity .45s ease,transform .45s var(--ease-spring)}
+.vpop.on{opacity:1;transform:scale(1)}
+.vdraw{opacity:0;transition:opacity .5s ease}
+.vdraw.on{opacity:1}
+/* SVG line that draws in on slide entry: add pathLength="1" to the element. */
+.draw{stroke-dasharray:1;stroke-dashoffset:0}
+.motion:not(.motion-paused) .slide.is-active .draw{animation:draw-line 1.2s var(--ease-out) both}
+@keyframes draw-line{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 
-.foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--txt-faint);padding-top:22px}
-.dark .foot{color:rgba(255,255,255,.45)}
-
-/* ---- Oatmakers storyline slide: world map ported from the lab 01 story deck ---- */
-.slide.dark.oat{background:radial-gradient(120% 120% at 80% -10%,#1e3427 0%,#101d14 55%)}
-.stage-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
-.maphead{display:flex;align-items:baseline;gap:16px;margin-bottom:4px}
-.maphead .chap{font-family:'IBM Plex Mono';font-size:11px;letter-spacing:2px;color:#EBBE58;font-weight:600;text-transform:uppercase}
-.maphead .mtitle{font-weight:800;font-size:30px;letter-spacing:-.6px;color:#fff}
+/* Diagram canvas: an SVG that fills the remaining slide height. */
 .viz{position:relative;flex:1;min-height:0}
-.viz svg{position:absolute;inset:0;width:100%;height:100%}
-.storyline{font-size:15px;color:#c3cfbc;line-height:1.55;max-width:120ch;margin-top:8px}
-.storyline b{color:#EBBE58}
-.viz .scard{fill:rgba(126,148,97,.10);stroke:#7E9461;stroke-width:1.6}
-.viz .gsite{fill:rgba(126,148,97,.28);stroke:#a9bd8f;stroke-width:1.5}
-.viz .slabel{fill:#e7ecdf;font-family:'Libre Franklin';font-weight:700;font-size:16px;text-anchor:middle}
-.viz .badge text{font-family:'IBM Plex Mono';font-size:13px;font-weight:600;text-anchor:middle;dominant-baseline:central}
-.viz .badge rect{stroke-width:1.5}
-.viz .b-g rect{fill:rgba(22,163,74,.20);stroke:#4ade80}   .viz .b-g text{fill:#86efac}
-.viz .b-a rect{fill:rgba(217,119,6,.18);stroke:#f0b765}   .viz .b-a text{fill:#f5cf8f}
-.viz .b-r rect{fill:rgba(220,38,38,.18);stroke:#ef6f6f}   .viz .b-r text{fill:#f8a3a3}
-.viz .warntri path{fill:#f59e0b}
-.viz .warntri text{fill:#1c1607;font-family:'Libre Franklin';font-weight:800;font-size:13px;text-anchor:middle}
-.viz .pnode rect.card{fill:rgba(246,241,227,.05);stroke:#C8902F;stroke-width:1.8}
-.viz .pnode text.nl{fill:#fff;font-family:'Libre Franklin';font-weight:700;font-size:16px}
-.viz .pnode text.ns{fill:#d8c9a0;font-family:'Libre Franklin';font-weight:500;font-size:12px}
-.viz text.nm{fill:#d8c9a0;font-family:'IBM Plex Mono';font-size:11px}
-.viz .envchip rect{fill:rgba(126,148,97,.14);stroke:#a9bd8f;stroke-width:1.6}
-.viz .envchip text{fill:#dfe8d4;font-family:'IBM Plex Mono';font-size:13px;font-weight:600;text-anchor:middle;dominant-baseline:central}
-.viz .envchip.production rect{fill:rgba(200,144,47,.18);stroke:#EBBE58}
-.viz .envchip.production text{fill:#EBBE58}
-.viz .link{stroke:#C8902F;stroke-width:2.2;fill:none}
-.viz .fanl{stroke:#4ade80;stroke-width:1.7;fill:none;opacity:.8}
-.viz .wall{fill:none;stroke:rgba(246,241,227,.35);stroke-width:1.5;stroke-dasharray:7 7}
-.viz .walllab{fill:rgba(246,241,227,.45);font-family:'IBM Plex Mono';font-size:11px}
-.viz .minig .lane{stroke:rgba(246,241,227,.22);stroke-width:1.6}
-.viz .minig .lname{fill:#bcC8ad;font-family:'IBM Plex Mono';font-size:10.5px}
-.viz .minig circle{fill:#101d14;stroke-width:2}
+.viz>svg{position:absolute;inset:0;width:100%;height:100%}
+.viz-row{flex:1;min-height:0;display:flex;gap:2.5rem;align-items:stretch}
 
+/* SVG text and shapes on light slides. */
+.sv-t{font-family:var(--font-sans);font-weight:600;fill:var(--ink)}
+.sv-m{font-family:var(--font-mono);font-weight:500;fill:var(--muted)}
+.sv-strong{font-family:var(--font-sans);font-weight:800;fill:var(--ink-strong)}
+.sv-blue{fill:var(--primary-deep)}
+.sv-box{fill:var(--panel);stroke:var(--line-2);stroke-width:1.5}
+.sv-line{stroke:var(--line-2);stroke-width:2;fill:none}
+
+/* Git graph diagrams (labs 01 and 02): commits, edges, branch pointers, HEAD. */
+.gnode{fill:var(--panel);stroke:var(--primary);stroke-width:2.5}
+.gnode.dim{opacity:.25}
+.gedge{stroke:hsl(var(--neutral-700));stroke-width:2.4;fill:none}
+.gedge.branchline{stroke:var(--teal)}
+.glabel{fill:var(--ink-strong);font-family:var(--font-sans);font-weight:700;font-size:30px;text-anchor:middle;dominant-baseline:central}
+.gsha{fill:var(--muted);font-family:var(--font-mono);font-size:14px;text-anchor:middle;dominant-baseline:central}
+.gbranch{fill:var(--teal);font-family:var(--font-sans);font-weight:700;font-size:22px;text-anchor:middle}
+.gtype{fill:var(--muted);font-family:var(--font-sans);font-weight:600;font-size:22px;text-anchor:middle}
+.gfolder{fill:var(--amber);font-family:var(--font-sans);font-weight:700;font-size:21px}
+.gfile{fill:var(--ink);font-family:var(--font-sans);font-weight:500;font-size:20px}
+.gptr rect{fill:hsl(var(--chart-4-light) / .1);stroke:var(--teal);stroke-width:2}
+.gptr text{fill:var(--teal);font-family:var(--font-sans);font-weight:700;font-size:22px;text-anchor:middle;dominant-baseline:central}
+.gptr line{stroke:var(--teal);stroke-width:2.4}
+.gptr.head rect{fill:hsl(var(--chart-3-light) / .12);stroke:var(--amber)}
+.gptr.head text{fill:var(--amber);font-weight:800}
+.gptr.head line{stroke:var(--amber)}
+.f-mono{font-family:var(--font-mono)}
+.f-sans{font-family:var(--font-sans)}
+
+/* Controls for an interactive slide (design system StepControls). */
+.controls{display:flex;align-items:center;gap:.6rem;flex:none;margin-top:1.25rem;padding-top:.85rem;border-top:1px solid var(--line)}
+.step-note{margin-right:auto;font-size:var(--text-lg);line-height:1.4;color:var(--muted);max-width:62rem;min-height:1.4em}
+.step-note>[data-at]{display:none}
+.step-note>[data-at].cur{display:inline}
+.btn{font-family:var(--font-sans);font-size:var(--text-sm);font-weight:600;border:1px solid var(--line-2);background:var(--panel);color:var(--ink);padding:.5rem 1rem;border-radius:var(--radius-md);cursor:pointer;transition:background var(--duration-fast),border-color var(--duration-fast)}
+.btn:hover:not(:disabled){border-color:var(--faint)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.primary:hover:not(:disabled){background:var(--primary-deep)}
+.btn:disabled{opacity:.35;cursor:default}
+.step-count{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--faint);min-width:2.5rem;text-align:right}
+.dark .controls{border-top-color:hsl(var(--neutral-0) / .12)}
+.dark .step-note{color:hsl(var(--neutral-300))}
+.dark .btn{background:hsl(var(--neutral-0) / .05);border-color:hsl(var(--neutral-0) / .2);color:hsl(var(--neutral-100))}
+.dark .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+
+/* ---- HUD: progress, pager, hint, motion toggle -------------------------- */
+.hud{position:fixed;left:0;right:0;bottom:0;height:4px;background:hsl(var(--neutral-0) / .1);z-index:50}
+.hud>.bar{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--soft));transition:width var(--duration-slow) var(--ease-out)}
+.pager{position:fixed;right:1.25rem;bottom:.9rem;z-index:50;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--faint)}
+.hint{position:fixed;left:9rem;bottom:.95rem;z-index:50;font-size:var(--text-xs);color:var(--faint);transition:opacity var(--duration-slower)}
+.motion-toggle{position:fixed;left:1.25rem;bottom:.7rem;z-index:51;font-family:var(--font-sans);font-size:var(--text-xs);font-weight:600;color:var(--muted);background:hsl(var(--neutral-0) / .6);border:1px solid var(--line-2);border-radius:var(--radius-sm);padding:.2rem .55rem;cursor:pointer}
+.on-dark .pager,.pager.on-dark,.hint.on-dark{color:hsl(var(--neutral-0) / .55)}
+.motion-toggle.on-dark{color:hsl(var(--neutral-200));background:hsl(var(--neutral-950) / .35);border-color:hsl(var(--neutral-0) / .22)}
+.motion-toggle:disabled{opacity:.6;cursor:default}
+
+/* ---- cover dot field: verbatim from mustry-cockpit src/server/quotations/original-cover-motion.ts
+   (ORIGINAL_COVER_MOTION_CSS); the artwork is public/quotations/background-cut.svg,
+   shipped as deck-assets/background-cut.svg. */
+/* Website references: HeroMain.vue, DecorativeBackgrounds.vue, CallToAction.vue.
+   Retain the source's point geometry; animate its position and a masked duplicate. */
+.cover-page{isolation:isolate}
+.cover-dotfield{position:absolute;inset:0;z-index:-1;overflow:hidden;contain:paint;pointer-events:none;mix-blend-mode:screen;mask-image:linear-gradient(100deg,transparent 8%,#0007 43%,#000 77%);-webkit-mask-image:linear-gradient(100deg,transparent 8%,#0007 43%,#000 77%)}
+.dot-plane{position:absolute;width:112%;height:100%;right:-15%;bottom:-5%;animation-play-state:paused!important;will-change:transform}
+.cover-dotfield[data-animation=magnetic] .dot-plane{animation:quotation-magnet-drift 20s ease-in-out infinite alternate}
+.motion:not(.motion-paused) .cover-dotfield[data-animation=magnetic][data-visible=true] .dot-plane{animation-play-state:running!important}
+@keyframes quotation-magnet-drift{from{transform:translate3d(0,2px,0)}to{transform:translate3d(-4px,-2px,0)}}
+.dot-art{position:absolute;inset:0;display:block;background-image:var(--quotation-dot-art);background-repeat:no-repeat;background-size:contain;background-position:right bottom}
+.dot-base{opacity:.58}
+.dot-light-pass{display:none;opacity:.5;mask-image:linear-gradient(112deg,transparent 34%,#0009 45%,#000 50%,#0009 55%,transparent 66%);-webkit-mask-image:linear-gradient(112deg,transparent 34%,#0009 45%,#000 50%,#0009 55%,transparent 66%);mask-size:250% 180%;-webkit-mask-size:250% 180%;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;animation:quotation-dot-light 22s linear infinite;animation-delay:-3s;animation-play-state:paused!important}
+.cover-dotfield[data-animation=light-sweep] .dot-light-pass,.cover-dotfield[data-animation=dot-streams] .dot-light-pass,.cover-dotfield[data-animation=travelling-focus] .dot-light-pass{display:block}
+.motion:not(.motion-paused) .cover-dotfield[data-visible=true] .dot-light-pass{animation-play-state:running!important}
+@keyframes quotation-dot-light{0%{mask-position:170% 0%;-webkit-mask-position:170% 0%;opacity:0}12%{opacity:.82}85%{opacity:.82}100%{mask-position:-70% 100%;-webkit-mask-position:-70% 100%;opacity:0}}
+@media screen and (max-width:600px){.dot-plane{width:170%;height:100%;right:-60%;bottom:-3%}.cover-dotfield{mask-image:linear-gradient(100deg,transparent 12%,#0008 60%,#000);-webkit-mask-image:linear-gradient(100deg,transparent 12%,#0008 60%,#000)}.dot-base{opacity:.5}}
+@media(prefers-reduced-motion:reduce){.dot-plane,.dot-light-pass{animation:none!important;will-change:auto}.dot-light-pass{display:none}}
+.dot-wave-canvas{position:absolute;inset:0;width:100%;height:100%;display:none;pointer-events:none}
+.dot-wave-ready .dot-wave-canvas{display:block}
+.dot-wave-ready .dot-plane{visibility:hidden;animation:none!important}
+.dot-wave-ready .dot-light-pass{animation:none!important}
 @media print{
-  body{overflow:visible}
-  .deck{height:auto;overflow:visible}
-  .slide{height:100vh;page-break-after:always;break-after:page}
-  .hud,.pager,.hint{display:none}
+  .cover-page{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cover-dotfield{display:block!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cover-dotfield .dot-plane{display:block!important;visibility:visible!important;transform:none!important;animation:none!important;will-change:auto}
+  .cover-dotfield .dot-base{display:block!important;opacity:.58}
+  .cover-dotfield .dot-light-pass,.cover-dotfield .dot-wave-canvas{display:none!important}
+}
+
+/* ---- cover dot field on a landscape slide --------------------------------
+   The block above is the Cockpit quotation-cover CSS, verbatim. On a slide
+   the layer is narrowed to the right side so the dense dots stay in view
+   next to the title. */
+.slide .cover-dotfield{left:auto;right:0;width:72%}
+@media screen and (max-aspect-ratio:1/1){.slide .cover-dotfield{width:100%}}
+
+/* ---- reduced motion (design system index.css policy) --------------------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .deck{scroll-behavior:auto}
+}
+
+/* ---- small screens: a readable scrolling layout (screen only) ------------ */
+@media screen and (max-width:820px),screen and (max-height:520px){
+  html{font-size:15px}
+  .deck{scroll-snap-type:none}
+  .slide{height:auto;min-height:100vh;min-height:100dvh;overflow:visible;padding:1.5rem 1.25rem 3rem}
+  .topbar{margin-bottom:1.25rem}
+  .cols2,.cols3,.cols4,.split,.split-r,.cmds,.compare{grid-template-columns:1fr;grid-auto-flow:row}
+  .flow,.track{grid-auto-flow:row;gap:1rem}
+  .flow>li{padding:0 0 0 3rem;min-height:2.25rem}
+  .flow>li::after{display:none}
+  .track::before{display:none}
+  .track>li::before{position:static;margin-bottom:.25rem}
+  .layers>.layer{grid-template-columns:1fr}
+  .viz,.viz-row{flex:none;min-height:60vh}
+  .viz-row{flex-direction:column}
+  .code>pre,.filecard>pre{white-space:pre-wrap;word-break:break-word}
+  .title{font-size:var(--text-3xl)}
+  .cover-title{font-size:var(--text-5xl)}
+  .divider-title{font-size:var(--text-4xl)}
+  .hint{display:none}
+  .controls{flex-wrap:wrap}
+  .step-note{flex-basis:100%}
+  .cmds>div{grid-template-columns:1fr;gap:.2rem}
+  :not(pre)>code,.cmds code{white-space:normal;overflow-wrap:anywhere}
+  .viz{min-height:45vh}
+}
+
+/* ---- print: one 16:9 page per slide, every step shown -------------------- */
+@page{size:1600px 900px;margin:0}
+@media print{
+  html{font-size:16px;height:auto}
+  body{height:auto;overflow:visible;background:none}
+  .deck{height:auto;overflow:visible;scroll-snap-type:none}
+  .slide{width:1600px;height:900px;break-after:page;page-break-after:always;break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .slide:last-child{break-after:auto;page-break-after:auto}
+  .hud,.pager,.hint,.controls,.motion-toggle{display:none!important}
+  .reveal,.vshow,.vpop,.vdraw{opacity:1!important}
+  .reveal,.vpop{transform:none!important}
+  .glow{display:none}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+/* deck-kit:css:end */
+
+/* ---- this deck ---------------------------------------------------------- */
+.num.warm{background:var(--teal)}
+.num.p2{background:var(--violet)}
+.num.opt{background:hsl(var(--neutral-600))}
+.steps.vio>li::before{color:var(--violet);background:hsl(var(--chart-5-light) / .12)}
+.work{display:grid;grid-template-columns:1fr 1.1fr;gap:2.5rem;align-items:start}
+.work .steps>li{font-size:var(--text-base)}
+.work.alt{grid-template-columns:1.25fr .75fr}
+.work .side{display:flex;flex-direction:column;gap:1.1rem;min-width:0}
+.work .aside{font-size:var(--text-base)}
+.work .aside>.label{font-size:var(--text-sm)}
+.work .dots>li{font-size:var(--text-base);color:var(--muted)}
+.work .dots{gap:.55rem}
+.body>.aside{max-width:none}
+.dark .code{box-shadow:none;border:1px solid hsl(var(--neutral-0) / .12)}
+.link{font-family:var(--font-mono);font-size:var(--text-sm);word-break:break-all}
+.q{font-family:var(--font-mono);font-size:var(--text-base);color:var(--primary-deep);margin:-.25rem 0 .25rem}
+.compare>.teal{border-top-color:var(--teal)}
+.compare>.teal h3,.compare>.teal .q{color:var(--teal)}
+.compare .dots>li{font-size:var(--text-base);color:var(--muted)}
+.track .gate{display:block;margin-top:.35rem;font-family:var(--font-mono);font-size:var(--text-sm);color:var(--good)}
+.table.tight td,.table.tight th{padding-top:.5rem;padding-bottom:.5rem}
+.table td code{white-space:normal}
+
+/* the Oatmakers world as day 3 left it (from the Lab 01 story deck) */
+:root{--oat-green:#24382B;--oat-sage:#7E9461;--oat-gold:#C8902F;--oat-gold-l:#EBBE58;--oat-cream:#F6F1E3}
+.scard{fill:#fff;stroke:var(--oat-sage);stroke-width:1.6}
+.gsite{fill:hsl(85 21% 48% / .18);stroke:var(--oat-sage);stroke-width:1.5}
+.slabel{fill:var(--ink-strong);font-family:var(--font-sans);font-weight:700;font-size:17px;text-anchor:middle}
+.badge text{font-family:var(--font-mono);font-size:13.5px;font-weight:700;text-anchor:middle;dominant-baseline:central}
+.badge rect{stroke-width:1.5}
+.b-g rect{fill:hsl(142 76% 36% / .1);stroke:#16A34A}   .b-g text{fill:#15803D}
+.b-a rect{fill:hsl(32 95% 44% / .12);stroke:#D97706}   .b-a text{fill:#B45309}
+.b-r rect{fill:hsl(0 72% 51% / .1);stroke:#DC2626}     .b-r text{fill:#B91C1C}
+.warntri path{fill:#F59E0B}
+.warntri text{fill:#1c1607;font-family:var(--font-sans);font-weight:800;font-size:13px;text-anchor:middle}
+.pnode rect.card{fill:#fff;stroke:var(--oat-gold);stroke-width:1.8}
+.pnode text.nl{fill:var(--ink-strong);font-family:var(--font-sans);font-weight:700;font-size:16px}
+.pnode text.ns{fill:var(--muted);font-family:var(--font-sans);font-weight:500;font-size:11.5px}
+svg text.nm{font-family:var(--font-mono);font-size:11.5px;fill:var(--muted)}
+.envchip rect{fill:hsl(85 21% 48% / .12);stroke:var(--oat-sage);stroke-width:1.6}
+.envchip text{fill:var(--oat-green);font-family:var(--font-mono);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central}
+.envchip.production rect{fill:hsl(38 63% 48% / .14);stroke:var(--oat-gold)}
+.envchip.production text{fill:#8a6118}
+.link-l{stroke:var(--oat-gold);stroke-width:2.2;fill:none}
+.fanl{stroke:#16A34A;stroke-width:1.7;fill:none;opacity:.7}
+.wall{fill:none;stroke:var(--line-2);stroke-width:1.5;stroke-dasharray:7 7}
+.walllab{fill:var(--muted);font-family:var(--font-mono);font-size:11.5px}
+.minig .lane{stroke:var(--line-2);stroke-width:1.6}
+svg text.lname{font-family:var(--font-mono);font-size:11px;fill:var(--muted)}
+.minig circle{fill:#fff;stroke-width:2}
+
+.nw{white-space:nowrap}
+/* small screens: this deck's grids collapse to one column */
+@media screen and (max-width:820px),screen and (max-height:520px){
+  .work.alt{grid-template-columns:1fr}
+  .nw{white-space:normal}
+  .work{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 
-<!-- Oatmakers logo defs, inlined from the lab 01 story deck so the HQ node can use it -->
+<!-- Oatmakers badge, dark ring for a light slide (from the Lab 01 story deck) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <linearGradient id="grain" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#EBBE58"/>
-      <stop offset="1" stop-color="#C8902F"/>
-    </linearGradient>
+    <linearGradient id="grain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EBBE58"/><stop offset="1" stop-color="#C8902F"/></linearGradient>
     <clipPath id="oring"><circle cx="100" cy="100" r="82"/></clipPath>
     <g id="oatgrain">
       <path d="M0,-13 C5.5,-7 5.5,7 0,13 C-5.5,7 -5.5,-7 0,-13 Z" fill="url(#grain)"/>
@@ -245,273 +568,201 @@ body{
       <use href="#oatgrain" transform="translate(86,122) rotate(-42)"/>
       <use href="#oatgrain" transform="translate(114,122) rotate(42)"/>
     </g>
-    <g id="ob-light">
-      <circle cx="100" cy="100" r="86" fill="none" stroke="#F6F1E3" stroke-width="6"/>
+    <g id="ob-dark">
+      <circle cx="100" cy="100" r="86" fill="none" stroke="#24382B" stroke-width="6"/>
       <g clip-path="url(#oring)">
         <path d="M4,148 Q78,112 196,156 L196,200 L4,200 Z" fill="#7E9461"/>
-        <path d="M4,166 Q96,132 196,176 L196,200 L4,200 Z" fill="#C8902F"/>
+        <path d="M4,166 Q96,132 196,176 L196,200 L4,200 Z" fill="#24382B"/>
       </g>
-      <path d="M100,148 Q103,104 100,50" fill="none" stroke="#F6F1E3" stroke-width="4" stroke-linecap="round"/>
+      <path d="M100,148 Q103,104 100,50" fill="none" stroke="#24382B" stroke-width="4" stroke-linecap="round"/>
       <use href="#ob-stem"/>
     </g>
   </defs>
 </svg>
 
-<div class="deck" id="deck">
+<main class="deck" id="deck">
 
-<!-- 1 · COVER -->
-<section class="slide dark">
-  <div class="topbar">
-    <div class="on-dark brandrow"><img class="logo-img logo-lg" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
-    <div class="stage on-dark">Lab 07 · The assignment · Day 4</div>
+<!-- COVER -->
+<section class="slide dark cover-page">
+  <div class="ambient ambient-cover cover-dotfield" aria-hidden="true" data-visible="true" data-animation="dot-streams" style="--quotation-dot-art:url('deck-assets/background-cut.svg')"><div class="dot-plane"><span class="dot-art dot-base"></span><span class="dot-art dot-light-pass"></span></div></div>
+  <header class="topbar"><img class="logo" src="logos/OriginalLight.png" alt="Mustry Solutions"></header>
+  <div class="cover-body">
+    <h1 class="cover-title" style="max-width:20ch">Contribute to <span class="nw">demo-oatmakers</span> and bring your work <em>live</em> on a production gateway</h1>
+    <div class="cover-meta"><span>Approving your PRs</span><span class="pill"><b>Sam</b></span><span class="pill"><b>Jasper</b></span><span class="pill"><b>each other</b></span><span class="pill">share your screen</span></div>
   </div>
-  <div class="cover">
-    <div class="eyebrow">The assignment · breakout rooms · ±75 min</div>
-    <div class="big">Contribute to demo-oatmakers and bring your work <em>live</em> on a production gateway</div>
-    <div class="for">
-      <span>Approving your PRs</span>
-      <span class="pill"><b>Sam</b></span>
-      <span class="pill"><b>Jasper</b></span>
-      <span class="pill"><b>each other</b></span>
-      <span>·</span>
-      <span class="pill">share your screen</span>
-    </div>
-  </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Lab 07: Multi-gateway deployments</span></div>
 </section>
 
-<!-- 2 · THE OATMAKERS STORY: THE FINAL CHAPTER -->
-<section class="slide dark oat">
-  <div class="topbar">
-    <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
-    <div class="stage on-dark">The Oatmakers story · Day 4</div>
-  </div>
-  <div class="stage-wrap">
-    <div class="maphead"><span class="chap">The final chapter</span><span class="mtitle">The team assembles to deploy Oatmakers to the production sites</span></div>
-    <div class="viz" id="viz-oat"></div>
-    <p class="storyline">Four days ago, Oatmakers could not ship. Now the pipeline stands, the map is drawn, and only the rollout remains. <b>It is time for the team to assemble.</b> We fix Oatmakers, and we take our project to the production sites. Today we learn what it means to build as one team, in one repo. It will get messy. The merge conflicts will come for us. But <b>together we shall succeed</b>, to make Oatmakers great again!</p>
-  </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>The Oatmakers story · The rollout</span></div>
-</section>
-
-<!-- 3 · HOW THIS WORKS -->
+<!-- THE OATMAKERS STORY: THE FINAL CHAPTER -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">The assignment · ground rules</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">DAY 4</span><h2 class="title">The final chapter: the team assembles to deploy Oatmakers to the production sites</h2></div>
+  <div class="viz" id="viz-oat"></div>
+  <div class="aside" style="max-width:none;margin-top:1rem;flex:none">Four days ago, Oatmakers could not ship. Now the pipeline stands and only the rollout remains: today we build <b>as one team, in one repo</b>. The merge conflicts will come for us, but <b>together we shall succeed</b>.</div>
+</section>
+
+<!-- HOW THIS WORKS -->
+<section class="slide">
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">READ FIRST</span><h2 class="title">How this works: you are contributors on a real, protected repo</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num">READ FIRST</span><div><div class="title">How this works: you are contributors on a real, protected repo</div></div></div>
-    <ul class="checks" style="max-width:1060px">
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>We're here to get reps in.</b> Everything from the past four days, on repeat: feature branch, commits, PR, review, tag, release pin, deploy. <span class="inlinecode">exercises/lab.md</span> is the source of truth; these slides mirror it. Share your screen in the breakout room.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>No fork this time.</b> Everyone works in <span class="inlinecode">Mustry-Solutions/demo-oatmakers</span>, the public repo behind Mustry's live Oatmakers demo. We add you as a collaborator; accept the invite and push your branches straight to that repo.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>main is protected.</b> Nothing reaches it without a pull request, a green <span class="inlinecode">CI OK</span> check and <b>one approval</b> from someone else. You cannot approve your own PR: we do, or a fellow student does.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Two deploy channels, two triggers.</b> Every merge to <span class="inlinecode">main</span> lands on <b>your own test gateway</b> (you set that up in Part 0). Only a change to <span class="inlinecode">release.yaml</span> on <span class="inlinecode">main</span> reaches <b>production</b>: workflow <b>Deploy</b>, on the runner <span class="inlinecode">[self-hosted, demo-oatmakers]</span>. Started by hand from another branch, it refuses.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Production is live and public:</b> <span class="inlinecode">https://cloud.mustrysolutions.com</span>. Customers see it, so be gentle. You verify through the public pages and the workflow logs; you do not need the admin login. Need a gateway status page? Ask, and we share access in the chat.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Stuck on the setup?</b> The Troubleshooting section of <span class="inlinecode">exercises/lab.md</span> covers the runner, the trial and stray file churn.</span></li>
+    <ul class="checks" style="max-width:78rem">
+      <li><b>Reps, on repeat:</b> feature branch, commits, PR, review, tag, release pin, deploy. <code>exercises/lab.md</code> is the source of truth; these slides mirror it. Share your screen in the breakout room.</li>
+      <li><b>No fork this time.</b> Everyone works in <code>Mustry-Solutions/demo-oatmakers</code>, the public repo behind Mustry's live Oatmakers demo. Accept the collaborator invite and push your branches straight to it.</li>
+      <li><b>main is protected:</b> a pull request, a green <code>CI OK</code> and <b>one approval</b> from someone else. You cannot approve your own PR: we do, or a fellow student does.</li>
+      <li><b>Two deploy channels.</b> Every merge to <code>main</code> lands on <b>your own test gateway</b> (Part 0). Only a change to <code>release.yaml</code> on <code>main</code> reaches <b>production</b>: workflow <b>Deploy</b>, on the runner <code>[self-hosted, demo-oatmakers]</code>. Started by hand from another branch, it refuses.</li>
+      <li class="warn"><b>Production is live and public:</b> <code>https://cloud.mustrysolutions.com</code>. Customers see it, so be gentle. Verify through the public pages and the workflow logs; you do not need the admin login. Need a gateway status page? Ask, and we share access in the chat.</li>
+      <li><b>Stuck on the setup?</b> The Troubleshooting section of <code>exercises/lab.md</code> covers the runner, the trial and stray file churn.</li>
     </ul>
-    <div class="goal good-g">
-      <span class="badge">Ask early</span>
-      <p>Stuck for more than a couple of minutes? <b>Say so in the room.</b> Don't sit blocked in silence; that's exactly what we're here for.</p>
-    </div>
+    <div class="aside good"><span class="label">Ask early</span>Stuck for more than a couple of minutes? <b>Say so in the room.</b> That's exactly what we're here for.</div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 0 → 1 → 2 → 3</span></div>
 </section>
 
-<!-- 4 · MENTAL MODEL -->
+<!-- MENTAL MODEL -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">The assignment · the mental model</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">MODEL</span><h2 class="title">One repository, two jobs: the projects and the release file live together</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num">MODEL</span><div><div class="title">One repository, two jobs: the projects and the release file live together</div><div class="lead">Keep this picture in your head for the whole hour. Every move you make is on one side of it, and the seam between the two sides is a version string.</div></div></div>
-    <div class="cols2">
-      <div class="does">
-        <div class="hd">projects/ + the gateway payload</div>
+    <div class="compare">
+      <div class="blue">
+        <h3>projects/ + the gateway payload</h3>
         <div class="q">"What have we built?"</div>
-        <ul>
-          <li><span class="d"></span><span>A tag like <code>&lt;yourname&gt;@v1.0.0</code> marks a version of one project: a point in history you can deploy.</span></li>
-          <li><span class="d"></span><span>Nothing gets compiled: the deploy ships the files as they were at that tag.</span></li>
-          <li><span class="d"></span><span>A tag that was never pushed is a release that <b>does not exist</b>.</span></li>
+        <ul class="dots">
+          <li>A tag like <code>&lt;yourname&gt;@v1.0.0</code> marks a version of one project: a point in history you can deploy.</li>
+          <li>Nothing gets compiled: the deploy ships the files as they were at that tag.</li>
+          <li>A tag that was never pushed is a release that <b>does not exist</b>.</li>
         </ul>
       </div>
-      <div class="does">
-        <div class="hd" style="color:var(--teal)">release.yaml</div>
+      <div class="teal">
+        <h3>release.yaml</h3>
         <div class="q">"What runs on production, right now?"</div>
-        <ul>
-          <li><span class="d" style="background:var(--teal)"></span><span>One file, one production gateway: <b>oatmakers-site-7</b>.</span></li>
-          <li><span class="d" style="background:var(--teal)"></span><span>You change a version number by PR, and <b>a deploy happens</b>.</span></li>
-          <li><span class="d" style="background:var(--teal)"></span><span>No workflow deploys any other way, and a pin may only point at a <b>tag on a commit on main</b>: only reviewed code ships.</span></li>
+        <ul class="dots">
+          <li>One file, one production gateway: <b>oatmakers-site-7</b>.</li>
+          <li>Change a version number by PR, and <b>a deploy happens</b>.</li>
+          <li>No workflow deploys any other way, and a pin may only point at a <b>tag on a commit on main</b>: only reviewed code ships.</li>
         </ul>
-        <div class="code" style="margin-top:12px"><pre><span class="cm"># release.yaml</span>
+        <div class="code"><pre><span class="cm"># release.yaml</span>
 gateway: <span class="cmd2">oatmakers-site-7</span>
 projects:
   oatmakers: <span class="grn">v5.1.0</span>   <span class="cm"># + the gateway payload</span></pre></div>
       </div>
     </div>
-    <div class="goal" style="margin-top:20px">
-      <span class="badge">One repo, by choice</span>
-      <p>In the teaching you saw <b>option B</b>: split the infra part (release files, gateway config) into its own repo, owned by another team. Both are valid. One repo keeps this lab small.</p>
-    </div>
+    <div class="aside"><span class="label">One repo, by choice</span>The seam between the two sides is a version string. In the teaching you saw <b>option B</b>: split the infra part (release files, gateway config) into its own repo, owned by another team. Both are valid; one repo keeps this lab small.</div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>what we built · what runs · one version string between them</span></div>
 </section>
 
-<!-- 5 · RULES FOR A SHARED LIVE DEMO -->
+<!-- RULES FOR A SHARED LIVE DEMO -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">The assignment · etiquette</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">RULES</span><h2 class="title">Rules for a shared live demo: how the whole group ships through one release file</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num">RULES</span><div><div class="title">Rules for a shared live demo: how the whole group ships through one release file</div><div class="lead">Everyone in the group, and the Mustry team, deploys through the same <span class="inlinecode">release.yaml</span> to the same gateway. These rules keep that civil.</div></div></div>
-    <div class="cols2" style="grid-template-columns:1.15fr .85fr;gap:24px">
-      <div class="steps">
-        <div class="step"><div class="ix">1</div><div class="tx"><b>Small PRs.</b> One view, one migration pair, one module.</div></div>
-        <div class="step"><div class="ix">2</div><div class="tx"><b>Stage only what you changed.</b> <code>git add &lt;your paths&gt;</code>, never <code>git commit -am</code>: the gateway rewrites files on its own.</div></div>
-        <div class="step"><div class="ix">3</div><div class="tx"><b>One release PR in flight at a time.</b> Check the open PRs, say in the chat when you start, wait for <b>Deploy</b> to go green.</div></div>
-        <div class="step"><div class="ix">4</div><div class="tx"><b>A conflict in <code>release.yaml</code> is normal:</b> rebase and keep every pin (commands on the right).</div></div>
-        <div class="step"><div class="ix">5</div><div class="tx"><b>Never lower a pin.</b> Check whether your tag is already inside a higher one (Part 2).</div></div>
-        <div class="step"><div class="ix">6</div><div class="tx"><b>A pushed tag is permanent.</b> Made a mistake? Fix it on main and cut the next number.</div></div>
-        <div class="step"><div class="ix">7</div><div class="tx"><b>Announce restarts.</b> A module or a JAR restarts the production gateway.</div></div>
-        <div class="step"><div class="ix">8</div><div class="tx"><b>Leave the existing demo alone.</b> Your screens, tags and tables carry your name or <code>Course</code>.</div></div>
-      </div>
-      <div>
-        <div class="code" style="margin-top:0"><pre>git fetch origin
+    <div class="work">
+      <ol class="steps">
+        <li><b>Small PRs.</b> One view, one migration pair, one module.</li>
+        <li><b>Stage only what you changed.</b> <code>git add &lt;your paths&gt;</code>, never <code>git commit -am</code>: the gateway rewrites files on its own.</li>
+        <li><b>One release PR in flight at a time.</b> Check the open PRs, say in the chat when you start, wait for <b>Deploy</b> to go green.</li>
+        <li><b>A conflict in <code>release.yaml</code> is normal:</b> rebase and keep every pin.</li>
+        <li><b>Never lower a pin.</b> Check whether your tag is already inside a higher one (Part 2).</li>
+        <li><b>A pushed tag is permanent.</b> Made a mistake? Fix it on main and cut the next number.</li>
+        <li><b>Announce restarts.</b> A module or a JAR restarts the production gateway.</li>
+        <li><b>Leave the existing demo alone.</b> Your screens, tags and tables carry your name or <code>Course</code>.</li>
+      </ol>
+      <div class="side">
+        <div class="code"><div class="code-title">4 · a conflict in release.yaml</div><pre>git fetch origin
 git rebase origin/main
 <span class="cm"># fix release.yaml: keep every pin</span>
 <span class="cm"># from main, re-apply only your line</span>
 git add release.yaml
 git rebase --continue
 git push --force-with-lease</pre></div>
-        <div class="obs"><span class="ob">Rollback</span><p>Production looks wrong after a release? Say so in the chat straight away. The fix is the <b>Revert</b> button on the merged release PR, then review and merge as usual.</p></div>
+        <div class="aside warn"><span class="label">Rollback</span>Production looks wrong after a release? Say so in the chat straight away. The fix is the <b>Revert</b> button on the merged release PR, then review and merge as usual.</div>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>small PRs · one release PR at a time · keep every pin</span></div>
 </section>
 
-<!-- 6 · THE PLAN -->
+<!-- THE PLAN -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">The assignment · the plan</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">THE PLAN</span><h2 class="title">Four parts: your test gateway, your project, the shared challenges, building on each other</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num">THE PLAN</span><div><div class="title">Four parts: your test gateway, your project, the shared challenges, building on each other</div><div class="lead">Part 0 gives you a test gateway that receives every merge to <span class="inlinecode">main</span>. Part 1 is everyone alone: the full loop once, by yourself. Parts 2 and 3 are the whole group on one project, one version stream and one production gateway.</div></div></div>
-    <div class="pmap">
-      <div class="pcard">
-        <div class="pn">PART 0 · ±15 MIN</div>
-        <h4>Stand up your test gateway and your runner</h4>
-        <p>The provided <span class="inlinecode">test</span> profile on your laptop, plus your own <span class="inlinecode">test-&lt;yourname&gt;.yml</span> workflow on your runner label.</p>
-        <div class="gate">gate → a green test-&lt;yourname&gt; run put main on localhost:8090</div>
-      </div>
-      <div class="pcard p1">
-        <div class="pn">PART 1 · ±20 MIN</div>
-        <h4>Create your own project and bring it live</h4>
-        <p>Add <span class="inlinecode">projects/&lt;yourname&gt;/</span> by PR, tag <span class="inlinecode">&lt;yourname&gt;@v1.0.0</span>, pin it in <span class="inlinecode">release.yaml</span>, watch <b>Deploy</b> ship it.</p>
-        <div class="gate">gate → your view live on cloud.mustrysolutions.com</div>
-      </div>
-      <div class="pcard p2">
-        <div class="pn">PART 2 · ±35 MIN</div>
-        <h4>Five challenges on the shared oatmakers project</h4>
-        <p>A module, a JAR, a database with a migration and a referenced secret, a simulator with live tags, and history on top. Claim one each.</p>
-        <div class="gate">gate → your challenge live via an oatmakers@ tag</div>
-      </div>
-      <div class="pcard p4">
-        <div class="pn">PART 3 · EXTRA</div>
-        <h4>Build on each other's work</h4>
-        <p>A showcase view, a shared library at its own tag, crossing the challenges. You decide together who does what.</p>
-        <div class="gate">gate → one PR that builds on someone else's work</div>
-      </div>
-    </div>
+    <ol class="track">
+      <li><small>Part 0 · ±15 min · solo</small><b>Stand up your test gateway and your runner</b><span>The provided <code>test</code> profile on your laptop, plus your own <code>test-&lt;yourname&gt;.yml</code> workflow on your runner label.</span><span class="gate">gate: a green test-&lt;yourname&gt; run put main on localhost:8090</span></li>
+      <li class="now"><small>Part 1 · ±20 min · solo</small><b>Create your own project and bring it live</b><span>Add <code>projects/&lt;yourname&gt;/</code> by PR, tag <code>&lt;yourname&gt;@v1.0.0</code>, pin it in <code>release.yaml</code>, watch <b>Deploy</b> ship it.</span><span class="gate">gate: your view live on cloud.mustrysolutions.com</span></li>
+      <li><small>Part 2 · ±35 min · group</small><b>Five challenges on the shared oatmakers project</b><span>A module, a JAR, a database with a migration and a referenced secret, a simulator with live tags, and history on top. Claim one each.</span><span class="gate">gate: your challenge live via an oatmakers@ tag</span></li>
+      <li><small>Part 3 · extra · group</small><b>Build on each other's work</b><span>A showcase view, a shared library at its own tag, crossing the challenges. You decide together who does what.</span><span class="gate">gate: one PR that builds on someone else's work</span></li>
+    </ol>
+    <div class="aside">Part 0 gives you a test gateway that receives every merge to <code>main</code>. Part 1 is the full loop once, by yourself. Parts 2 and 3 are the whole group on <b>one project, one version stream and one production gateway</b>.</div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>your test gateway → your project → your challenge → the group's product</span></div>
 </section>
 
-<!-- 7 · BEFORE YOU START -->
+<!-- BEFORE YOU START -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">The assignment · before you start</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num warm">START</span><h2 class="title">Before you start: accept the invite, free the ports, clone next to the course repo</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num warm">START</span><div><div class="title">Before you start: accept the invite, free the ports, clone next to the course repo</div><div class="lead">Three steps, then Part 0 starts the stack. Your laptop runs three things this afternoon: your local gateway to build on, your test gateway, and the runner that feeds it.</div></div></div>
-    <div class="cols2">
-      <div class="steps">
-        <div class="step"><div class="ix t">1</div><div class="tx"><b>Accept the invite</b> from your GitHub notifications, or at <code>github.com/Mustry-Solutions/demo-oatmakers/invitations</code>. You get write access; no fork.</div></div>
-        <div class="step"><div class="ix t">2</div><div class="tx"><b>Shut the lab 06 stack down</b> (<code>docker compose down</code> in <code>labs/06-secrets-db-and-modules/</code>). It holds ports <b>8088, 8090 and 5432</b>, all three of which this lab needs.</div></div>
-        <div class="step"><div class="ix t">3</div><div class="tx"><b>Clone next to the course repo</b> in <code>~/mustry-academy/</code>, not inside <code>cicd-for-ignition/</code>. On Windows: in your WSL home, never under <code>/mnt/c/</code>.</div></div>
-      </div>
-      <div>
-        <div class="code" style="margin-top:0"><pre>cd ~/mustry-academy
+    <div class="work">
+      <ol class="steps alt">
+        <li><b>Accept the invite</b> from your GitHub notifications, or at <code>github.com/Mustry-Solutions/demo-oatmakers/invitations</code>. You get write access; no fork.</li>
+        <li><b>Shut the lab 06 stack down</b> (<code>docker compose down</code> in <code>labs/06-secrets-db-and-modules/</code>). It holds ports <b>8088, 8090 and 5432</b>, all three of which this lab needs.</li>
+        <li><b>Clone next to the course repo</b> in <code>~/mustry-academy/</code>, not inside <code>cicd-for-ignition/</code>. On Windows: in your WSL home, never under <code>/mnt/c/</code>.</li>
+      </ol>
+      <div class="side">
+        <div class="code"><pre>cd ~/mustry-academy
 git clone git@github.com:<span class="cmd2">Mustry-Solutions/demo-oatmakers</span>.git
 cd demo-oatmakers</pre></div>
-        <table class="tbl" style="margin-top:14px">
-          <tr><th>What</th><th>Where</th><th>Fed by</th></tr>
-          <tr><td><b>local gateway</b></td><td><code>localhost:8088</code></td><td>your working tree (bind mount), <code>admin</code> / <code>password</code></td></tr>
-          <tr><td><b>local database</b></td><td><code>localhost:5432</code></td><td>login in <code>local-development/secrets/</code></td></tr>
-          <tr><td><b>your test gateway</b></td><td><code>localhost:8090</code></td><td>your workflow, on every merge to main</td></tr>
-          <tr><td><b>production</b></td><td><code>cloud.mustrysolutions.com</code></td><td><b>Deploy</b>, only when <code>release.yaml</code> changes</td></tr>
+        <table class="table tight">
+          <tr><th>Your laptop runs</th><th>Where</th><th>Fed by</th></tr>
+          <tr><td>local gateway</td><td><code>localhost:8088</code></td><td>your working tree (bind mount), <code>admin</code> / <code>password</code></td></tr>
+          <tr><td>local database</td><td><code>localhost:5432</code></td><td>login in <code>local-development/secrets/</code></td></tr>
+          <tr><td>your test gateway</td><td><code>localhost:8090</code></td><td>your workflow, on every merge to main</td></tr>
+          <tr><td>production</td><td><code>cloud.mustrysolutions.com</code></td><td><b>Deploy</b>, only when <code>release.yaml</code> changes</td></tr>
         </table>
       </div>
     </div>
-    <div class="goal" style="margin-top:16px">
-      <span class="badge">Trial mode</span>
-      <p>Perspective pages go blank, the Designer drops its connection, a deploy that worked an hour ago fails? The 2-hour trial lapsed. Run <span class="inlinecode">scripts/reset-trial.sh</span>; never wipe volumes for this.</p>
-    </div>
+    <div class="aside warn"><span class="label">Trial mode</span>Perspective pages go blank, the Designer drops its connection, a deploy that worked an hour ago fails? The 2-hour trial lapsed. Run <code>scripts/reset-trial.sh</code>; never wipe volumes for this.</div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>invite · ports · clone</span></div>
 </section>
 
-<!-- 8 · PART 0 A -->
+<!-- PART 0 A -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 0 · your test gateway · A</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num warm">PART 0 · A</span><h2 class="title">Start your test gateway and register your runner with the shared token</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num warm">0A</span><div><div class="title">Start your test gateway and register your runner with the shared token</div><div class="lead">Do this once, at the start, then leave it running all afternoon. It reuses a self-hosted runner (labs 03-06) and the push-to-main deploy you know from labs 04-06.</div></div></div>
-    <div class="cols2">
-      <div class="steps">
-        <div class="step"><div class="ix t">1</div><div class="tx"><b>Tell the stack who you are.</b> We post <b>one runner registration token</b> in the Zoom chat at the start of Part 0. Copy <code>.env.example</code> to <code>.env</code>, set <code>LAB_USER</code> (lowercase, no spaces) and <code>RUNNER_TOKEN</code>. Leave <code>IGNITION_API_KEY</code> empty.</div></div>
-        <div class="step"><div class="ix t">2</div><div class="tx"><b>Start the stack:</b> <code>./scripts/setup.sh</code>. It starts the local stack and, because <code>LAB_USER</code> is set, the <code>test</code> profile: your test gateway on <code>8090</code>, its own database and your runner. It also generates your API key, seeds it into the test gateway before its first boot and checks that both gateways accept it, so always use <code>setup.sh</code> for the first start.</div></div>
-        <div class="step"><div class="ix t">3</div><div class="tx"><b>Check your runner is online.</b> Contributors cannot open <i>Settings → Actions → Runners</i>, so read the runner's own log: <code>Listening for Jobs</code> means it is registered and waiting.</div></div>
-      </div>
-      <div>
-        <div class="code" style="margin-top:0"><pre>cp .env.example .env
+    <div class="work">
+      <ol class="steps alt">
+        <li><b>Tell the stack who you are.</b> We post <b>one runner registration token</b> in the Zoom chat at the start of Part 0. Copy <code>.env.example</code> to <code>.env</code>, set <code>LAB_USER</code> (lowercase, no spaces) and <code>RUNNER_TOKEN</code>. Leave <code>IGNITION_API_KEY</code> empty.</li>
+        <li><b>Start the stack:</b> <code>./scripts/setup.sh</code>. It starts the local stack and, because <code>LAB_USER</code> is set, the <code>test</code> profile: your test gateway on <code>8090</code>, its own database and your runner. It also generates your API key, seeds it into the test gateway before its first boot and checks that both gateways accept it, so always use <code>setup.sh</code> for the first start.</li>
+        <li><b>Check your runner is online.</b> Contributors cannot open <i>Settings → Actions → Runners</i>, so read the runner's own log: <code>Listening for Jobs</code> means it is registered and waiting.</li>
+      </ol>
+      <div class="side">
+        <div class="code"><pre>cp .env.example .env
 <span class="cm"># LAB_USER=&lt;yourname&gt;</span>
 <span class="cm"># RUNNER_TOKEN=&lt;the token from the Zoom chat&gt;</span>
 ./scripts/setup.sh
 
 docker logs oatmakers-test-runner-<span class="cmd2">&lt;yourname&gt;</span> 2>&amp;1 \
   | grep -E <span class="grn">"Connected to GitHub|Listening for Jobs"</span></pre></div>
-        <div class="obs"><span class="ob">The token</span><p><b>One token for everyone</b>, valid one hour. It can only enroll runners on this repo (it is not a login, so the chat is fine). Registering a runner is a repo-admin act, which is why it comes from us. Your runner trades it for its own credentials on the first start and keeps them in a volume. Missed the window? Say so: a fresh one takes five seconds.</p></div>
-        <div class="obs"><span class="ob">Observe</span><p>Your runner is <code>oatmakers-test-&lt;yourname&gt;</code> with the labels <code>self-hosted,&lt;yourname&gt;-local</code>. Only jobs asking for that label run on your machine.</p></div>
+        <div class="aside"><span class="label">The token</span><b>One token for everyone</b>, valid one hour. It can only enroll runners on this repo (not a login, so the chat is fine); registering a runner is a repo-admin act, which is why it comes from us. Your runner trades it for its own credentials on the first start and keeps them in a volume. Missed the window? Say so: a fresh one takes five seconds.</div>
+        <div class="aside good"><span class="label">Observe</span>Your runner is <code>oatmakers-test-&lt;yourname&gt;</code> with the labels <code>self-hosted,&lt;yourname&gt;-local</code>. Only jobs asking for that label run on your machine.</div>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 0 · A of B</span></div>
 </section>
 
-<!-- 9 · PART 0 B -->
+<!-- PART 0 B -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 0 · your test gateway · B</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num warm">PART 0 · B</span><h2 class="title">Copy the workflow template under your name, merge it, and watch it deploy main to localhost:8090</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num warm">0B</span><div><div class="title">Copy the workflow template under your name, merge it, and watch it deploy main to localhost:8090</div><div class="lead">The deploy workflow is already written. You copy it, put your name in it, and PR it in like anything else. Your own merge is the first push it deploys.</div></div></div>
-    <div class="cols2">
-      <div class="steps">
-        <div class="step"><div class="ix t">4</div><div class="tx"><b>Make the provided workflow yours:</b> copy <code>test-example.yml.template</code> to <code>test-&lt;yourname&gt;.yml</code> and replace <code>CHANGEME</code> with your name in the one line marked <code>CHANGEME</code>: <code>runs-on</code>.</div></div>
-        <div class="step"><div class="ix t">5</div><div class="tx"><b>PR it in:</b> branch, <code>git add</code> that one file, push, open the PR, wait for <code>CI OK</code>, ask for an approval, merge.</div></div>
-        <div class="step"><div class="ix t">6</div><div class="tx"><b>Verify it works.</b> Your merge is a push to <code>main</code>, so it starts your workflow: Actions → <code>.github/workflows/test-&lt;yourname&gt;.yml</code> runs on <b>your</b> runner and goes green, and <code>localhost:8090/data/perspective/client/oatmakers/</code> serves the shared project. From now on every merge anyone makes runs it.</div></div>
-        <div class="step"><div class="ix t">7</div><div class="tx"><b>Test a branch before you merge it:</b> <code>gh workflow run test-&lt;yourname&gt;.yml --ref &lt;your-branch&gt;</code> puts that branch on your test gateway. The next push to <code>main</code> puts <code>main</code> back.</div></div>
-      </div>
-      <div>
-        <div class="code" style="margin-top:0"><pre>git switch -c feature/&lt;yourname&gt;-test-workflow
+    <div class="work">
+      <ol class="steps alt">
+        <li data-n="4"><b>Make the provided workflow yours:</b> copy <code>test-example.yml.template</code> to <code>test-&lt;yourname&gt;.yml</code> and replace <code>CHANGEME</code> with your name in the one line marked <code>CHANGEME</code>: <code>runs-on</code>.</li>
+        <li data-n="5"><b>PR it in:</b> branch, <code>git add</code> that one file, push, open the PR, wait for <code>CI OK</code>, ask for an approval, merge.</li>
+        <li data-n="6"><b>Verify it works.</b> Your merge is a push to <code>main</code>, so it starts your workflow: <code>test-&lt;yourname&gt;.yml</code> runs on <b>your</b> runner and goes green, and <code>localhost:8090/data/perspective/client/oatmakers/</code> serves the shared project. From now on every merge anyone makes runs it.</li>
+        <li data-n="7"><b>Test a branch before you merge it:</b> <code>gh workflow run test-&lt;yourname&gt;.yml --ref &lt;your-branch&gt;</code> puts that branch on your test gateway. The next push to <code>main</code> puts <code>main</code> back.</li>
+      </ol>
+      <div class="side">
+        <div class="code"><pre>git switch -c feature/&lt;yourname&gt;-test-workflow
 cp .github/workflows/test-example.yml.template \
    .github/workflows/test-<span class="cmd2">&lt;yourname&gt;</span>.yml
 <span class="cm"># the one CHANGEME line: CHANGEME → &lt;yourname&gt;</span>
@@ -520,64 +771,58 @@ runs-on: [self-hosted, <span class="cmd2">&lt;yourname&gt;-local</span>]
 git add .github/workflows/test-&lt;yourname&gt;.yml
 git commit -m <span class="grn">"ci: add test deploy workflow for &lt;yourname&gt;"</span>
 git push -u origin feature/&lt;yourname&gt;-test-workflow</pre></div>
-        <div class="obs"><span class="ob">Observe</span><p><b>The runner label is the whole routing story.</b> Everyone has a push-to-main workflow, and each deploys only to its owner's test gateway. The label is written out per file because GitHub resolves <code>runs-on</code> before any per-user context exists. Production works the same way: <code>[self-hosted, demo-oatmakers]</code>.</p></div>
+        <div class="aside"><span class="label">Observe</span><b>The runner label is the whole routing story.</b> Everyone has a push-to-main workflow, each deploys only to its owner's test gateway. The label is written out per file because GitHub resolves <code>runs-on</code> before any per-user context exists. Production works the same way: <code>[self-hosted, demo-oatmakers]</code>.</div>
       </div>
     </div>
-    <div class="goal good-g" style="margin-top:14px">
-      <span class="badge">✅ Part 0 gate</span>
-      <p><b>Your <span class="inlinecode">test-&lt;yourname&gt;.yml</span> merged through an approved PR</b>, <span class="inlinecode">Listening for Jobs</span> in your runner's log, and a green <span class="inlinecode">test-&lt;yourname&gt;.yml</span> run that put <span class="inlinecode">main</span> on <span class="inlinecode">localhost:8090</span>. Your test gateway got those files the way production does: <span class="inlinecode">docker cp</span> plus an authenticated scan, never a bind mount.</p>
-    </div>
+    <div class="aside good"><span class="label">Part 0 gate</span><b>Your <code>test-&lt;yourname&gt;.yml</code> merged through an approved PR</b>, <code>Listening for Jobs</code> in your runner's log, and a green run that put <code>main</code> on <code>localhost:8090</code>. Your test gateway got those files the way production does: <code>docker cp</code> plus an authenticated scan, never a bind mount.</div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 0 · B of B</span></div>
 </section>
 
-<!-- 10 · PART 1 A -->
+<!-- PART 1 A -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 1 · your project · A</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">PART 1 · A</span><h2 class="title">Build a project with your name locally and get it merged through review</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num">1A</span><div><div class="title">Build a project with your name locally and get it merged through review</div><div class="lead">Everyone does this part alone. It is the full loop every production deploy in this lab uses: PR → review → merge → tag → <span class="inlinecode">release.yaml</span> PR → live.</div></div></div>
-    <div class="cols2">
-      <div class="steps">
-        <div class="step"><div class="ix">1</div><div class="tx"><b>Branch</b> from a fresh <code>main</code>.</div></div>
-        <div class="step"><div class="ix">2</div><div class="tx"><b>Build it on the local gateway.</b> In the Designer (<code>localhost:8088</code>, <code>admin</code> / <code>password</code>) create a project named <code>&lt;yourname&gt;</code>. Add one Perspective view that shows your name, make it the primary view of the <code>/</code> page in <i>Page Configuration</i>, save. <code>git status</code> shows <code>projects/&lt;yourname&gt;/</code>.</div></div>
-        <div class="step"><div class="ix">3</div><div class="tx"><b>Commit only your folder, push, open the PR.</b> Wait for <code>CI OK</code>, then ask for an approval. Review comments? Fix and push again: same PR.</div></div>
-        <div class="step"><div class="ix">4</div><div class="tx"><b>Merge.</b></div></div>
+    <div class="work">
+      <div class="stack" style="gap:1.25rem">
+        <ol class="flow nonum">
+          <li><b>PR</b></li><li><b>review</b></li><li><b>merge</b></li><li><b>tag</b></li><li><b>pin by PR</b></li><li class="on"><b>live</b></li>
+        </ol>
+        <ol class="steps">
+          <li><b>Branch</b> from a fresh <code>main</code>.</li>
+          <li><b>Build it on the local gateway.</b> In the Designer (<code>localhost:8088</code>, <code>admin</code> / <code>password</code>) create a project named <code>&lt;yourname&gt;</code>. Add one Perspective view that shows your name, make it the primary view of the <code>/</code> page in <i>Page Configuration</i>, save. <code>git status</code> shows <code>projects/&lt;yourname&gt;/</code>.</li>
+          <li><b>Commit only your folder, push, open the PR.</b> Wait for <code>CI OK</code>, then ask for an approval. Review comments? Fix and push again: same PR.</li>
+          <li><b>Merge.</b></li>
+        </ol>
       </div>
-      <div>
-        <div class="code" style="margin-top:0"><pre>git switch main &amp;&amp; git pull
+      <div class="side">
+        <div class="code"><pre>git switch main &amp;&amp; git pull
 git switch -c feature/&lt;yourname&gt;-project
 <span class="cm"># build projects/&lt;yourname&gt;/ in the Designer …</span>
 git status
 git add projects/<span class="cmd2">&lt;yourname&gt;</span>/
 git commit -m <span class="grn">"feat: add &lt;yourname&gt; project with welcome view"</span>
 git push -u origin feature/&lt;yourname&gt;-project</pre></div>
-        <div class="obs"><span class="ob">Observe</span><p><b>Your merge landed on every test gateway:</b> <code>localhost:8090/data/perspective/client/&lt;yourname&gt;/</code> works on yours, through the workflow you built in Part 0.</p></div>
-        <div class="obs"><span class="ob">Observe</span><p><b>Production did not change.</b> <b>Deploy</b> did not even run: <code>release.yaml</code> did not change. <code>main</code> means "reviewed and could ship", not "shipped".</p></div>
+        <div class="aside good"><span class="label">Observe</span><b>Your merge landed on every test gateway:</b> <code>localhost:8090/data/perspective/client/&lt;yourname&gt;/</code> works on yours, through the workflow you built in Part 0.</div>
+        <div class="aside"><span class="label">Observe</span><b>Production did not change.</b> <b>Deploy</b> did not even run: <code>release.yaml</code> did not change. <code>main</code> means "reviewed and could ship", not "shipped".</div>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 1 · A of B</span></div>
 </section>
 
-<!-- 11 · PART 1 B -->
+<!-- PART 1 B -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 1 · your project · B</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">PART 1 · B</span><h2 class="title">Tag your release, pin it in release.yaml, and watch Deploy bring it live</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num">1B</span><div><div class="title">Tag your release, pin it in release.yaml, and watch Deploy bring it live</div><div class="lead">Two moves: make the release exist, then point production at it. In that order: CI refuses a pin whose tag does not exist.</div></div></div>
-    <div class="cols2">
-      <div class="steps">
-        <div class="step"><div class="ix">5</div><div class="tx"><b>Tag the merged main:</b> <code>&lt;yourname&gt;@v1.0.0</code>, and push the tag. Never tag your feature branch: a tag must point at a commit on <code>main</code>. The tag is the release; the deploy copies the files as they were at that tag.</div></div>
-        <div class="step"><div class="ix">6</div><div class="tx"><b>Pin it:</b> check the open PRs (one release PR in flight at a time), branch, add one line to <code>release.yaml</code>, stage <b>only</b> that file, push, PR, <code>CI OK</code>, approval, merge. Conflict with someone else's pin? Rebase and keep both lines.</div></div>
-        <div class="step"><div class="ix">7</div><div class="tx"><b>Watch it go live:</b> Actions → <b>Deploy</b> on the <code>demo-oatmakers</code> runner. When it is green, open <code>cloud.mustrysolutions.com/data/perspective/client/&lt;yourname&gt;/</code>.</div></div>
-      </div>
-      <div>
-        <div class="code" style="margin-top:0"><pre>git switch main &amp;&amp; git pull
+    <div class="work">
+      <ol class="steps">
+        <li data-n="5"><b>Tag the merged main:</b> <code>&lt;yourname&gt;@v1.0.0</code>, and push the tag. Never tag your feature branch: a tag must point at a commit on <code>main</code>. The tag is the release; the deploy copies the files as they were at that tag.</li>
+        <li data-n="6"><b>Pin it:</b> check the open PRs (one release PR in flight at a time), branch, add one line to <code>release.yaml</code>, stage <b>only</b> that file, push, PR, <code>CI OK</code>, approval, merge. Conflict with someone else's pin? Rebase and keep both lines.</li>
+        <li data-n="7"><b>Watch it go live:</b> Actions, <b>Deploy</b> on the <code>demo-oatmakers</code> runner. When it is green, open <code>cloud.mustrysolutions.com/data/perspective/client/&lt;yourname&gt;/</code>.</li>
+      </ol>
+      <div class="side">
+        <div class="code"><pre>git switch main &amp;&amp; git pull
 git tag <span class="cmd2">&lt;yourname&gt;@v1.0.0</span>
 git push origin <span class="cmd2">&lt;yourname&gt;@v1.0.0</span>
 
@@ -589,72 +834,58 @@ git switch -c pin/&lt;yourname&gt;-v1.0.0
 git add release.yaml
 git commit -m <span class="grn">"release: pin &lt;yourname&gt; v1.0.0"</span>
 git push -u origin pin/&lt;yourname&gt;-v1.0.0</pre></div>
-        <div class="obs"><span class="ob">Observe</span><p><b>CI checks that <code>&lt;yourname&gt;@v1.0.0</code> exists and sits on <code>main</code></b> before it lets the pin through, so the tag comes first. Pushed it after opening the PR? A tag push does not re-run CI: <b>Checks → Re-run failed jobs</b> (or <code>gh run rerun &lt;id&gt; --failed</code>).</p></div>
+        <div class="aside"><span class="label">Observe</span><b>CI checks that <code>&lt;yourname&gt;@v1.0.0</code> exists and sits on <code>main</code></b> before it lets the pin through, so the tag comes first. Pushed it after opening the PR? A tag push does not re-run CI: <b>Checks, Re-run failed jobs</b> (or <code>gh run rerun &lt;id&gt; --failed</code>).</div>
       </div>
     </div>
-    <div class="goal" style="margin-top:14px">
-      <span class="badge">✅ Part 1 gate</span>
-      <p><b>Your project merged through an approved PR, the tag <span class="inlinecode">&lt;yourname&gt;@v1.0.0</span> pushed, your line in <span class="inlinecode">release.yaml</span> merged through an approved PR, your view live on production.</b> You just did the full loop.</p>
-    </div>
+    <div class="aside good"><span class="label">Part 1 gate</span><b>Your project merged through an approved PR, the tag <code>&lt;yourname&gt;@v1.0.0</code> pushed, your line in <code>release.yaml</code> merged through an approved PR, your view live on production.</b> You just did the full loop.</div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 1 · B of B</span></div>
 </section>
 
-<!-- 12 · PART 2 RULES -->
+<!-- PART 2 HOW IT WORKS -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 2 · how it works</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num p2">PART 2</span><h2 class="title">Five challenges on the shared oatmakers project: claim one, ship it with the next free oatmakers@ tag</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num phase2">2</span><div><div class="title">Five challenges on the shared oatmakers project: claim one, ship it with the next free oatmakers@ tag</div><div class="lead">One project, the whole group, one version stream. Every challenge is a move from an earlier lab; the new part is doing it together on a live gateway.</div></div></div>
-    <div class="cols2" style="grid-template-columns:1fr 1fr;gap:22px">
-      <div class="steps">
-        <div class="step"><div class="ix p">1</div><div class="tx"><b>Claim a challenge in the room.</b> More people than challenges: pair up. Challenge 5 builds on 3 and 4.</div></div>
-        <div class="step"><div class="ix p">2</div><div class="tx"><b>Work lands in <code>projects/oatmakers/</code></b> plus <code>services/</code>, <code>third-party-modules/</code>, <code>jar-files/jar/</code>, <code>db-migration/migrate/</code>. Your views in <code>Course/&lt;yourname&gt;/</code> with a page like <code>/course/&lt;yourname&gt;</code>, tags under <code>Course/</code>, tables prefixed <code>course_</code>.</div></div>
-        <div class="step"><div class="ix p">3</div><div class="tx"><b>Check your test gateway first:</b> <code>gh workflow run test-&lt;yourname&gt;.yml --ref &lt;branch&gt;</code> before the merge, your workflow on <code>main</code> after it. Not working on <code>localhost:8090</code>? Fix it before you tag.</div></div>
-        <div class="step"><div class="ix p">4</div><div class="tx"><b>Finished means live:</b> merge, cut the next free <code>oatmakers@</code> tag (from <code>v5.1.0</code>: a fix <code>v5.1.1</code>, a feature <code>v5.2.0</code>), pin it by PR. The gateway payload rides the <code>oatmakers</code> pin.</div></div>
-      </div>
-      <div>
-        <div class="code" style="margin-top:0"><pre>git switch main &amp;&amp; git pull
+    <div class="work">
+      <ol class="steps vio">
+        <li><b>Claim a challenge in the room.</b> More people than challenges: pair up. Challenge 5 builds on 3 and 4.</li>
+        <li><b>Work lands in <code>projects/oatmakers/</code></b> plus <code>services/</code>, <code>third-party-modules/</code>, <code>jar-files/jar/</code>, <code>db-migration/migrate/</code>. Your views in <code>Course/&lt;yourname&gt;/</code> with a page like <code>/course/&lt;yourname&gt;</code>, tags under <code>Course/</code>, tables prefixed <code>course_</code>.</li>
+        <li><b>Check your test gateway first:</b> <code>gh workflow run test-&lt;yourname&gt;.yml --ref &lt;branch&gt;</code> before the merge, your workflow on <code>main</code> after it. Not working on <code>localhost:8090</code>? Fix it before you tag.</li>
+        <li><b>Finished means live:</b> merge, cut the next free <code>oatmakers@</code> tag (from <code>v5.1.0</code>: a fix <code>v5.1.1</code>, a feature <code>v5.2.0</code>), pin it by PR. The gateway payload rides the <code>oatmakers</code> pin.</li>
+      </ol>
+      <div class="side">
+        <div class="code"><pre>git switch main &amp;&amp; git pull
 git fetch --tags
 git tag -l <span class="grn">'oatmakers@*'</span> --sort=-v:refname | head -3
 git tag oatmakers@v5.2.0          <span class="cm"># the next free number</span>
 git push origin oatmakers@v5.2.0
 <span class="cm"># rejected? someone took it: drop yours, take the next</span>
 git tag -d oatmakers@v5.2.0 &amp;&amp; git fetch --tags</pre></div>
-        <div class="code" style="margin-top:10px"><pre><span class="cm"># release.yaml already pins a HIGHER oatmakers@ version?</span>
+        <div class="code"><pre><span class="cm"># release.yaml already pins a HIGHER oatmakers@ version?</span>
 <span class="cm"># check whether your tag is inside it before you pin:</span>
 git merge-base --is-ancestor \
   oatmakers@v5.2.0 oatmakers@v5.3.0 &amp;&amp; echo <span class="grn">"already included"</span></pre></div>
-        <div class="obs"><span class="ob">Observe</span><p><b>Already included</b> means your change ships with the higher pin: you are done, never pin backwards. No output: cut a new tag from the current <code>main</code> and pin that.</p></div>
+        <div class="aside good"><span class="label">Observe</span><b>Already included</b> means your change ships with the higher pin: you are done, never pin backwards. No output: cut a new tag from the current <code>main</code> and pin that.</div>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 2 · one project, one version stream</span></div>
 </section>
 
-<!-- 13 · PART 2 CHALLENGE 1: MODULE -->
+<!-- CHALLENGE 1: MODULE -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 2 · challenges · module</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num p2">CHALLENGE 1</span><h2 class="title">Add the Embr Charts module and build a chart screen</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num phase2">2</span><div><div class="title">Challenge 1: add the Embr Charts module and build a chart screen</div><div class="lead">Boot-time payload: the release restarts the production gateway. Announce it in the chat before you merge the pin.</div></div></div>
-    <div class="cols2">
-      <div class="does">
-        <div class="hd">CHALLENGE 1 · MODULE</div>
-        <ul>
-          <li><span class="d"></span><span>Download <code>Embr-Charts-Ignition83-6.0.1.modl</code> (module id <code>com.mussonindustrial.embr.charts</code>) from<br><a href="https://github.com/mussonindustrial/embr/releases/tag/releases%2F8.3%2F2026.6.17" style="font-family:'IBM Plex Mono';font-size:11px;color:var(--blue-d);word-break:break-all">github.com/mussonindustrial/embr/releases/tag/releases%2F8.3%2F2026.6.17</a><br>and put it in <code>third-party-modules/</code>.</span></li>
-          <li><span class="d"></span><span>Add the minimal entry on the right to <code>services/modules.json</code>: the lab 06 move.</span></li>
-          <li><span class="d"></span><span><b>Recreate</b> your local gateway (env vars only reach a new container). The repo's compose file already accepts this module id on your local gateway, so it installs headless and writes <code>certFingerprint</code> + <code>licenseAgreementHash</code> into your entry.</span></li>
-          <li><span class="d"></span><span>Commit <b>only</b> your <code>modules.json</code> entry and the <code>.modl</code>. Test and production trust the module through those two values.</span></li>
-          <li><span class="d"></span><span>Build a Perspective screen with a chart from the module. Verify on production: <b>your chart renders</b>.</span></li>
-        </ul>
-      </div>
-      <div>
-        <div class="code" style="margin-top:0"><pre style="font-size:12.5px"><span class="cm"># services/modules.json, your entry</span>
+    <div class="work">
+      <ol class="steps vio">
+        <li>Download <code>Embr-Charts-Ignition83-6.0.1.modl</code> (module id <code>com.mussonindustrial.embr.charts</code>) into <code>third-party-modules/</code>, from <a class="link" href="https://github.com/mussonindustrial/embr/releases/tag/releases%2F8.3%2F2026.6.17">github.com/mussonindustrial/embr/releases/tag/releases%2F8.3%2F2026.6.17</a></li>
+        <li>Add the minimal entry on the right to <code>services/modules.json</code>: the lab 06 move.</li>
+        <li><b>Recreate</b> your local gateway (env vars only reach a new container). The repo's compose file already accepts this module id on your local gateway, so it installs headless and writes <code>certFingerprint</code> + <code>licenseAgreementHash</code> into your entry.</li>
+        <li>Commit <b>only</b> your <code>modules.json</code> entry and the <code>.modl</code>. Test and production trust the module through those two values.</li>
+        <li>Build a Perspective screen with a chart from the module. Verify on production: <b>your chart renders</b>.</li>
+      </ol>
+      <div class="side">
+        <div class="code sm"><pre><span class="cm"># services/modules.json, your entry</span>
 "com.mussonindustrial.embr.charts": {
   "filename": <span class="grn">"/third-party-modules/Embr-Charts-Ignition83-6.0.1.modl"</span>,
   "onStartup": <span class="grn">"enabled"</span>
@@ -663,34 +894,28 @@ git merge-base --is-ancestor \
 <span class="cm"># a recreate, not a restart</span>
 docker compose up -d --force-recreate gateway
 git diff services/modules.json   <span class="cm"># the two values appeared</span></pre></div>
-        <div class="obs"><span class="ob">Observe</span><p>Your <b>test gateway</b> has no env var for this module. If it installs there from your merged entry, production will too.</p></div>
-        <div class="obs"><span class="ob">Already on main?</span><p>Embr Charts stays on production once a group installed it. If <code>services/modules.json</code> on <code>main</code> already has the entry, skip the module steps: check it runs on your test gateway, then build the chart screen.</p></div>
+        <div class="aside warn"><span class="label">Boot-time payload</span>The release restarts the production gateway: announce it in the chat before you merge the pin.</div>
+        <div class="aside good"><span class="label">Observe</span>Your <b>test gateway</b> has no env var for this module. If it installs there from your merged entry, production will too.</div>
+        <div class="aside"><span class="label">Already on main?</span>Embr Charts stays on production once a group installed it. If <code>services/modules.json</code> on <code>main</code> already has the entry, skip the module steps: check it runs on your test gateway, then build the chart screen.</div>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 2 · module</span></div>
 </section>
 
-<!-- 14 · PART 2 CHALLENGE 2: JAR -->
+<!-- CHALLENGE 2: JAR -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 2 · challenges · JAR</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num p2">CHALLENGE 2</span><h2 class="title">Use the FastCSV JAR in a recipe-parsing function</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num phase2">2</span><div><div class="title">Challenge 2: use the FastCSV JAR in a recipe-parsing function</div><div class="lead">Boot-time payload too: a new JAR restarts the production gateway. Announce it in the chat before you merge the pin.</div></div></div>
-    <div class="cols2">
-      <div class="does">
-        <div class="hd">CHALLENGE 2 · JAR</div>
-        <ul>
-          <li><span class="d"></span><span>Download <code>fastcsv-4.4.0.jar</code> from Maven Central into <code>jar-files/jar/</code> and add its row (source, sha256) to <code>jar-files/jar/README.md</code>: the lab 06 move.<br><a href="https://repo1.maven.org/maven2/de/siegmar/fastcsv/4.4.0/fastcsv-4.4.0.jar" style="font-family:'IBM Plex Mono';font-size:11px;color:var(--blue-d);word-break:break-all">repo1.maven.org/maven2/de/siegmar/fastcsv/4.4.0/fastcsv-4.4.0.jar</a></span></li>
-          <li><span class="d"></span><span>FastCSV on purpose: the gateway does not bundle it, so the import fails until the JAR is really there.</span></li>
-          <li><span class="d"></span><span>Load it locally: your gateway bind-mounts <code>jar-files/jar/</code> into its JAR directory, so a <b>restart</b> loads it. Test and production keep shipped JARs in a volume.</span></li>
-          <li><span class="d"></span><span>A project script <code>course/&lt;yourname&gt;/recipe</code>, and a Perspective screen that <b>calls it</b> and shows <b>oats | water | salt</b>, live on production.</span></li>
-        </ul>
-      </div>
-      <div>
-        <div class="code" style="margin-top:0"><pre style="font-size:12px">docker compose restart gateway   <span class="cm"># JARs load at boot</span>
+    <div class="work">
+      <ol class="steps vio">
+        <li>Download <code>fastcsv-4.4.0.jar</code> from Maven Central into <code>jar-files/jar/</code> and add its row (source, sha256) to <code>jar-files/jar/README.md</code>: the lab 06 move. <a class="link" href="https://repo1.maven.org/maven2/de/siegmar/fastcsv/4.4.0/fastcsv-4.4.0.jar">repo1.maven.org/maven2/de/siegmar/fastcsv/4.4.0/fastcsv-4.4.0.jar</a></li>
+        <li>FastCSV on purpose: the gateway does not bundle it, so the import fails until the JAR is really there.</li>
+        <li>Load it locally: your gateway bind-mounts <code>jar-files/jar/</code> into its JAR directory, so a <b>restart</b> loads it. Test and production keep shipped JARs in a volume.</li>
+        <li>A project script <code>course/&lt;yourname&gt;/recipe</code>, and a Perspective screen that <b>calls it</b> and shows <b>oats | water | salt</b>, live on production.</li>
+      </ol>
+      <div class="side">
+        <div class="code"><pre>docker compose restart gateway   <span class="cm"># JARs load at boot</span>
 
 <span class="cm"># project script course/&lt;yourname&gt;/recipe</span>
 from de.siegmar.fastcsv.reader <span class="cmd2">import</span> CsvReader
@@ -701,32 +926,26 @@ from de.siegmar.fastcsv.reader <span class="cmd2">import</span> CsvReader
 
 <span class="cm"># in a binding or script on your screen</span>
 course.&lt;yourname&gt;.recipe.parseIngredients(<span class="grn">"oats,water,salt"</span>)</pre></div>
+        <div class="aside warn"><span class="label">Boot-time payload</span>A new JAR restarts the production gateway: announce it in the chat before you merge the pin.</div>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 2 · JAR</span></div>
 </section>
 
-<!-- 15 · PART 2 CHALLENGE 3: DATABASE -->
+<!-- CHALLENGE 3: DATABASE -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 2 · challenges · database</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num p2">CHALLENGE 3</span><h2 class="title">A database connection with a referenced secret, a migration with a seed, a view on the data</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num phase2">2</span><div><div class="title">Challenge 3: a database connection with a referenced secret, a migration with a seed, a view on the data</div><div class="lead">No restart: the migration runs before anything ships, and the connection arrives with a hot scan.</div></div></div>
-    <div class="cols2">
-      <div class="does">
-        <div class="hd">CHALLENGE 3 · DATABASE</div>
-        <ul>
-          <li><span class="d"></span><span>A connection named <code>Course_&lt;yourname&gt;</code> to <code>jdbc:postgresql://postgres:5432/ignition</code> (resolves locally and on production). Username: the plain string <code>ignition</code>. Password: the <b>referenced secret</b> <code>POSTGRES_PASSWORD</code> from the file secret provider named <code>environment</code>. <b>You never see the value.</b></span></li>
-          <li><span class="d"></span><span>The gateway adds a <b>store-and-forward engine</b> of the same name and status tags: stage them with the connection (paths on the right).</span></li>
-          <li><span class="d"></span><span>A migration pair in <code>db-migration/migrate/</code>: <code>.up.sql</code> creates and seeds your <code>course_</code> tables, <code>.down.sql</code> undoes exactly that. <b>Always pairs.</b></span></li>
-          <li><span class="d"></span><span>A Perspective view that queries the seeded rows. Verify on production: <b>your page shows the rows</b>.</span></li>
-        </ul>
-      </div>
-      <div>
-        <div class="code" style="margin-top:0"><pre style="font-size:11.5px"><span class="cm"># stage, under services/config/resources/core/ignition/</span>
+    <div class="work">
+      <ol class="steps vio">
+        <li>A connection named <code>Course_&lt;yourname&gt;</code> to <code>jdbc:postgresql://postgres:5432/ignition</code> (resolves locally and on production). Username: the plain string <code>ignition</code>. Password: the <b>referenced secret</b> <code>POSTGRES_PASSWORD</code> from the file secret provider named <code>environment</code>. <b>You never see the value.</b></li>
+        <li>The gateway adds a <b>store-and-forward engine</b> of the same name and status tags: stage them with the connection (paths on the right).</li>
+        <li>A migration pair in <code>db-migration/migrate/</code>: <code>.up.sql</code> creates and seeds your <code>course_</code> tables, <code>.down.sql</code> undoes exactly that. <b>Always pairs.</b></li>
+        <li>A Perspective view that queries the seeded rows. Verify on production: <b>your page shows the rows</b>.</li>
+      </ol>
+      <div class="side">
+        <div class="code sm"><pre><span class="cm"># stage, under services/config/resources/core/ignition/</span>
 database-connection/Course_&lt;yourname&gt;/
 store-and-forward-engine/Course_&lt;yourname&gt;/
 tag-definition/System/Gateway/Database/Course_&lt;yourname&gt;/
@@ -734,368 +953,627 @@ tag-definition/System/Gateway/StoreAndForward/course_&lt;yourname&gt;/
 
 scripts/migrate.sh up       <span class="cm"># test it locally</span>
 scripts/migrate.sh down 1   <span class="cm"># before you switch branches</span></pre></div>
-        <div class="obs"><span class="ob">Careful</span><p>That is your <b>local</b> database; your test gateway has its own, migrated only by your test workflow. Your local one remembers the branch: step it down before you switch, or <code>migrate.sh up</code> on <code>main</code> fails with <code>no migration found for version N</code>. Pick a number <b>higher than any on main at merge time</b>: a lower number merged after a higher one ran is silently skipped. Same number as someone else after a rebase? Renumber yours.</p></div>
+        <div class="aside good"><span class="label">No restart</span>The migration runs before anything ships, and the connection arrives with a hot scan.</div>
+        <div class="aside warn"><span class="label">Careful</span>That is your <b>local</b> database; your test gateway has its own, migrated only by your test workflow. Your local one remembers the branch: step it down before you switch, or <code>migrate.sh up</code> on <code>main</code> fails with <code>no migration found for version N</code>. Pick a number <b>higher than any on main at merge time</b>: a lower number merged after a higher one ran is silently skipped. Same number as someone else after a rebase? Renumber yours.</div>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 2 · database</span></div>
 </section>
 
-<!-- 16 · PART 2 CHALLENGE 4: SIMULATOR + TAGS -->
+<!-- CHALLENGE 4: SIMULATOR + TAGS -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 2 · challenges · tags</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num p2">CHALLENGE 4</span><h2 class="title">A simulator device with a program, OPC tags on it and live values on a screen</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num phase2">2</span><div><div class="title">Challenge 4: a simulator device with a program, OPC tags on it and live values on a screen</div><div class="lead">No restart: the device and the tags arrive with a hot scan.</div></div></div>
-    <div class="cols2">
-      <div class="does">
-        <div class="hd">CHALLENGE 4 · TAGS</div>
-        <ul>
-          <li><span class="d"></span><span>Add a <b>Programmable Device Simulator</b> named <code>CourseSim</code> (<i>Connections → Devices</i>). Device menu → <b>Edit Program</b>: add the two rows on the right (or load them as CSV).</span></li>
-          <li><span class="d"></span><span>OPC tags in a <code>Course/</code> folder of the default tag provider: OPC server <code>Ignition OPC UA Server</code>, item paths <code>ns=1;s=[CourseSim]Ramp</code> and <code>ns=1;s=[CourseSim]Sine</code>, type Float8. Use them on a Perspective screen.</span></li>
-          <li><span class="d"></span><span>Stage your device, your tag folder and the status tags the gateway creates for the device.</span></li>
-          <li><span class="d"></span><span>Verify on production: <b>values changing live</b>, on a gateway you never logged in to configure.</span></li>
-        </ul>
-      </div>
-      <div>
-        <div class="code" style="margin-top:0"><pre style="font-size:12px"><span class="cm"># the program: a ramp 0..100 every 60 s, a sine -50..50 every 30 s</span>
+    <div class="work">
+      <ol class="steps vio">
+        <li>Add a <b>Programmable Device Simulator</b> named <code>CourseSim</code> (<i>Connections, Devices</i>). Device menu, <b>Edit Program</b>: add the two rows on the right (or load them as CSV).</li>
+        <li>OPC tags in a <code>Course/</code> folder of the default tag provider: OPC server <code>Ignition OPC UA Server</code>, item paths <code>ns=1;s=[CourseSim]Ramp</code> and <code>ns=1;s=[CourseSim]Sine</code>, type Float8. Use them on a Perspective screen.</li>
+        <li>Stage your device, your tag folder and the status tags the gateway creates for the device.</li>
+        <li>Verify on production: <b>values changing live</b>, on a gateway you never logged in to configure.</li>
+      </ol>
+      <div class="side">
+        <div class="code sm"><pre><span class="cm"># the program: a ramp 0..100 every 60 s, a sine -50..50 every 30 s</span>
 Time Interval, Browse Path, Value Source, Data Type
 0,"Ramp","ramp(0,100,60,1)","Double"
 0,"Sine","sine(-50,50,30,1)","Double"</pre></div>
-        <div class="code" style="margin-top:10px"><pre style="font-size:11.5px"><span class="cm"># stage, under services/config/resources/core/</span>
+        <div class="code sm"><pre><span class="cm"># stage, under services/config/resources/core/</span>
 com.inductiveautomation.opcua/device/CourseSim/
 ignition/tag-definition/default/Course/
 ignition/tag-definition/System/Gateway/Devices/CourseSim/</pre></div>
+        <div class="aside good"><span class="label">No restart</span>The device and the tags arrive with a hot scan.</div>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 2 · simulator · tags</span></div>
 </section>
 
-<!-- 17 · PART 2 CHALLENGE 5 + GATE -->
+<!-- CHALLENGE 5: HISTORY + PART 2 GATE -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 2 · challenges · history</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num p2">CHALLENGE 5</span><h2 class="title">Historize the live tags with the <span class="nw">TimescaleDB-Historian</span> and build a dashboard</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num phase2">2</span><div><div class="title">Challenge 5: historize the live tags with the TimescaleDB-Historian and build a dashboard</div><div class="lead">Builds on challenges 3 and 4: start against their work as it lands on <span class="inlinecode">main</span>.</div></div></div>
-    <div class="cols2" style="grid-template-columns:1.2fr .8fr">
-      <div class="does">
-        <div class="hd">CHALLENGE 5 · HISTORY</div>
-        <div class="q">Historize the live tags and build a dashboard</div>
-        <ul>
-          <li><span class="d"></span><span>The <b>TimescaleDB-Historian</b> module (Mustry's own) already ships in <code>third-party-modules/</code> and is registered in <code>services/modules.json</code>: you build on it, you do not install it. Without a licence it runs in trial mode; <code>scripts/reset-trial.sh</code> resets your local trial.</span></li>
-          <li><span class="d"></span><span>Create a historian named <code>CourseHistorian</code> of the module's TimescaleDB type that stores into the <b>same plant database</b> challenge 3's connection reads (<code>jdbc:postgresql://postgres:5432/ignition</code>, username <code>ignition</code>). Password: the referenced <code>POSTGRES_PASSWORD</code>.</span></li>
-          <li><span class="d"></span><span>It comes with a store-and-forward engine of the same name: stage <code>store-and-forward-engine/CourseHistorian/</code> and <code>tag-definition/System/Gateway/StoreAndForward/coursehistorian/</code> with it. Never reuse a connection's name: they would share one engine.</span></li>
-          <li><span class="d"></span><span>Enable <b>tag history</b> on challenge 4's tags, pointed at your historian.</span></li>
-          <li><span class="d"></span><span>Build a dashboard view that charts that history.</span></li>
-          <li><span class="d"></span><span>You will be merging into files the others just changed. <b>Merge conflicts are part of the challenge</b>, not an accident.</span></li>
-          <li><span class="d"></span><span>Verify on production: <b>the chart fills up</b> with history from the live tags.</span></li>
-        </ul>
-      </div>
-      <div class="does">
-        <div class="hd">EVERY CHALLENGE ENDS THE SAME WAY</div>
-        <ul>
-          <li><span class="d"></span><span>Small PR, <code>CI OK</code>, approval, merge.</span></li>
-          <li><span class="d"></span><span>Working on <code>localhost:8090</code> (your branch via <code>gh workflow run</code>, then <code>main</code>).</span></li>
-          <li><span class="d"></span><span>The next free <code>oatmakers@</code> tag, or proof that a pinned one already contains yours.</span></li>
-          <li><span class="d"></span><span>One release PR in flight; restarts announced.</span></li>
-          <li><span class="d"></span><span>Verified on <code>cloud.mustrysolutions.com</code>.</span></li>
-        </ul>
+    <div class="work alt">
+      <ol class="steps vio">
+        <li>The <b>TimescaleDB-Historian</b> module (Mustry's own) already ships in <code>third-party-modules/</code> and is registered in <code>services/modules.json</code>: you build on it, you do not install it. Without a licence it runs in trial mode; <code>scripts/reset-trial.sh</code> resets your local trial.</li>
+        <li>Create a historian named <code>CourseHistorian</code> of the module's TimescaleDB type that stores into the <b>same plant database</b> challenge 3's connection reads (<code>jdbc:postgresql://postgres:5432/ignition</code>, username <code>ignition</code>). Password: the referenced <code>POSTGRES_PASSWORD</code>.</li>
+        <li>It comes with a store-and-forward engine of the same name: stage <code>store-and-forward-engine/CourseHistorian/</code> and <code>tag-definition/System/Gateway/StoreAndForward/coursehistorian/</code> with it. Never reuse a connection's name: they would share one engine.</li>
+        <li>Enable <b>tag history</b> on challenge 4's tags, pointed at your historian, and build a dashboard view that charts that history.</li>
+        <li>Verify on production: <b>the chart fills up</b> with history from the live tags.</li>
+      </ol>
+      <div class="side">
+        <div class="aside warn"><span class="label">Builds on challenges 3 and 4</span>Start against their work as it lands on <code>main</code>. You will be merging into files the others just changed: <b>merge conflicts are part of the challenge</b>, not an accident.</div>
+        <div>
+          <h3 class="col-head">Every challenge ends the same way</h3>
+          <ul class="checks" style="gap:.6rem">
+            <li style="font-size:var(--text-base)">Small PR, <code>CI OK</code>, approval, merge.</li>
+            <li style="font-size:var(--text-base)">Working on <code>localhost:8090</code> (your branch via <code>gh workflow run</code>, then <code>main</code>).</li>
+            <li style="font-size:var(--text-base)">The next free <code>oatmakers@</code> tag, or proof that a pinned one already contains yours.</li>
+            <li style="font-size:var(--text-base)">One release PR in flight; restarts announced.</li>
+            <li style="font-size:var(--text-base)">Verified on <code>cloud.mustrysolutions.com</code>.</li>
+          </ul>
+        </div>
       </div>
     </div>
-    <div class="goal" style="margin-top:16px">
-      <span class="badge">✅ Part 2 gate</span>
-      <p><b>Your challenge live on production</b> through a reviewed PR, an <span class="inlinecode">oatmakers@</span> tag that contains it, and a <span class="inlinecode">release.yaml</span> pin: yours, or a higher one you proved contains your tag.</p>
-    </div>
+    <div class="aside good"><span class="label">Part 2 gate</span><b>Your challenge live on production</b> through a reviewed PR, an <code>oatmakers@</code> tag that contains it, and a <code>release.yaml</code> pin: yours, or a higher one you proved contains your tag.</div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 2 · history · the gate</span></div>
 </section>
 
-<!-- 18 · PART 3 EXTRA -->
+<!-- PART 3 EXTRA -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 3 · extra · build on each other's work</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num opt">PART 3 · EXTRA</span><h2 class="title">Build on each other's work: decide as a group who does what, then ship it</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num warm">3 · EXTRA</span><div><div class="title">Build on each other's work: decide as a group who does what, then ship it</div><div class="lead">Everything from Part 2 is now shared infrastructure. Everything still ships the same way: small PR, quick review, next free tag, one release PR at a time.</div></div></div>
-    <div class="cols2" style="grid-template-columns:repeat(3,1fr);gap:16px">
-      <div class="does">
-        <div class="hd">A SHOWCASE VIEW</div>
+    <div class="compare">
+      <div class="blue">
+        <h3>A showcase view</h3>
         <div class="q">One overview screen for oatmakers</div>
-        <ul>
-          <li><span class="d"></span><span>Pull the group's work together on one screen: the chart, the live tags, the database rows.</span></li>
-          <li><span class="d"></span><span>Agree on the layout, then land it <b>section by section</b>, in small PRs.</span></li>
+        <ul class="dots">
+          <li>Pull the group's work together on one screen: the chart, the live tags, the database rows.</li>
+          <li>Agree on the layout, then land it <b>section by section</b>, in small PRs.</li>
         </ul>
       </div>
-      <div class="does">
-        <div class="hd">A SHARED LIBRARY</div>
+      <div class="blue">
+        <h3>A shared library</h3>
         <div class="q">A parent project at its own version tag</div>
-        <ul>
-          <li><span class="d"></span><span>Create an inheritable project <code>projects/course-lib/</code> with something reusable: a styled component, a script function.</span></li>
-          <li><span class="d"></span><span>Tag <code>course-lib@v1.0.0</code> and pin it. Make your Part 1 project inherit from it (<code>project.json</code>: <code>"inheritable": true</code> in course-lib, <code>"parent": "course-lib"</code> in yours), tag <code>&lt;yourname&gt;@v1.1.0</code>, pin that too.</span></li>
-          <li><span class="d"></span><span>The parent must be on the gateway before, or together with, its child: the teaching's "parent pinned alongside".</span></li>
+        <ul class="dots">
+          <li>Create an inheritable project <code>projects/course-lib/</code> with something reusable: a styled component, a script function.</li>
+          <li>Tag <code>course-lib@v1.0.0</code> and pin it. Make your Part 1 project inherit from it (<code>project.json</code>: <code>"inheritable": true</code> in course-lib, <code>"parent": "course-lib"</code> in yours), tag <code>&lt;yourname&gt;@v1.1.0</code>, pin that too.</li>
+          <li>The parent must be on the gateway before, or together with, its child: the teaching's "parent pinned alongside".</li>
         </ul>
       </div>
-      <div class="does">
-        <div class="hd">CROSS THE CHALLENGES</div>
+      <div class="blue">
+        <h3>Cross the challenges</h3>
         <div class="q">Build on someone else, or get more reps</div>
-        <ul>
-          <li><span class="d"></span><span>Historize more tags, add a migration on top of someone else's tables, put an Embr chart on the seeded data, call the recipe function from your view.</span></li>
-          <li><span class="d"></span><span>Or <b>rebuild something that looks like another challenge</b>, purely to train the move you want more practice on.</span></li>
+        <ul class="dots">
+          <li>Historize more tags, add a migration on top of someone else's tables, put an Embr chart on the seeded data, call the recipe function from your view.</li>
+          <li>Or <b>rebuild something that looks like another challenge</b>, purely to train the move you want more practice on.</li>
         </ul>
       </div>
     </div>
-    <div class="goal" style="margin-top:16px">
-      <span class="badge">Stay current</span>
-      <p><b>Pull main often and rebase your branch.</b> Most merge conflicts die before they are born; the ones that do happen are the pipeline making a collision visible <b>before</b> production.</p>
-    </div>
+    <div class="aside good"><span class="label">Stay current</span>Everything from Part 2 is now shared infrastructure, and everything still ships the same way: small PR, quick review, next free tag, one release PR at a time. <b>Pull main often and rebase your branch.</b> Most merge conflicts die before they are born; the ones that do happen are the pipeline making a collision visible <b>before</b> production.</div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Part 3 · the group's product</span></div>
 </section>
 
-<!-- 19 · TROUBLESHOOTING -->
+<!-- TROUBLESHOOTING -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">The assignment · troubleshooting</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">FIXES</span><h2 class="title">Troubleshooting: the runner, the trial, stray churn and a red release</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num">FIXES</span><div><div class="title">Troubleshooting: the runner, the trial, stray churn and a red release</div><div class="lead">The same list as the Troubleshooting section of <span class="inlinecode">exercises/lab.md</span>.</div></div></div>
-    <table class="tbl">
-      <tr><th style="width:36%">Symptom</th><th>Fix</th></tr>
-      <tr><td><b>"Waiting for a runner to pick up this job"</b> on your <code>test-&lt;yourname&gt;</code> run</td><td>The <code>runs-on</code> label does not match your runner. It must be exactly <code>&lt;yourname&gt;-local</code>, the same name as <code>LAB_USER</code>. Check <code>docker logs oatmakers-test-runner-&lt;yourname&gt;</code> for <code>Listening for Jobs</code>.</td></tr>
-      <tr><td><b>The runner log says the token is invalid or expired</b></td><td>Ask for a fresh token in the chat, put it in <code>.env</code> as <code>RUNNER_TOKEN</code>, re-run <code>./scripts/setup.sh</code>.</td></tr>
-      <tr><td><b>Blank Perspective pages, Designer disconnects, a deploy that worked fails</b></td><td>The trial lapsed: <code>scripts/reset-trial.sh</code>.</td></tr>
-      <tr><td><b><code>git status</code> shows files you never touched</b></td><td>Gateway churn (module fingerprints, <code>resource.json</code> stamps), not your change: do not stage it. See <code>docs/resource-json-hygiene.html</code>. Except <code>store-and-forward-engine/&lt;name&gt;/</code> and <code>tag-definition/System/Gateway/{Devices,Database,StoreAndForward}/&lt;name&gt;/</code> for a device, connection or historian <b>you</b> added: stage those with it.</td></tr>
-      <tr><td><b>Test run fails: <code>no migration found for version N</code></b></td><td>A branch you deployed with <code>gh workflow run</code> left its migration in your test database, and <code>main</code> does not have it. On that branch: <code>scripts/migrate.sh --test down 1</code>, then re-run. (The same message from <code>setup.sh</code> or <code>migrate.sh up</code>: your local database, <code>scripts/migrate.sh down 1</code> on that branch.)</td></tr>
-      <tr><td><b>Test run says <code>Still not authorized</code></b></td><td>Your test gateway and your runner hold different API keys (the key in <code>.env</code> changed). Run <code>./scripts/setup.sh</code>: it puts the key on both and restarts the gateway. Then re-run.</td></tr>
-      <tr><td><b><code>CI OK</code> is red on a release PR</b></td><td>Open the failing job. Most often the pin points at a tag that was never pushed (<code>git push origin &lt;tag&gt;</code>) or not on <code>main</code>, or the YAML lost a line in a rebase. After pushing a tag: <b>Checks → Re-run failed jobs</b> (<code>gh run rerun &lt;id&gt; --failed</code>).</td></tr>
-      <tr><td><b><b>Deploy</b> is red, or production looks wrong after your release</b></td><td>Say so in the chat straight away. The fix is the <b>Revert</b> button on the merged release PR, reviewed and merged as usual. Anything a revert cannot undo, such as a migration that already ran, we handle.</td></tr>
+    <table class="table tight" style="font-size:var(--text-base)">
+      <tr><th style="width:30%">Symptom</th><th>Fix</th></tr>
+      <tr><td>"Waiting for a runner to pick up this job" on your <code>test-&lt;yourname&gt;</code> run</td><td>The <code>runs-on</code> label does not match your runner. It must be exactly <code>&lt;yourname&gt;-local</code>, the same name as <code>LAB_USER</code>. Check <code>docker logs oatmakers-test-runner-&lt;yourname&gt;</code> for <code>Listening for Jobs</code>.</td></tr>
+      <tr><td>The runner log says the token is invalid or expired</td><td>Ask for a fresh token in the chat, put it in <code>.env</code> as <code>RUNNER_TOKEN</code>, re-run <code>./scripts/setup.sh</code>.</td></tr>
+      <tr><td>Blank Perspective pages, Designer disconnects, a deploy that worked fails</td><td>The trial lapsed: <code>scripts/reset-trial.sh</code>.</td></tr>
+      <tr><td><code>git status</code> shows files you never touched</td><td>Gateway churn (module fingerprints, <code>resource.json</code> stamps), not your change: do not stage it. See <code>docs/resource-json-hygiene.html</code>. Except <code>store-and-forward-engine/&lt;name&gt;/</code> and <code>tag-definition/System/Gateway/{Devices,Database,StoreAndForward}/&lt;name&gt;/</code> for a device, connection or historian <b>you</b> added: stage those with it.</td></tr>
+      <tr><td>Test run fails: <code>no migration found for version N</code></td><td>A branch you deployed with <code>gh workflow run</code> left its migration in your test database, and <code>main</code> does not have it. On that branch: <code>scripts/migrate.sh --test down 1</code>, then re-run. (The same message from <code>setup.sh</code> or <code>migrate.sh up</code>: your local database, <code>scripts/migrate.sh down 1</code> on that branch.)</td></tr>
+      <tr><td>Test run says <code>Still not authorized</code></td><td>Your test gateway and your runner hold different API keys (the key in <code>.env</code> changed). Run <code>./scripts/setup.sh</code>: it puts the key on both and restarts the gateway. Then re-run.</td></tr>
+      <tr><td><code>CI OK</code> is red on a release PR</td><td>Open the failing job. Most often the pin points at a tag that was never pushed (<code>git push origin &lt;tag&gt;</code>) or not on <code>main</code>, or the YAML lost a line in a rebase. After pushing a tag: <b>Checks, Re-run failed jobs</b> (<code>gh run rerun &lt;id&gt; --failed</code>).</td></tr>
+      <tr><td><b>Deploy</b> is red, or production looks wrong after your release</td><td>Say so in the chat straight away. The fix is the <b>Revert</b> button on the merged release PR, reviewed and merged as usual. Anything a revert cannot undo, such as a migration that already ran, we handle.</td></tr>
     </table>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>troubleshooting</span></div>
 </section>
 
-<!-- 20 · DONE GATE -->
+<!-- DEFINITION OF DONE -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Definition of done</div>
-  </div>
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">GATE</span><h2 class="title">Definition of done for all four parts</h2></div>
   <div class="body">
-    <div class="sechead"><span class="num">GATE</span><div><div class="title">Definition of done for all four parts</div><div class="lead">Walk these before you call it. Everything on this list is visible on GitHub or on the production gateway; nothing needs your laptop.</div></div></div>
-    <div class="steps" style="max-width:1020px">
-      <div class="step"><div class="ix t">0</div><div class="tx"><b>Part 0:</b> your <span class="inlinecode">test-&lt;yourname&gt;.yml</span> merged through an approved PR, and a green <span class="inlinecode">test-&lt;yourname&gt;.yml</span> run <b>on your own runner</b>.</div></div>
-      <div class="step"><div class="ix">1</div><div class="tx"><b>Part 1:</b> <span class="inlinecode">projects/&lt;yourname&gt;/</span> merged through an approved PR, the tag <span class="inlinecode">&lt;yourname&gt;@v1.0.0</span>, your line in <span class="inlinecode">release.yaml</span>, and your view <b>live on cloud.mustrysolutions.com</b>.</div></div>
-      <div class="step"><div class="ix p">2</div><div class="tx"><b>Part 2:</b> your challenge merged and <b>live on production</b> via an <span class="inlinecode">oatmakers@</span> tag that contains it and a reviewed <span class="inlinecode">release.yaml</span> pin.</div></div>
-      <div class="step"><div class="ix t">3</div><div class="tx"><b>Part 3:</b> at least one merged PR that <b>builds on someone else's work</b>, and at least one review (an approval or a comment) you gave someone else.</div></div>
-    </div>
-    <div class="goal warn-g" style="margin-top:22px">
-      <span class="badge">Debrief fuel</span>
-      <p>Bring answers: one repo carried the whole group to one production gateway today: when would you split it, like the teaching's option B? · who approves a production release at your plant? · two people cut the same tag today: how would ten engineers keep one version stream sane?</p>
-    </div>
+    <ol class="steps" style="max-width:72rem">
+      <li data-n="0"><b>Part 0:</b> your <code>test-&lt;yourname&gt;.yml</code> merged through an approved PR, and a green <code>test-&lt;yourname&gt;.yml</code> run <b>on your own runner</b>.</li>
+      <li data-n="1"><b>Part 1:</b> <code>projects/&lt;yourname&gt;/</code> merged through an approved PR, the tag <code>&lt;yourname&gt;@v1.0.0</code>, your line in <code>release.yaml</code>, and your view <b>live on cloud.mustrysolutions.com</b>.</li>
+      <li data-n="2"><b>Part 2:</b> your challenge merged and <b>live on production</b> via an <code>oatmakers@</code> tag that contains it and a reviewed <code>release.yaml</code> pin.</li>
+      <li data-n="3"><b>Part 3:</b> at least one merged PR that <b>builds on someone else's work</b>, and at least one review (an approval or a comment) you gave someone else.</li>
+    </ol>
+    <div class="aside">Everything on this list is visible on GitHub or on the production gateway; nothing needs your laptop.</div>
+    <div class="aside warn"><span class="label">Debrief fuel</span>Bring answers. One repo carried the whole group to one production gateway today: when would you split it, like the teaching's option B? Who approves a production release at your plant? Two people cut the same tag today: how would ten engineers keep one version stream sane?</div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>The gate → debrief</span></div>
 </section>
 
-<!-- 21 · DONE -->
+<!-- CLOSING -->
 <section class="slide dark">
-  <div class="topbar">
-    <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
-    <div class="stage on-dark">The assignment → Debrief</div>
-  </div>
-  <div class="body">
-    <div class="eyebrow">Nicely done</div>
-    <div class="title" style="color:#fff;max-width:28ch">You shipped to a live production gateway through a protected, shared repo.</div>
-    <ul class="checks" style="max-width:940px;margin-top:22px">
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>A test gateway that tracked <b>main</b> all afternoon, fed by your own runner through a label only you answer to.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>Your own project, from <b>git clone to live on production</b>: a reviewed PR, a tag, a <span class="mono">release.yaml</span> line, a <b>Deploy</b> run.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>Five challenges on one shared project: a <b>module</b>, a <b>JAR</b>, a <b>database</b> with a migration and a referenced secret, <b>live tags</b> from a simulator, and <b>history</b> on top.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>One version stream shared by the whole group: <b>tag races, rebases, merge conflicts and small fast PRs</b>, exactly like a real team on a real plant.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span>And every production deploy was decided by <b>one file</b>, run by <b>one labelled runner</b>, and approved by <b>a human</b>.</span></li>
+  <div class="glow ambient" aria-hidden="true"></div>
+  <header class="topbar"><img class="logo" src="logos/OriginalLight.png" alt="Mustry Solutions"></header>
+  <div class="divider-body">
+    <h2 class="divider-title" style="max-width:26ch">You shipped to a <em>live production gateway</em> through a protected, shared repo</h2>
+    <ul class="checks" style="max-width:74rem">
+      <li>A test gateway that tracked <b>main</b> all afternoon, fed by your own runner through a label only you answer to.</li>
+      <li>Your own project, from <b>git clone to live on production</b>: a reviewed PR, a tag, a <code>release.yaml</code> line, a <b>Deploy</b> run.</li>
+      <li>Five challenges on one shared project: a <b>module</b>, a <b>JAR</b>, a <b>database</b> with a migration and a referenced secret, <b>live tags</b> from a simulator, and <b>history</b> on top.</li>
+      <li>One version stream shared by the whole group: <b>tag races, rebases, merge conflicts and small fast PRs</b>, like a real team on a real plant.</li>
+      <li>Every production deploy decided by <b>one file</b>, run by <b>one labelled runner</b>, approved by <b>a human</b>.</li>
     </ul>
-    <div class="goal" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.14);border-left-color:var(--peri2)">
-      <span class="badge" style="background:var(--peri2);color:var(--navy)">Next</span>
-      <p style="color:#c4cfde">The course debrief: four days from <b style="color:#fff">git init</b> to shipping a live production gateway as a team. We close with the question that matters: <b style="color:#fff">what will you build first, back at your own plant?</b></p>
-    </div>
+    <div class="aside"><span class="label">Next: the course debrief</span>Four days from <b>git init</b> to shipping a live production gateway as a team. We close with the question that matters: <b>what will you build first, back at your own plant?</b></div>
   </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Lab 07 complete · course complete</span></div>
 </section>
 
-</div>
-
-<div class="hud"><div class="bar" id="bar"></div></div>
-<div class="pager" id="pager">01 / 21</div>
-<div class="hint" id="hint">↑ ↓ / scroll to navigate</div>
-
+</main>
 <script>
-const deck=document.getElementById('deck');
-const slides=[...document.querySelectorAll('.slide')];
-const bar=document.getElementById('bar');
-const pager=document.getElementById('pager');
-const hint=document.getElementById('hint');
-function pad(n){return String(n).padStart(2,'0')}
-const POS_KEY='deckpos:'+location.pathname;
-function update(){
-  const i=Math.round(deck.scrollTop/window.innerHeight);
-  bar.style.width=((i)/(slides.length-1)*100)+'%';
-  pager.textContent=pad(i+1)+' / '+pad(slides.length);
-  const dark=slides[i]&&slides[i].classList.contains('dark');
-  pager.classList.toggle('on-dark',dark);
-  hint.classList.toggle('on-dark',dark);
-  try{localStorage.setItem(POS_KEY,String(i))}catch(e){}
-}
-// On a reload (Live Server save, or manual F5), jump back to the slide you were
-// on. A fresh open (new tab / typed URL) is nav type 'navigate' → starts at 1.
-(function restorePos(){
-  try{
-    const nav=performance.getEntriesByType('navigation')[0];
-    if(!nav||nav.type!=='reload')return;
-    const saved=parseInt(localStorage.getItem(POS_KEY)||'0',10);
-    if(saved>0)deck.scrollTop=saved*window.innerHeight;
-  }catch(e){}
-})();
-deck.addEventListener('scroll',()=>{requestAnimationFrame(update)});
-window.addEventListener('keydown',e=>{
-  const i=Math.round(deck.scrollTop/window.innerHeight);
-  if(e.key==='ArrowDown'||e.key==='PageDown'||e.key===' '){e.preventDefault();deck.scrollTo({top:(i+1)*window.innerHeight})}
-  if(e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();deck.scrollTo({top:(i-1)*window.innerHeight})}
-  if(e.key==='Home'){deck.scrollTo({top:0})}
-  if(e.key==='End'){deck.scrollTo({top:slides.length*window.innerHeight})}
-});
-update();
-setTimeout(()=>{hint.style.transition='opacity .6s';hint.style.opacity='0'},4200);
+/* deck-kit:js:begin v1 */
+/* Mustry deck runtime for the CI/CD for Ignition decks. Do not edit inside the
+   deck-kit markers. Sources: mustry-design-system 6cffb20 (tokens.css, components/deck), mustry-cockpit e45c5c7 (quotation cover motion, files last changed in cf79d93). */
+/* Deck runtime: navigation, pager, progress, position restore, step
+   controllers, motion toggle and print readiness. Exposes window.deckKit.
 
-/* ---- Oatmakers day 4 world map, ported (static) from the lab 01 story deck ---- */
-/* The scene as day 3 left it: pipeline + ladder + vault built, fan-out lines drawn,
-   sites still on mixed versions. Today's assignment is the rollout that fixes them. */
-(function(){
-  const mount=document.getElementById('viz-oat'); if(!mount)return;
-  const NS='http://www.w3.org/2000/svg';
-  function el(tag,attrs,parent){const n=document.createElementNS(NS,tag);for(const k in attrs)n.setAttribute(k,attrs[k]);if(parent)parent.appendChild(n);return n;}
-  function txt(attrs,parent,content){const t=el('text',attrs,parent);t.textContent=content;return t;}
-  const svg=el('svg',{viewBox:'0 0 1560 780',preserveAspectRatio:'xMidYMid meet'},mount);
-  const defs=el('defs',{},svg);
-  const mkArrow=(id,color)=>{
-    const m=el('marker',{id,viewBox:'0 0 10 10',refX:'8',refY:'5',markerWidth:'6.5',markerHeight:'6.5',orient:'auto-start-reverse'},defs);
-    el('path',{d:'M0,0 L10,5 L0,10 z',fill:color},m);
+   Interactive slides: give the slide data-ctrl="<name>" and a .controls bar.
+   - data-ctrl="reveal" needs no code: elements with class "reveal" and
+     data-step="N" appear from step N on; the number of steps is the highest N.
+   - any other name: register it from the deck's own script with
+       deckKit.controller('<name>', {max: 4, render(step, api){ ... }});
+     The controller is bound to the slide whose data-ctrl matches, so slides
+     can be added, removed or reordered without re-indexing anything.
+   Step notes: inside .controls put <p class="step-note"> with one
+   <span data-at="N"> per step; the span with the highest N <= step shows.
+   Keys: up/down/PageUp/PageDown/space/Home/End change slides, left/right step
+   the current slide. Entering a slide resets its build to step 0. Print and
+   deckKit.showAll() put every controller on its last step. */
+(() => {
+  const deck = document.getElementById('deck');
+  const slides = [...deck.querySelectorAll(':scope > .slide')];
+  const root = document.documentElement;
+  const pad = n => String(n).padStart(2, '0');
+
+  /* ---- HUD, built here so decks only carry their slides ---------------- */
+  function make(tag, cls, html) { const n = document.createElement(tag); n.className = cls; if (html != null) n.innerHTML = html; document.body.appendChild(n); return n; }
+  const hud = make('div', 'hud', '<div class="bar"></div>');
+  const bar = hud.firstChild;
+  const pager = make('div', 'pager');
+  const hint = make('div', 'hint', slides.some(s => s.dataset.ctrl) ? 'Up and down: slides. Left and right: steps.' : 'Up and down: slides.');
+  const motionBtn = make('button', 'motion-toggle');
+  motionBtn.type = 'button';
+  motionBtn.setAttribute('data-motion', '');
+
+  /* ---- position ------------------------------------------------------- */
+  function curIndex() {
+    const y = deck.scrollTop + deck.clientHeight * 0.35;
+    let i = 0;
+    for (let k = 0; k < slides.length; k++) if (slides[k].offsetTop <= y) i = k;
+    return i;
+  }
+  function goTo(i) {
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    deck.scrollTo({ top: slides[i].offsetTop });
+  }
+  const POS_KEY = 'deckpos:' + location.pathname;
+  let lastIdx = -1;
+  function update() {
+    const i = curIndex();
+    bar.style.width = (slides.length > 1 ? i / (slides.length - 1) * 100 : 0) + '%';
+    pager.textContent = pad(i + 1) + ' / ' + pad(slides.length);
+    const dark = slides[i].classList.contains('dark');
+    [pager, hint, motionBtn].forEach(n => n.classList.toggle('on-dark', dark));
+    try { localStorage.setItem(POS_KEY, String(i)); } catch (e) {}
+    if (i !== lastIdx) {
+      if (slides[lastIdx]) slides[lastIdx].classList.remove('is-active');
+      slides[i].classList.add('is-active');
+      lastIdx = i;
+      const b = bound.get(slides[i]);
+      if (b && !printing) b.reset();
+    }
+  }
+  // On a reload (Live Server save, or F5) jump back to the slide you were on.
+  // A fresh open (new tab, typed URL) is navigation type 'navigate': slide 1.
+  (function restorePos() {
+    try {
+      const nav = performance.getEntriesByType('navigation')[0];
+      if (!nav || nav.type !== 'reload') return;
+      const saved = parseInt(localStorage.getItem(POS_KEY) || '0', 10);
+      if (saved > 0 && slides[saved]) deck.scrollTop = slides[saved].offsetTop;
+    } catch (e) {}
+  })();
+
+  /* ---- step controllers ------------------------------------------------ */
+  const bound = new Map();
+  let printing = false;
+  function bind(slide, ctrl) {
+    let step = 0;
+    let controls = slide.querySelector('.controls');
+    if (!controls) { controls = document.createElement('div'); controls.className = 'controls'; slide.appendChild(controls); }
+    let back = controls.querySelector('[data-act="back"]');
+    let next = controls.querySelector('[data-act="next"]');
+    let count = controls.querySelector('.step-count');
+    if (!back) { back = document.createElement('button'); back.className = 'btn'; back.type = 'button'; back.dataset.act = 'back'; back.textContent = 'Back'; controls.appendChild(back); }
+    if (!next) { next = document.createElement('button'); next.className = 'btn primary'; next.type = 'button'; next.dataset.act = 'next'; next.textContent = 'Next'; controls.appendChild(next); }
+    if (!count) { count = document.createElement('span'); count.className = 'step-count'; controls.appendChild(count); }
+    const notes = [...controls.querySelectorAll('.step-note [data-at]')];
+    const noteEl = controls.querySelector('.step-note');
+    const api = {
+      slide,
+      note(html) { if (noteEl) noteEl.innerHTML = html; },
+      get step() { return step; },
+    };
+    function sync(prev) {
+      back.disabled = step <= 0;
+      next.disabled = step >= ctrl.max;
+      count.textContent = step + ' / ' + ctrl.max;
+      slide.dataset.at = String(step);
+      let cur = null;
+      notes.forEach(n => { if (+n.dataset.at <= step && (!cur || +n.dataset.at >= +cur.dataset.at)) cur = n; });
+      notes.forEach(n => n.classList.toggle('cur', n === cur));
+      ctrl.render(step, api, prev);
+    }
+    function go(d) { const prev = step; step = Math.max(0, Math.min(ctrl.max, step + d)); if (step !== prev) { sync(prev); return true; } return false; }
+    function set(s) { const prev = step; step = Math.max(0, Math.min(ctrl.max, s)); sync(prev); }
+    back.addEventListener('click', () => go(-1));
+    next.addEventListener('click', () => go(1));
+    const b = { go, set, reset: () => set(0), last: () => set(ctrl.max), ctrl };
+    bound.set(slide, b);
+    printing ? b.last() : b.reset();
+    return b;
+  }
+  function revealCtrl(slide) {
+    const items = [...slide.querySelectorAll('.reveal[data-step]')];
+    const max = items.reduce((m, n) => Math.max(m, +n.dataset.step || 0), 0);
+    return { max, render(s) { items.forEach(n => n.classList.toggle('show', +n.dataset.step <= s)); } };
+  }
+  slides.filter(s => s.dataset.ctrl === 'reveal').forEach(s => bind(s, revealCtrl(s)));
+
+  /* ---- keyboard -------------------------------------------------------- */
+  window.addEventListener('keydown', e => {
+    const t = e.target;
+    if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+    if (t && t.tagName === 'BUTTON' && (e.key === ' ' || e.key === 'Enter')) return;
+    const i = curIndex();
+    const b = bound.get(slides[i]);
+    switch (e.key) {
+      case 'ArrowDown': case 'PageDown': case ' ': e.preventDefault(); goTo(i + 1); break;
+      case 'ArrowUp': case 'PageUp': e.preventDefault(); goTo(i - 1); break;
+      case 'Home': e.preventDefault(); goTo(0); break;
+      case 'End': e.preventDefault(); goTo(slides.length - 1); break;
+      // Left/right only step the current slide's build; they never change slides.
+      case 'ArrowRight': e.preventDefault(); if (b) b.go(1); break;
+      case 'ArrowLeft': e.preventDefault(); if (b) b.go(-1); break;
+    }
+  });
+  let frame = 0;
+  deck.addEventListener('scroll', () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); }, { passive: true });
+  window.addEventListener('resize', () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); });
+  setTimeout(() => { hint.style.opacity = '0'; }, 5000);
+
+  /* ---- motion: pause control, hidden tab, visibility (Cockpit presentation.ts) */
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  function setMotion(enabled) {
+    const active = enabled && !reduced.matches;
+    root.classList.toggle('motion', active);
+    motionBtn.textContent = reduced.matches ? 'Reduced motion' : active ? 'Pause motion' : 'Play motion';
+    motionBtn.disabled = reduced.matches;
+    motionBtn.setAttribute('aria-pressed', String(active));
+  }
+  setMotion(!reduced.matches);
+  motionBtn.addEventListener('click', () => setMotion(!root.classList.contains('motion')));
+  reduced.addEventListener('change', () => setMotion(!reduced.matches));
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => entries.forEach(en => { en.target.dataset.visible = String(en.isIntersecting); }));
+    document.querySelectorAll('.ambient').forEach(n => io.observe(n));
+  }
+  function visibility() { root.classList.toggle('motion-paused', document.hidden); }
+  document.addEventListener('visibilitychange', visibility);
+  visibility();
+
+  /* ---- print: every build on its last step ----------------------------- */
+  function showAll() { bound.forEach(b => b.last()); slides.forEach(s => s.querySelectorAll('.reveal').forEach(n => n.classList.add('show'))); }
+  function enterPrint() { printing = true; showAll(); }
+  function leavePrint() { printing = false; bound.forEach((b, s) => { if (s !== slides[curIndex()]) b.reset(); }); }
+  const printMq = matchMedia('print');
+  if (printMq.matches) printing = true;
+  printMq.addEventListener('change', e => (e.matches ? enterPrint() : leavePrint()));
+  window.addEventListener('beforeprint', enterPrint);
+  window.addEventListener('afterprint', leavePrint);
+
+  /* ---- small SVG helpers for diagram builders -------------------------- */
+  const NS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs, parent) { const n = document.createElementNS(NS, tag); for (const k in attrs || {}) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; }
+  function arrowMarker(svg, id, color) {
+    let defs = svg.querySelector('defs') || svgEl('defs', {}, svg);
+    const m = svgEl('marker', { id, viewBox: '0 0 10 10', refX: '8', refY: '5', markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse' }, defs);
+    svgEl('path', { d: 'M0,0 L10,5 L0,10 z', fill: color }, m);
+    return 'url(#' + id + ')';
+  }
+
+  window.deckKit = {
+    slides, goTo, current: curIndex, showAll, svgEl, arrowMarker,
+    // For tools: number of steps of slide i (0 when it has no build), and set its step.
+    steps(i) { const b = bound.get(slides[i]); return b ? b.ctrl.max : 0; },
+    setStep(i, s) { const b = bound.get(slides[i]); if (b) b.set(s); },
+    controller(name, ctrl) {
+      const slide = slides.find(s => s.dataset.ctrl === name);
+      if (!slide) { console.warn('deckKit: no slide with data-ctrl="' + name + '"'); return null; }
+      return bind(slide, ctrl);
+    },
   };
-  mkArrow('oat-arrg','#C8902F'); mkArrow('oat-arrf','#4ade80');
-  const AG='url(#oat-arrg)', AF='url(#oat-arrf)';
+
+  /* ---- start ------------------------------------------------------------ */
+  update();
+  if (printing) showAll();
+  const fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  window.addEventListener('load', () => {
+    slides.forEach(s => { if (s.dataset.ctrl && !bound.has(s)) console.warn('deckKit: slide ' + (slides.indexOf(s) + 1) + ' has data-ctrl="' + s.dataset.ctrl + '" but no controller'); });
+    if (printing) showAll();
+    fontsReady.then(() => { root.dataset.printReady = 'true'; });
+  });
+})();
+
+/* Cover dot field: verbatim from mustry-cockpit src/server/quotations/svg-wave-script.ts
+   (SVG_WAVE_SCRIPT, with its DOT_STREAM_PATHS and QUOTATION_ANIMATIONS values
+   inlined). WebGL deformation of the artwork; when the page is opened from
+   file:// the browser refuses the texture and the CSS light pass runs instead. */
+(() => {
+  const layer = document.querySelector('.cover-dotfield');
+  if (!layer || matchMedia('print').matches) return;
+  const cover = layer.closest('.cover-page');
+  const variants = {"cursor-light":0,"magnetic":1,"soft-tide":2,"light-sweep":3,"single-ripple":4,"dot-streams":5,"travelling-focus":6};
+  const defaultVariant = "dot-streams";
+  const canvas = document.createElement('canvas');
+  canvas.className = 'dot-wave-canvas';
+  canvas.setAttribute('aria-hidden', 'true');
+  const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: false, powerPreference: 'low-power' });
+  if (!gl) return;
+  const vertexSource = 'attribute vec2 position; varying vec2 uv; void main(){ uv=vec2(position.x*.5+.5,.5-position.y*.5); gl_Position=vec4(position,0.,1.); }';
+  const fragmentSource = "\n    precision highp float;\n    varying vec2 uv;\n    uniform sampler2D artwork;\n    uniform vec4 artRect;\n    uniform vec2 pointer;\n    uniform vec2 clickPoint;\n    uniform float aspect;\n    uniform float time;\n    uniform float presence;\n    uniform float variant;\n    uniform float clickAge;\n    uniform vec3 signals[12];\n    vec2 rotateDelta(vec2 d,float angle){\n      float c=cos(angle),s=sin(angle);\n      return vec2(c*d.x-s*d.y,s*d.x+c*d.y)-d;\n    }\n    void main(){\n      vec2 p=(uv-artRect.xy)/artRect.zw;\n      vec2 delta=(uv-pointer)*vec2(aspect,1.);\n      float reach=exp(-dot(delta,delta)*30.);\n      vec2 offset=vec2(0.);\n      float light=.74+.20*reach*presence;\n      if(variant>.5 && variant<1.5){\n        float magnetReach=exp(-dot(delta,delta)*24.);\n        offset=vec2(.004*sin(time*.32),.0025*cos(time*.26));\n        offset+=delta/vec2(aspect,1.)*magnetReach*.095*presence/artRect.zw;\n      } else if(variant>1.5 && variant<2.5){\n        offset=vec2(.003*sin(p.y*7.+time*.22),.002*sin(p.x*6.-time*.17));\n        offset+=delta/vec2(aspect,1.)*reach*.035*presence/artRect.zw;\n      } else if(variant>2.5 && variant<3.5){\n        float centre=fract(time/22.)*1.8-.4;\n        float band=(p.x*.35+p.y*.65-centre)/.14;\n        light+=.17*exp(-band*band);\n      } else if(variant>3.5 && variant<4.5){\n        vec2 fromClick=(uv-clickPoint)*vec2(aspect,1.);\n        float distance=length(fromClick);\n        float radius=clickAge*.20;\n        float band=(distance-radius)/.065;\n        float envelope=clamp(1.-clickAge/2.6,0.,1.);\n        float ring=exp(-band*band)*envelope;\n        offset=normalize(fromClick+vec2(.0001))/vec2(aspect,1.)*.003*sin((distance-radius)*36.)*ring/artRect.zw;\n        light+=.10*ring;\n      }\n      if(variant>4.5){\n        float local=1.-smoothstep(0.,.24,length(delta));\n        offset=rotateDelta(delta,1.9*local*local*presence)/vec2(aspect,1.)/artRect.zw;\n        if(variant>5.5){\n          vec2 current=(p-signals[0].xy)*vec2(1.12025,1.);\n          float field=1.-smoothstep(0.,.23,length(current));\n          offset+=rotateDelta(current,(.85+.25*sin(time*.8))*field*field)/vec2(1.12025,1.);\n        }\n      }\n      vec2 at=p+offset;\n      float inside=step(0.,at.x)*step(at.x,1.)*step(0.,at.y)*step(at.y,1.);\n      vec4 colour=texture2D(artwork,clamp(at,0.,1.));\n      if(variant>4.5){\n        if(variant<5.5){\n          float core=0.,halo=0.;\n          for(int i=0;i<12;i++){\n            vec2 d=(at-signals[i].xy)*vec2(1.12025,1.);\n            float distanceSquared=dot(d,d);\n            core+=exp(-distanceSquared/.000014)*signals[i].z;\n            halo+=exp(-distanceSquared/.000095)*signals[i].z*.16;\n          }\n          vec3 particles=vec3(.72,.91,1.)*core+vec3(.10,.48,.78)*halo;\n          gl_FragColor=vec4(colour.rgb*(.54+.16*reach*presence)+particles,\n            max(colour.a,clamp(core+halo,0.,1.))*inside);\n          return;\n        } else {\n          vec2 d=(at-signals[0].xy)*vec2(1.12025,1.);\n          float glow=exp(-dot(d,d)/.018);\n          light=.64+.50*glow+.18*reach*presence;\n        }\n      }\n      gl_FragColor=vec4(colour.rgb*light,colour.a*inside);\n    }\n";
+  function shader(kind, source){
+    const s=gl.createShader(kind); gl.shaderSource(s,source); gl.compileShader(s);
+    if (!gl.getShaderParameter(s,gl.COMPILE_STATUS)) { gl.deleteShader(s); return null; }
+    return s;
+  }
+  const vertex=shader(gl.VERTEX_SHADER,vertexSource), fragment=shader(gl.FRAGMENT_SHADER,fragmentSource);
+  if (!vertex || !fragment) return;
+  const program=gl.createProgram(); gl.attachShader(program,vertex); gl.attachShader(program,fragment); gl.linkProgram(program);
+  if (!gl.getProgramParameter(program,gl.LINK_STATUS)) return;
+  gl.useProgram(program); gl.deleteShader(vertex); gl.deleteShader(fragment);
+  const buffer=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const position=gl.getAttribLocation(program,'position'); gl.enableVertexAttribArray(position); gl.vertexAttribPointer(position,2,gl.FLOAT,false,0,0);
+  const uniforms={}; ['artwork','artRect','pointer','clickPoint','aspect','time','presence','variant','clickAge','signals[0]'].forEach(name=>uniforms[name]=gl.getUniformLocation(program,name));
+  const texture=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,texture);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.uniform1i(uniforms.artwork,0);
+  const routes=[[[0.979338,0.114358],[0.952518,0.11193],[0.925562,0.109874],[0.900762,0.111419],[0.873868,0.11253],[0.847423,0.118077],[0.822623,0.129688],[0.799935,0.14579],[0.782174,0.168281],[0.769382,0.194801],[0.76081,0.223301],[0.755827,0.25298],[0.754146,0.283039],[0.756961,0.315527],[0.759529,0.345476],[0.762115,0.375479],[0.760711,0.403386],[0.758322,0.43339],[0.752656,0.462821],[0.737272,0.487023],[0.709848,0.490286],[0.684303,0.482],[0.658283,0.473032],[0.633298,0.474791],[0.607943,0.484843],[0.584695,0.499966],[0.565296,0.52069],[0.552547,0.547072],[0.546167,0.576365],[0.544104,0.606424],[0.544991,0.636608],[0.550761,0.668509],[0.555879,0.697933],[0.562481,0.727144],[0.569416,0.756264],[0.575562,0.785744],[0.581031,0.815361],[0.586062,0.844944],[0.590755,0.8747],[0.595337,0.90449],[0.600159,0.934052],[0.605043,0.963822],[0.608935,0.993694]],[[0.97839,0.205343],[0.956693,0.20942],[0.93161,0.214035],[0.909581,0.228165],[0.889812,0.246157],[0.875364,0.26951],[0.866089,0.296106],[0.860461,0.323861],[0.857215,0.352237],[0.855349,0.38073],[0.857874,0.413921],[0.849117,0.437046],[0.84616,0.465401],[0.844048,0.493812],[0.841751,0.522332],[0.838518,0.550563],[0.836781,0.578946],[0.829662,0.606142],[0.809647,0.622734],[0.784329,0.626059],[0.759301,0.630799],[0.737832,0.646018],[0.717029,0.662451],[0.698215,0.681713],[0.682627,0.704253],[0.671265,0.72971],[0.663068,0.75674],[0.657581,0.784633],[0.654409,0.812892],[0.657396,0.845841],[0.658757,0.873907],[0.662175,0.901875],[0.666874,0.929982],[0.670243,0.958558],[0.668093,0.983063]],[[0.985983,0.33532],[0.971351,0.356562],[0.962636,0.381668],[0.958332,0.408181],[0.956638,0.435004],[0.956219,0.461862],[0.956028,0.48883],[0.955185,0.515819],[0.949143,0.540546],[0.938415,0.564492],[0.931665,0.590343],[0.926498,0.61669],[0.922187,0.643189],[0.918394,0.669813],[0.926036,0.701734],[0.920451,0.722977],[0.911693,0.748241],[0.894018,0.766233],[0.876854,0.785088],[0.862801,0.806972],[0.845686,0.825931],[0.828874,0.845179],[0.813496,0.865773],[0.800267,0.888394],[0.789151,0.912244],[0.779605,0.93697],[0.771593,0.962345],[0.765115,0.988306]]].map(points=>{
+    const distances=[0];
+    for(let i=1;i<points.length;i++) distances.push(distances[i-1]+Math.hypot((points[i][0]-points[i-1][0])*1.12025,points[i][1]-points[i-1][1]));
+    return {points,distances,total:distances[distances.length-1]};
+  });
+  const signalData=new Float32Array(36);
+  function pointOn(route,distance){
+    distance=Math.max(0,Math.min(route.total,distance));
+    let i=1;while(i<route.distances.length-1&&route.distances[i]<distance)i++;
+    const t=(distance-route.distances[i-1])/(route.distances[i]-route.distances[i-1]);
+    return [route.points[i-1][0]+(route.points[i][0]-route.points[i-1][0])*t,route.points[i-1][1]+(route.points[i][1]-route.points[i-1][1])*t];
+  }
+  function signalPositions(){
+    signalData.fill(0);
+    if(variant===5){
+      for(let r=0;r<3;r++){
+        const route=routes[r];
+        for(let packet=0;packet<2;packet++){
+          const phase=(time*(.078+r*.007)/route.total+[.32,.61,.82][r]+packet*.5)%1;
+          const fade=Math.min(1,phase/.055,(1-phase)/.055);
+          for(let tail=0;tail<2;tail++){
+            const distance=phase*route.total-tail*.022;
+            const point=pointOn(route,distance),index=(r*4+packet*2+tail)*3;
+            signalData[index]=point[0];signalData[index+1]=point[1];signalData[index+2]=distance<0?0:[1,.36][tail]*fade;
+          }
+        }
+      }
+    } else if(variant===6){
+      const route=routes[0],fraction=.28+.55*(.5-.5*Math.cos(time*.21));
+      const point=pointOn(route,fraction*route.total);signalData[0]=point[0];signalData[1]=point[1];signalData[2]=1;
+    }
+    gl.uniform3fv(uniforms['signals[0]'],signalData);
+  }
+  let ready=false, frame=0, last=0, time=4, width=1, height=1, printing=false;
+  let x=.75,y=.55,targetX=x,targetY=y,presence=0,targetPresence=0;
+  let variant=variants[layer.dataset.animation]??variants[defaultVariant], activeVariant=layer.dataset.animation;
+  time=variant===3?12:variant===6?8:0;
+  let clickTime=-99,clickX=.75,clickY=.55;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  function enabled(){return ready&&!printing&&!reduced.matches&&!document.hidden&&document.documentElement.classList.contains('motion')&&layer.dataset.visible!=='false';}
+  function draw(){
+    gl.uniform2f(uniforms.pointer,x,y); gl.uniform1f(uniforms.time,time); gl.uniform1f(uniforms.presence,presence);
+    gl.uniform1f(uniforms.variant,variant);gl.uniform2f(uniforms.clickPoint,clickX,clickY);gl.uniform1f(uniforms.clickAge,time-clickTime);
+    if(variant>=5)signalPositions();
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  }
+  function tick(now){
+    frame=0; if(!enabled()){last=0;return;}
+    const dt=last?Math.min((now-last)/1000,.05):0;last=now;time+=dt;
+    const ease=1-Math.exp(-dt*7);
+    x+=(targetX-x)*ease;y+=(targetY-y)*ease;presence+=(targetPresence-presence)*ease;
+    draw();
+    const settling=Math.abs(x-targetX)+Math.abs(y-targetY)+Math.abs(presence-targetPresence)>.0005;
+    const ripple=variant===4&&time-clickTime<2.6;
+    if(variant===1||variant===2||variant===3||variant>=5||settling||ripple) frame=requestAnimationFrame(tick);
+    else last=0;
+  }
+  function update(){
+    if(activeVariant!==layer.dataset.animation){
+      activeVariant=layer.dataset.animation;variant=variants[activeVariant]??variants[defaultVariant];
+      time=variant===3?12:variant===6?8:0;clickTime=-99;presence=0;targetPresence=0;
+      if(ready)draw();
+    }
+    if(layer.dataset.pointerMode==='off')targetPresence=0;
+    layer.classList.toggle('dot-wave-ready',ready&&!reduced.matches);
+    if(enabled()){if(!frame){last=0;frame=requestAnimationFrame(tick);}}
+    else {cancelAnimationFrame(frame);frame=0;last=0;}
+  }
+  function resize(){
+    const rect=layer.getBoundingClientRect();width=Math.max(1,rect.width);height=Math.max(1,rect.height);
+    const ratio=Math.min(devicePixelRatio||1,1.5);canvas.width=Math.round(width*ratio);canvas.height=Math.round(height*ratio);gl.viewport(0,0,canvas.width,canvas.height);
+    const mobile=width<=600, sourceRatio=162.377/144.948;
+    const artWidth=Math.min(width*(mobile?1.7:1.12),height*sourceRatio),artHeight=artWidth/sourceRatio;
+    const left=width*(mobile?1.6:1.15)-artWidth,top=height*(mobile?1.03:1.05)-artHeight;
+    gl.uniform4f(uniforms.artRect,left/width,top/height,artWidth/width,artHeight/height);gl.uniform1f(uniforms.aspect,width/height);
+    if(ready)draw();
+  }
+  cover.addEventListener('pointermove',event=>{
+    if(event.pointerType==='touch'||layer.dataset.pointerMode==='off'||!enabled())return;
+    const rect=layer.getBoundingClientRect();targetX=(event.clientX-rect.left)/width;targetY=(event.clientY-rect.top)/height;targetPresence=1;update();
+  },{passive:true});
+  cover.addEventListener('pointerleave',()=>{targetPresence=0;update();});
+  cover.addEventListener('click',event=>{
+    if(variant!==4||layer.dataset.pointerMode==='off'||!enabled()||event.target.closest('button,a,input,textarea,select,label'))return;
+    const rect=layer.getBoundingClientRect();clickX=(event.clientX-rect.left)/width;clickY=(event.clientY-rect.top)/height;clickTime=time;update();
+  });
+  document.addEventListener('visibilitychange',update);reduced.addEventListener('change',update);
+  new MutationObserver(update).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+  new MutationObserver(update).observe(layer,{attributes:true,attributeFilter:['data-visible','data-animation','data-pointer-mode']});
+  new ResizeObserver(resize).observe(layer);
+  addEventListener('beforeprint',()=>{printing=true;update();});addEventListener('afterprint',()=>{printing=false;update();});
+  canvas.addEventListener('webglcontextlost',()=>{ready=false;update();});
+  addEventListener('pagehide',()=>{cancelAnimationFrame(frame);frame=0;last=0;});
+  addEventListener('pageshow',update);
+  const image=new Image();
+  image.onload=()=>{
+    if(gl.isContextLost())return;
+    try {
+      const source=document.createElement('canvas');const textureWidth=Math.min(gl.getParameter(gl.MAX_TEXTURE_SIZE),innerWidth<=600?1024:2048);
+      source.width=textureWidth;source.height=Math.round(textureWidth*144.948/162.377);
+      source.getContext('2d').drawImage(image,0,0,source.width,source.height);
+      gl.bindTexture(gl.TEXTURE_2D,texture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);
+      layer.appendChild(canvas);ready=true;resize();update();
+    } catch {ready=false;update();}
+  };
+  const background=getComputedStyle(layer).getPropertyValue('--quotation-dot-art').trim();
+  image.src=background.slice(4,-1).replace(/^["']|["']$/g,'');
+})();
+/* deck-kit:js:end */
+</script>
+<script>
+/* ---- Oatmakers day 4 world map, static, as day 3 left it: pipeline, ladder and
+   vault built, fan-out lines drawn, sites still on mixed versions. Today's
+   assignment is the rollout that fixes them. Ported from the Lab 01 story deck. ---- */
+(function () {
+  const mount = document.getElementById('viz-oat'); if (!mount) return;
+  const el = deckKit.svgEl;
+  function txt(attrs, parent, content) { const t = el('text', attrs, parent); t.textContent = content; return t; }
+  const svg = el('svg', { viewBox: '55 30 1500 700', preserveAspectRatio: 'xMidYMid meet' }, mount);
+  const AG = deckKit.arrowMarker(svg, 'oat-arrg', '#C8902F');
+  const AF = deckKit.arrowMarker(svg, 'oat-arrf', '#16A34A');
 
   /* 8 sites, badges as day 3 left them */
-  const SX=[660,885,1110,1335], SY=[120,520];
-  const siteCenter=n=>({x:SX[(n-1)%4]+100,y:SY[n<=4?0:1]+75});
-  const BADGES=[['v2.0','g'],['v1.3','g'],['v1.3+Bob','a'],['v1.3','g'],['v1.1','r'],['v1.2-test','a'],['v1.3?','a'],['???','r']];
-  const WARN=[5,8];
-  for(let n=1;n<=8;n++){
-    const g=el('g',{transform:'translate('+SX[(n-1)%4]+','+SY[n<=4?0:1]+')'},svg);
-    el('rect',{class:'scard',x:0,y:0,width:200,height:150,rx:16},g);
-    const f=el('g',{transform:'translate(56,22)'},g);
-    el('path',{class:'gsite',d:'M0,50 L0,20 L22,8 L22,20 L44,8 L44,20 L66,8 L66,20 L88,20 L88,50 Z'},f);
-    el('rect',{class:'gsite',x:70,y:-6,width:9,height:16},f);
-    txt({class:'slabel',x:100,y:100},g,'Site '+n);
-    const bg=el('g',{class:'badge b-'+BADGES[n-1][1]},g);
-    el('rect',{x:50,y:112,width:100,height:26,rx:9},bg);
-    txt({x:100,y:125},bg,BADGES[n-1][0]);
-    if(WARN.includes(n)){
-      const w=el('g',{class:'warntri',transform:'translate(164,10)'},g);
-      el('path',{d:'M13,2 L25,22 H1 Z'},w);
-      txt({x:13,y:19},w,'!');
+  const SX = [660, 885, 1110, 1335], SY = [120, 520];
+  const siteCenter = n => ({ x: SX[(n - 1) % 4] + 100, y: SY[n <= 4 ? 0 : 1] + 75 });
+  const BADGES = [['v2.0', 'g'], ['v1.3', 'g'], ['v1.3+Bob', 'a'], ['v1.3', 'g'], ['v1.1', 'r'], ['v1.2-test', 'a'], ['v1.3?', 'a'], ['???', 'r']];
+  const WARN = [5, 8];
+  for (let n = 1; n <= 8; n++) {
+    const g = el('g', { transform: 'translate(' + SX[(n - 1) % 4] + ',' + SY[n <= 4 ? 0 : 1] + ')' }, svg);
+    el('rect', { class: 'scard', x: 0, y: 0, width: 200, height: 150, rx: 16 }, g);
+    const f = el('g', { transform: 'translate(56,22)' }, g);
+    el('path', { class: 'gsite', d: 'M0,50 L0,20 L22,8 L22,20 L44,8 L44,20 L66,8 L66,20 L88,20 L88,50 Z' }, f);
+    el('rect', { class: 'gsite', x: 70, y: -6, width: 9, height: 16 }, f);
+    txt({ class: 'slabel', x: 100, y: 100 }, g, 'Site ' + n);
+    const bg = el('g', { class: 'badge b-' + BADGES[n - 1][1] }, g);
+    el('rect', { x: 50, y: 112, width: 100, height: 26, rx: 9 }, bg);
+    txt({ x: 100, y: 125 }, bg, BADGES[n - 1][0]);
+    if (WARN.includes(n)) {
+      const w = el('g', { class: 'warntri', transform: 'translate(164,10)' }, g);
+      el('path', { d: 'M13,2 L25,22 H1 Z' }, w);
+      txt({ x: 13, y: 19 }, w, '!');
     }
   }
 
   /* HQ */
-  const hq=el('g',{class:'pnode'},svg);
-  el('rect',{class:'card',x:70,y:55,width:210,height:90,rx:14},hq);
-  el('use',{href:'#ob-light',transform:'translate(88,72) scale(0.28)'},hq);
-  txt({class:'nl',x:155,y:95},hq,'HQ');
-  txt({class:'ns',x:155,y:115},hq,'Engineering');
+  const hq = el('g', { class: 'pnode' }, svg);
+  el('rect', { class: 'card', x: 70, y: 55, width: 210, height: 90, rx: 14 }, hq);
+  el('use', { href: '#ob-dark', transform: 'translate(88,72) scale(0.28)' }, hq);
+  txt({ class: 'nl', x: 155, y: 95 }, hq, 'HQ');
+  txt({ class: 'ns', x: 155, y: 115 }, hq, 'Engineering');
 
   /* Git repo + branch graph + hotfix arc */
-  const repo=el('g',{class:'pnode'},svg);
-  el('rect',{class:'card',x:70,y:215,width:210,height:160,rx:14},repo);
-  txt({class:'nl',x:88,y:242},repo,'Git');
-  txt({class:'ns',x:130,y:242},repo,'one shared history');
-  el('line',{class:'link',x1:175,y1:147,x2:175,y2:213,'marker-end':AG},svg);
-  const mg=el('g',{class:'minig'},svg);
-  [['main',272],['fix/null-reading',312],['feature/v2.0',352]].forEach(L=>{
-    el('line',{class:'lane',x1:90,y1:L[1],x2:260,y2:L[1]},mg);
-    txt({class:'lname',x:90,y:L[1]-7},mg,L[0]);
+  const repo = el('g', { class: 'pnode' }, svg);
+  el('rect', { class: 'card', x: 70, y: 215, width: 210, height: 160, rx: 14 }, repo);
+  txt({ class: 'nl', x: 88, y: 242 }, repo, 'Git');
+  txt({ class: 'ns', x: 130, y: 242 }, repo, 'one shared history');
+  el('line', { class: 'link-l', x1: 175, y1: 147, x2: 175, y2: 213, 'marker-end': AG }, svg);
+  const mg = el('g', { class: 'minig' }, svg);
+  [['main', 272], ['fix/null-reading', 312], ['feature/v2.0', 352]].forEach(L => {
+    el('line', { class: 'lane', x1: 90, y1: L[1], x2: 260, y2: L[1] }, mg);
+    txt({ class: 'lname', x: 90, y: L[1] - 7 }, mg, L[0]);
   });
-  [[120,272],[160,272],[130,312],[185,312],[150,352],[205,352],[245,352]].forEach(p=>{
-    el('circle',{cx:p[0],cy:p[1],r:5,stroke:p[1]===352?'#f0b765':'#4ade80'},mg);
+  [[120, 272], [160, 272], [130, 312], [185, 312], [150, 352], [205, 352], [245, 352]].forEach(p => {
+    el('circle', { cx: p[0], cy: p[1], r: 5, stroke: p[1] === 352 ? '#D97706' : '#16A34A' }, mg);
   });
-  const hf=el('g',{},svg);
-  el('path',{d:'M166,268 C190,246 216,246 240,266',stroke:'#4ade80','stroke-width':2,fill:'none','marker-end':AF},hf);
-  el('circle',{cx:245,cy:272,r:5,fill:'#101d14',stroke:'#4ade80','stroke-width':2},hf);
-  txt({class:'lname',x:203,y:250,'text-anchor':'middle',fill:'#86efac','font-family':"'IBM Plex Mono'",'font-size':'10.5'},hf,'fix · v1.2.1');
-  /* green check on the repo */
-  const ck=el('g',{},svg);
-  el('circle',{cx:280,cy:218,r:15,fill:'#16a34a'},ck);
-  el('path',{d:'M272,218 l6,6 l11,-12',stroke:'#fff','stroke-width':3.2,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'},ck);
+  el('path', { d: 'M166,268 C190,246 216,246 240,266', stroke: '#16A34A', 'stroke-width': 2, fill: 'none', 'marker-end': AF }, svg);
+  el('circle', { cx: 245, cy: 272, r: 5, fill: '#fff', stroke: '#16A34A', 'stroke-width': 2 }, svg);
+  txt({ class: 'lname', x: 203, y: 263, 'text-anchor': 'middle', fill: '#15803D' }, svg, 'fix · v1.2.1');
+  el('circle', { cx: 280, cy: 218, r: 15, fill: '#16A34A' }, svg);
+  el('path', { d: 'M272,218 l6,6 l11,-12', stroke: '#fff', 'stroke-width': 3.2, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
 
   /* CI + workflow strip + runner behind the wall */
-  const ci=el('g',{class:'pnode'},svg);
-  el('rect',{class:'card',x:70,y:415,width:210,height:110,rx:14},ci);
-  txt({class:'nl',x:88,y:445},ci,'CI');
-  txt({class:'ns',x:120,y:445},ci,'GitHub Actions');
-  el('line',{class:'link',x1:175,y1:375,x2:175,y2:413,'marker-end':AG},svg);
-  [[88,455,174,'workflow'],[102,481,146,'jobs'],[116,505,118,'steps']].forEach(c=>{
-    el('rect',{x:c[0],y:c[1],width:c[2],height:20,rx:6,fill:'rgba(200,144,47,.12)',stroke:'#C8902F','stroke-width':1.2},svg);
-    txt({class:'nm',x:c[0]+10,y:c[1]+14},svg,c[3]);
+  const ci = el('g', { class: 'pnode' }, svg);
+  el('rect', { class: 'card', x: 70, y: 415, width: 210, height: 110, rx: 14 }, ci);
+  txt({ class: 'nl', x: 88, y: 445 }, ci, 'CI');
+  txt({ class: 'ns', x: 120, y: 445 }, ci, 'GitHub Actions');
+  el('line', { class: 'link-l', x1: 175, y1: 375, x2: 175, y2: 413, 'marker-end': AG }, svg);
+  [[88, 455, 174, 'workflow'], [102, 481, 146, 'jobs'], [116, 505, 118, 'steps']].forEach(c => {
+    el('rect', { x: c[0], y: c[1], width: c[2], height: 20, rx: 6, fill: 'rgba(200,144,47,.12)', stroke: '#C8902F', 'stroke-width': 1.2 }, svg);
+    txt({ class: 'nm', x: c[0] + 10, y: c[1] + 14 }, svg, c[3]);
   });
-  const run=el('g',{class:'pnode'},svg);
-  el('rect',{class:'wall',x:288,y:432,width:200,height:92,rx:12},run);
-  txt({class:'walllab',x:300,y:426},run,'your network');
-  el('rect',{class:'card',x:302,y:448,width:172,height:58,rx:10},run);
-  txt({class:'nl',x:318,y:472,'font-size':14},run,'runner');
-  txt({class:'ns',x:318,y:492},run,'self-hosted, next to Ignition');
-  el('line',{class:'link',x1:280,y1:470,x2:300,y2:470},run);
+  const run = el('g', { class: 'pnode' }, svg);
+  el('rect', { class: 'wall', x: 288, y: 432, width: 200, height: 92, rx: 12 }, run);
+  txt({ class: 'walllab', x: 300, y: 426 }, run, 'your network');
+  el('rect', { class: 'card', x: 302, y: 448, width: 172, height: 58, rx: 10 }, run);
+  txt({ class: 'nl', x: 318, y: 472 }, run, 'runner');
+  txt({ class: 'ns', x: 318, y: 492 }, run, 'self-hosted, next to Ignition');
+  el('line', { class: 'link-l', x1: 280, y1: 470, x2: 300, y2: 470 }, run);
 
   /* Release + the two delivery routes + sidecars */
-  const art=el('g',{class:'pnode'},svg);
-  el('rect',{class:'card',x:70,y:615,width:210,height:95,rx:14},art);
-  txt({class:'nl',x:88,y:645},art,'Release');
-  txt({class:'ns',x:88,y:665},art,'image or files, versioned');
-  el('line',{class:'link',x1:135,y1:527,x2:135,y2:613,'marker-end':AG},svg);
-  el('line',{class:'link',x1:215,y1:527,x2:215,y2:613,'marker-end':AG},svg);
-  txt({class:'nm',x:96,y:560},svg,'files');
-  txt({class:'nm',x:225,y:560},svg,'image');
-  [[300,618,'DB migrations'],[300,650,'3rd-party modules'],[300,682,'external JARs']].forEach(c=>{
-    el('rect',{x:c[0],y:c[1],width:150,height:24,rx:8,fill:'rgba(126,148,97,.14)',stroke:'#a9bd8f','stroke-width':1.2},svg);
-    txt({class:'nm',x:c[0]+10,y:c[1]+16},svg,c[2]);
-    el('line',{x1:282,y1:c[1]+12,x2:298,y2:c[1]+12,stroke:'#a9bd8f','stroke-width':1.2},svg);
+  const art = el('g', { class: 'pnode' }, svg);
+  el('rect', { class: 'card', x: 70, y: 615, width: 210, height: 95, rx: 14 }, art);
+  txt({ class: 'nl', x: 88, y: 645 }, art, 'Release');
+  txt({ class: 'ns', x: 88, y: 665 }, art, 'image or files, versioned');
+  el('line', { class: 'link-l', x1: 135, y1: 527, x2: 135, y2: 613, 'marker-end': AG }, svg);
+  el('line', { class: 'link-l', x1: 215, y1: 527, x2: 215, y2: 613, 'marker-end': AG }, svg);
+  txt({ class: 'nm', x: 96, y: 560 }, svg, 'files');
+  txt({ class: 'nm', x: 225, y: 560 }, svg, 'image');
+  [[300, 618, 'DB migrations'], [300, 650, '3rd-party modules'], [300, 682, 'external JARs']].forEach(c => {
+    el('rect', { x: c[0], y: c[1], width: 150, height: 24, rx: 8, fill: 'rgba(126,148,97,.14)', stroke: '#a9bd8f', 'stroke-width': 1.2 }, svg);
+    txt({ class: 'nm', x: c[0] + 10, y: c[1] + 16 }, svg, c[2]);
+    el('line', { x1: 282, y1: c[1] + 12, x2: 298, y2: c[1] + 12, stroke: '#a9bd8f', 'stroke-width': 1.2 }, svg);
   });
 
   /* environment ladder + vault */
-  const ENVY={local:120,test:265,staging:410,production:555};
-  Object.keys(ENVY).forEach(k=>{
-    const y=ENVY[k];
-    const g=el('g',{class:'envchip'+(k==='production'?' production':'')},svg);
-    el('rect',{x:490,y:y,width:130,height:50,rx:12},g);
-    txt({x:555,y:y+26},g,k);
+  const ENVY = { local: 120, test: 265, staging: 410, production: 555 };
+  Object.keys(ENVY).forEach(k => {
+    const y = ENVY[k];
+    const g = el('g', { class: 'envchip' + (k === 'production' ? ' production' : '') }, svg);
+    el('rect', { x: 490, y: y, width: 130, height: 50, rx: 12 }, g);
+    txt({ x: 555, y: y + 26 }, g, k);
   });
-  [[170,263],[315,408],[460,553]].forEach(p=>{
-    el('line',{class:'link',x1:555,y1:p[0],x2:555,y2:p[1]-2,'marker-end':AG},svg);
+  [[170, 263], [315, 408], [460, 553]].forEach(p => {
+    el('line', { class: 'link-l', x1: 555, y1: p[0], x2: 555, y2: p[1] - 2, 'marker-end': AG }, svg);
   });
-  el('line',{class:'link',x1:282,y1:650,x2:487,y2:588,'marker-end':AG},svg);
-  const va=el('g',{class:'pnode'},svg);
-  el('rect',{class:'card',x:470,y:635,width:170,height:58,rx:10},va);
-  el('path',{d:'M492,668 v-7 a8,8 0 0 1 16,0 v7 M488,668 h24 v16 h-24 z',stroke:'#EBBE58','stroke-width':2,fill:'none','stroke-linejoin':'round'},va);
-  txt({class:'nl',x:524,y:663,'font-size':13.5},va,'secrets');
-  txt({class:'ns',x:524,y:681,'font-size':11},va,'per environment');
+  el('line', { class: 'link-l', x1: 282, y1: 650, x2: 487, y2: 588, 'marker-end': AG }, svg);
+  const va = el('g', { class: 'pnode' }, svg);
+  el('rect', { class: 'card', x: 470, y: 635, width: 170, height: 58, rx: 10 }, va);
+  el('path', { d: 'M492,668 v-7 a8,8 0 0 1 16,0 v7 M488,668 h24 v16 h-24 z', stroke: '#C8902F', 'stroke-width': 2, fill: 'none', 'stroke-linejoin': 'round' }, va);
+  txt({ class: 'nl', x: 524, y: 663, 'font-size': 13.5 }, va, 'secrets');
+  txt({ class: 'ns', x: 524, y: 681 }, va, 'per environment');
 
   /* fan-out from production to all 8 sites: today's rollout */
-  for(let n=1;n<=8;n++){
-    const c=siteCenter(n);
-    const ty=n<=4?c.y+123:c.y-83;
-    el('line',{class:'fanl',x1:622,y1:580,x2:c.x,y2:ty,'marker-end':AF},svg);
+  for (let n = 1; n <= 8; n++) {
+    const c = siteCenter(n);
+    const ty = n <= 4 ? c.y + 123 : c.y - 83;
+    el('line', { class: 'fanl', x1: 622, y1: 580, x2: c.x, y2: ty, 'marker-end': AF }, svg);
   }
 })();
 </script>
