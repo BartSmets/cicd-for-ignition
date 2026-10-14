@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>How we keep junk out of resource.json</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --navy:#0e1b2e; --navy2:#15233a;
@@ -22,21 +19,21 @@
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--txt);font-family:'Libre Franklin',system-ui,sans-serif;
+body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
-.mono,code,pre{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.mono,code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 
 .wrap{max-width:960px;margin:0 auto;padding:0 26px 90px}
 
 .hero{background:var(--navy);color:#fff;padding:46px 26px 42px}
 .hero .inner{max-width:960px;margin:0 auto}
-.hero .kicker{font-family:'IBM Plex Mono';font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--peri)}
+.hero .kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--peri)}
 .hero h1{margin:10px 0 10px;font-size:33px;line-height:1.16;letter-spacing:-.6px;font-weight:800;max-width:780px}
 .hero p{margin:0;max-width:700px;color:#c3d0e4;font-size:17px}
 
 section{margin:52px 0;scroll-margin-top:20px}
 h2{font-size:24px;letter-spacing:-.4px;margin:0 0 4px;font-weight:800}
-h2 .num{font-family:'IBM Plex Mono';font-size:12px;font-weight:600;color:#fff;background:var(--blue);
+h2 .num{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;font-weight:600;color:#fff;background:var(--blue);
   padding:4px 9px;border-radius:7px;margin-right:11px;vertical-align:4px}
 .lead{color:var(--txt-dim);margin:0 0 22px;max-width:760px;font-size:16.5px}
 .big{font-size:19px;font-weight:700;letter-spacing:-.2px;margin:0 0 14px}
@@ -47,7 +44,7 @@ pre .cm{color:#7d90ad}
 pre .ok{color:#7fe0a8} pre .no{color:#ff9d9d} pre .hl{color:var(--peri2)} pre .key{color:#ffd79a}
 pre .keep{background:rgba(22,163,74,.18);display:inline-block;width:100%}
 pre .junk{background:rgba(220,38,38,.22);display:inline-block;width:100%}
-code.i{font-family:'IBM Plex Mono';font-size:13.4px;background:var(--panel);border:1px solid var(--line);
+code.i{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.4px;background:var(--panel);border:1px solid var(--line);
   border-radius:5px;padding:1px 6px;color:var(--blue-d);white-space:nowrap}
 
 .legend{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
@@ -65,7 +62,7 @@ code.i{font-family:'IBM Plex Mono';font-size:13.4px;background:var(--panel);bord
 .tool.rev .tag{background:var(--warn-soft);color:var(--warn)}
 .tool h3{margin:0 0 8px;font-size:20px;font-weight:800;letter-spacing:-.3px}
 .tool p{margin:0 0 12px;font-size:15px;color:var(--txt-dim)}
-.tool .file{font-family:'IBM Plex Mono';font-size:11.8px;color:var(--blue-d);word-break:break-word;
+.tool .file{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.8px;color:var(--blue-d);word-break:break-word;
   background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;margin-bottom:12px}
 .tool ul{margin:0;padding:0;list-style:none;font-size:14.5px}
 .tool li{padding:5px 0 5px 24px;position:relative;color:var(--txt-dim)}
@@ -103,7 +100,7 @@ code.i{font-family:'IBM Plex Mono';font-size:13.4px;background:var(--panel);bord
 
 .parts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
 .part{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px 18px;box-shadow:var(--shadow)}
-.part .f{font-family:'IBM Plex Mono';font-size:12.5px;color:var(--blue-d);word-break:break-word;font-weight:600;
+.part .f{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;color:var(--blue-d);word-break:break-word;font-weight:600;
   margin-bottom:6px}
 .part p{margin:0;font-size:14.5px;color:var(--txt-dim)}
 
