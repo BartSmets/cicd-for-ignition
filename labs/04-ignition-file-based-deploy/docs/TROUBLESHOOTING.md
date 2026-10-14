@@ -7,7 +7,7 @@ are one of the first three.
 
 - **Docker isn't running or isn't Compose v2.** `docker compose version` must work (note the space —
   not `docker-compose`). Start Docker Desktop and re-run `scripts/setup.sh` (it's idempotent).
-- **Not enough RAM.** Three gateways at 1 GB each + TimescaleDB + the runner need **≥ 8 GB free**.
+- **Not enough RAM.** Three gateways (1 GB heap, 1.5 GB cap each) + TimescaleDB + the runner need **≥ 8 GB free**.
   If gateways crash or never reach RUNNING, raise Docker's memory or bump the per-gateway limit in
   [`docker-compose.yaml`](../docker-compose.yaml).
 - **Port already in use** (`port is already allocated` from `docker compose up`). 8088/8089/8090

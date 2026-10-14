@@ -25,7 +25,7 @@ The offline copy is the same deck: open it from your clone if the link doesn't l
 - Your fork of the course repo (`cicd-for-ignition`, set up once — see the [course hub](../../README.md)), **with Actions enabled** — the warm-up, Parts 1C–1D and 2B are pipeline work (same setup as Lab 04). Enabling is one click a fresh fork *requires*: *Actions* tab → **"I understand my workflows, go ahead and enable them"**. Skip it and every automatic trigger stays off — a PR, a merge or a `lab06-v*` tag produces no workflow run and no error message. There is no CLI or API for that button.
 - A GitHub Personal Access Token with `repo` scope — the bundled runner uses it to auto-register against your fork. **Reuse the one you made in Lab 04** (or create one at [github.com/settings/tokens](https://github.com/settings/tokens) → classic → tick `repo`) and put it in `.env` as `RUNNER_GITHUB_PAT` (the repo root's `course-setup.sh` does this for you). It never leaves `.env`.
 - The [GitHub CLI](https://cli.github.com/) (`gh`), authenticated (`gh auth status`), with `gh repo set-default <you>/cicd-for-ignition` done once
-- **≥ 8 GB free RAM for Docker** — three Ignition gateways each cap at 1 GB, plus TimescaleDB, the runner, and the usual Docker Desktop overhead
+- **≥ 8 GB free RAM for Docker** — three Ignition gateways (1 GB heap each, capped at 1.5 GB), plus TimescaleDB, the runner, and the usual Docker Desktop overhead
 - _Background:_ [Lab 04](../04-ignition-file-based-deploy/) — this lab reuses its stack and deploy mechanics; the config-scope overlays (`local-development`/`test`/`production`) it shipped silently become load-bearing here
 
 

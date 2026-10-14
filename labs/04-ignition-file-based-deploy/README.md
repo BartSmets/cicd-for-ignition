@@ -26,7 +26,7 @@ The offline copy is the same deck: open it from your clone if the link doesn't l
 - A GitHub Personal Access Token with `repo` scope — the bundled runner uses it to auto-register against your fork. Create it at [github.com/settings/tokens](https://github.com/settings/tokens) (Generate new token → classic → tick `repo`) and put it in `.env` as `RUNNER_GITHUB_PAT` (the root `course-setup.sh` asks for it once and writes it there for you). You make it once here; **Lab 06 reuses the same token** (Lab 05 has no runner). It never leaves `.env`.
 - On your fork, *Settings → Actions → General → Approval for running fork pull request workflows from contributors* set to **Require approval for all external contributors**. Your fork is public and the bundled runner holds the Docker socket, so no outside PR may start a job on it without your approval (see [`exercises/lab.md`](./exercises/lab.md), Pre-flight).
 - The [GitHub CLI](https://cli.github.com/) (`gh`), authenticated (`gh auth status`) — used to fork and clone the course repo
-- **≥ 8 GB free RAM for Docker** — three Ignition gateways each cap at 1 GB, plus TimescaleDB, the runner, and the usual Docker Desktop overhead
+- **≥ 8 GB free RAM for Docker** — three Ignition gateways (1 GB heap each, capped at 1.5 GB), plus TimescaleDB, the runner, and the usual Docker Desktop overhead
 - _Optional but recommended:_ pass the [preflight](../../preflight/) checks so unrelated env issues don't bite you mid-lab
 - _Background reading:_ [Lab 03](../03-github-actions/) covers the GitHub Actions fundamentals this lab builds on, but this lab stands alone — the self-hosted runner ships in `docker-compose.yaml`, no manual `docker run` of `myoung34/github-runner` required
 
@@ -136,7 +136,7 @@ Three Ignition 8.3 gateways + one TimescaleDB. The three gateways simulate the c
 
 The single TimescaleDB hosts three logical databases (`ignition_local_development`, `ignition_test`, `ignition_production`) so each gateway can have its own historian data without crosstalk.
 
-Memory is set to 1 GB per gateway via Compose limits. Tight but workable; bump it in `docker-compose.yaml` if you see GC pauses.
+Each gateway gets a 1 GB Java heap (`-m 1024`) and a 1.5 GB Compose memory limit, the extra half for the JVM itself. Tight but workable; raise both in `docker-compose.yaml` if you see GC pauses.
 
 ## Branching model (GitHub Flow)
 
