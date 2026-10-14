@@ -380,6 +380,8 @@ gateway on every student laptop.
   is resolved before any per-user context exists: the file **is** the
   routing. Each runner registers with a one-hour registration token the
   instructor posts in the chat (registering a runner is a repo-admin act).
+  Each test gateway has its own database, which only its workflow migrates,
+  just as each site's runner migrates only that site's database.
 - **Production is pinned.** The production deploy is wide: every pinned
   project ships from its own tag, and the gateway payload (gateway config,
   module manifest, third-party modules, JARs, migrations) ships from the

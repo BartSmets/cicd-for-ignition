@@ -27,7 +27,7 @@ of the release PR.
   of the session. Accept the invite from your GitHub notifications. No fork.
 - Docker with the Compose V2 plugin, `git`, `curl`, `python3`
 - **≥ 6 GB free RAM for Docker**: two Ignition gateways (your local one and
-  your test gateway), PostgreSQL and a runner
+  your test gateway), a PostgreSQL database for each, and a runner
 - Ports **8088, 8090 and 5432** free: stop the lab 06 stack first
   (`docker compose down` in `labs/06-secrets-db-and-modules/`)
 - _Background:_ [labs 03-06](../): the runner, tags, secrets, migrations and
@@ -53,6 +53,7 @@ cp .env.example .env   # Part 0: LAB_USER + the runner token from the Zoom chat
 | local gateway | http://localhost:8088 | `admin` / `password`, bind-mounted from your working tree |
 | local database | localhost:5432 | see `local-development/secrets/` |
 | your test gateway | http://localhost:8090 | your `test-<yourname>.yml` workflow, on every merge to `main` |
+| its own database | no host port | migrated by that workflow only |
 | **production** | https://cloud.mustrysolutions.com | the `Deploy` workflow, only when `release.yaml` changes |
 
 ## Lab structure
