@@ -20,10 +20,9 @@
 # GATEWAY_MODULES_ENABLED for a gateway that has a modules.json, because that
 # env var overrides modules.json at boot.
 #
-# Why modules belong in the image: a project scan can hot-reload views, scripts,
-# and config, but it CANNOT enable/disable modules — that needs a gateway
-# restart. Baking modules into the image is how image-based deploy earns its keep
-# over file-based (the payoff Lab 04's Block B stretch teased).
+# The gateway reads modules.json at boot, and every image deploy boots a fresh
+# gateway, so the baked file takes effect on every deploy. (A file-based deploy
+# gets the same result by shipping modules.json and restarting the gateway.)
 #
 # Build context is trimmed by .dockerignore so docs/exercises/scripts/.git never
 # enter the build or the image.

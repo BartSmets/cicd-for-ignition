@@ -75,9 +75,8 @@ error there, the image was built without that `RUN`: put it back and rebuild.
   against what's actually on disk.
 - **Context is huge / build is slow.** Something big is in the context. In a stand-alone repo `.git`
   is the usual culprit (confirm `.git/` is in `.dockerignore`); in the course monorepo it sits outside
-  this lab's folder. Measure the real context with the probe image from `exercises/lab.md`
-  (`docker run --rm ctx-probe du -sh /ctx`): the `transferring context` line of a normal build only
-  shows what changed since the previous build.
+  this lab's folder. Look for large files in the lab folder (`du -sh *`) and add what the gateway
+  doesn't need to `.dockerignore`.
 - **Image builds but is missing a file.** It's almost always `.dockerignore` excluding something you
   meant to bake. Verify with `docker run --rm --entrypoint find <image> /usr/local/bin/ignition/data/projects`
   (the `--entrypoint` is required — the IA image otherwise treats trailing args as gateway arguments).
