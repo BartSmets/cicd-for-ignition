@@ -70,7 +70,9 @@ python3.12 -m venv .venv && source .venv/bin/activate   # Linux: python3 if it i
 # (ign-lint needs Python 3.10-3.13: macOS's python3 is 3.9, so name python3.12;
 #  the venv also avoids pip's PEP 668 error on Homebrew/Ubuntu 24.04 Python)
 pip install ign-lint==0.6.1
-ign-lint --config rule_config.json --files "projects/**/view.json"   # Ignition-native linting of the Perspective views
+# Ignition-native linting of the Perspective views. It runs from the repo root, like CI:
+# rule_config.json names the pylint config (.config/.ignition-pylintrc) repo-root-relative.
+(cd ../.. && ign-lint --config labs/03-github-actions/rule_config.json --files "labs/03-github-actions/projects/**/view.json")
 ```
 
 The other linters Part 1 introduces (install separately — see [`exercises/lab.md`](./exercises/lab.md)):
@@ -107,11 +109,14 @@ Part 1 starts from a deliberately-broken state seeded by [`scripts/seed.sh`](./s
 labs/03-github-actions/
 ├── README.md
 ├── docker-compose.yml                 ← one Ignition gateway (named volume + bind-mounted projects/)
+├── third-party-modules/               ← Project Scan Endpoint .modl the gateway installs at boot (for Flint)
 ├── .env.example                       ← copy to .env before running
 ├── .gitattributes                     ← LF normalization so Ignition's JSON resources stay clean
 ├── .yamllint.yml                      ← yamllint config (its documented mute is read in Part 1)
 ├── .pre-commit-config.yaml            ← Part 1 stretch target
 ├── rule_config.json                   ← ign-lint rule configuration
+├── .config/
+│   └── .ignition-pylintrc             ← pylint config ign-lint uses for scripts inside views
 ├── .github/
 │   └── actionlint.yaml                ← declares the self-hosted runner label
 ├── scripts/
@@ -144,7 +149,7 @@ reads them:
 A single Ignition 8.3 gateway. Two things to understand about how it's wired:
 
 - **The gateway's own config and runtime state live in a named volume** (`ignition-data`) that the gateway generates itself on first boot. It never lands in the repo — which is exactly why you never see or touch gateway config in this lab. (That's Lab 04's subject.)
-- **Only `./projects` is bind-mounted** from the repo into the gateway. So the project files you (and CI) validate *are* the project files the gateway runs.
+- **`./projects` is the one thing you edit that is bind-mounted** from the repo into the gateway. So the project files you (and CI) validate *are* the project files the gateway runs. (`./third-party-modules` is mounted too, read at boot: it holds the Project Scan Endpoint module that the Flint extension calls, as in Lab 02.)
 
 ```yaml
 services:
@@ -154,6 +159,7 @@ services:
     volumes:
       - ignition-data:/usr/local/bin/ignition/data        # gateway-owned, self-generated, not in git
       - ./projects:/usr/local/bin/ignition/data/projects   # the one thing you edit
+      - ./third-party-modules:/third-party-modules         # add-on .modl files, installed at boot
 
 volumes:
   ignition-data:

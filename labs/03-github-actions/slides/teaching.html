@@ -572,7 +572,7 @@ body{
         <div class="rrow"><code>PollingIntervalRule</code><span>floor on binding poll rates, <b>1000&nbsp;ms</b> in this lab. <span class="mono">now(250)</span> is a finding.</span></div>
         <div class="rrow"><code>BadComponentReferenceRule</code><span>flags brittle traversal: <span class="mono">.getSibling()</span>, <span class="mono">.getParent()</span>, relative paths<span class="sev err">error</span></span></div>
         <div class="rrow"><code>ComponentReferenceValidationRule</code><span>do relative references <b>actually resolve</b>? Validates expressions, bindings, scripts.</span></div>
-        <div class="rrow"><code>PylintScriptRule</code><span>runs pylint over the Python <b>inside views</b>, mapping categories to error/warning.</span></div>
+        <div class="rrow"><code>PylintScriptRule</code><span>runs pylint over the Python <b>inside views</b> with the lab's <span class="mono">.config/.ignition-pylintrc</span>: the bundled config minus <span class="mono">import-outside-toplevel</span>, since a transform is a function body and imports go inside it.</span></div>
         <div class="rrow"><code>UnusedCustomPropertiesRule</code><span>custom properties nothing reads.</span></div>
         <div class="rrow"><code>ExcessiveContextDataRule</code><span>oversized context data: big arrays, deep nesting, too many data points.</span></div>
       </div>
@@ -580,9 +580,10 @@ body{
         <div class="code"><pre><span class="cm"># install the PROGRAM (Python pkg, 3.10+)</span>
 pip install ign-lint==0.6.1
 
-<span class="cm"># run: same command locally and in CI</span>
-ign-lint --config rule_config.json <span class="cm">&larr; the CONFIG</span>
-  --files <span class="cmd2">"projects/**/view.json"</span> <span class="cm">&larr; the TARGET</span></pre></div>
+<span class="cm"># run from the REPO ROOT, locally and in CI: rule_config.json
+# names .config/.ignition-pylintrc relative to it</span>
+ign-lint --config labs/03-github-actions/rule_config.json <span class="cm">&larr; the CONFIG</span>
+  --files <span class="cmd2">"labs/03-github-actions/projects/**/view.json"</span> <span class="cm">&larr; the TARGET</span></pre></div>
         <div class="callout" style="margin-top:16px">
           <div class="lab">A note on maturity</div>
           <p><b>Pre-1.0 (v0.6.1)</b>, from BW Design Group (<code>bw-design-group/ignition-lint</code>): the best Ignition-native linter going today. It began as <code>etknorr/ignition-lint</code>, now <b>archived read-only</b>; the maintained line moved to this fork. That handoff <i>is</i> the lesson: the tooling is young, so <b>pin the version</b>, follow where the maintained project lives, and hold onto the <b>pattern</b>, an Ignition-aware linter as a required CI check, not the specific tool.</p>
@@ -787,8 +788,8 @@ pre-commit run --all-files --config .pre-commit-config.yaml</pre></div>
       <div>
         <div class="code"><pre><span class="cm"># Chapter 1: you, at a terminal</span>
 scripts/validate.sh
-ign-lint --config rule_config.json \
-  --files <span class="cmd2">"projects/**/view.json"</span>
+(cd ../.. &amp;&amp; ign-lint --config labs/03-github-actions/rule_config.json \
+  --files <span class="cmd2">"labs/03-github-actions/projects/**/view.json"</span>)
 <span class="cm"># trigger = you typing · step = the command</span>
 <span class="cm"># pass/fail = the exit code</span>
 
@@ -1065,7 +1066,7 @@ jobs:
       - run: yamllint -c .yamllint.yml . ../../.github/workflows/lab03-*.yml
       - uses: raven-actions/actionlint@v2   <span class="cm"># + with: lab03-*.yml</span>
       - run: shellcheck scripts/*.sh   <span class="cm"># apt-get install first</span>
-      - run: ign-lint --config rule_config.json --files <span class="cmd2">"projects/**/view.json"</span>
+      - run: ign-lint --config labs/03-…/rule_config.json …   <span class="cm"># working-directory: . (repo root)</span>
       - run: docker compose config -q
   validate:
     runs-on: ubuntu-latest
@@ -1077,7 +1078,7 @@ jobs:
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Two jobs, two VMs, parallel.</b> Independent failures: a shell bug fails <span class="mono">lint</span>; broken JSON fails <span class="mono">validate</span>.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Steps are sequential:</b> a failing step skips the rest of its job and fails it. (<span class="mono">continue-on-error</span> and <span class="mono">needs:</span> exist for when you want different behaviour.)</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b><span class="mono">"3.12"</span> is quoted</b> because unquoted YAML coerces it to the float <b>3.1</b>. A classic. And <span class="mono">ign-lint</span> needs Python 3.10+, so the pin matters.</span></li>
-          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>The <span class="mono">--files</span> glob is quoted</b> so the runner's shell doesn't expand it before ign-lint sees it.</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>The <span class="mono">--files</span> glob is quoted</b> so the runner's shell doesn't expand it before ign-lint sees it. That step sets <span class="mono">working-directory: .</span>, overriding the default for itself only: ign-lint runs from the <b>repo root</b>, as you did in Part 1.</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Check your build against this file</b> with <span class="mono">git diff --no-index .github/ci-reference.yml ../../.github/workflows/lab03-ci.yml</span>. <span class="mono">--no-index</span> makes <span class="mono">git diff</span> compare any two files on disk, tracked or not.</span></li>
         </ul>
       </div>

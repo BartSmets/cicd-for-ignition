@@ -168,7 +168,7 @@ files live outside `data/`: the built-in modules ship in the image at
 `/third-party-modules` (`-Dignition.gateway.externalModulesFolder`).
 
 - **In git?** **No** for `data/modules/`. Module binaries are large artifacts too: pin their
-  versions and install them through your image or runner setup. (This lab commits the four
+  versions and install them through your image or runner setup. (This lab commits the five
   third-party `.modl` files under `third-party-modules/` purely so a fresh clone boots offline.)
 - `modules.json` decides which of the available modules start; the binaries come from the folders above.
 
@@ -216,10 +216,10 @@ state. Note that gateway logs live *outside* `data/` entirely, at the install ro
 SHA-256), 8.3 migration logs, and theme/font/icon digests. The gateway regenerates these; they churn
 constantly. All are excluded by [`.gitignore`](../.gitignore) — if you ever see them in `git status`,
 something is wrong with your ignore rules. There are two `.resources/` folders, both inside trees
-you version: `config/resources/.resources/` and `projects/.resources/`. (One migration log,
-`services/config/resources/migration-log-202605211406.md`, is tracked for historical reasons: it
-records the seed's one-time 8.1 to 8.3 conversion. Every fresh gateway writes its own at
-commissioning; those stay ignored.)
+you version: `config/resources/.resources/` and `projects/.resources/`. Every gateway writes its
+own migration log into `config/resources/` at commissioning (for the local gateway:
+`services/config/resources/migration-log-*.md`); nothing reads it, so it stays out of git and out
+of every deploy.
 
 ### `config/resources/local/`
 

@@ -116,6 +116,39 @@ ensure_env_file
 # setup.sh shell's export. See pf_persist_lab_gid in scripts/preflight.sh.
 pf_persist_lab_gid
 
+# ---- Module list for test/production on the base image --------------------
+# Before the first deploy, test and production run the plain base image. It
+# has no modules.json, so Ignition would start every module it ships.
+# docker-compose.yaml hands such a gateway the list services/modules.json
+# enables instead (LAB_MODULES_ENABLED). Record it in .env, like LAB_GID, so
+# a later `docker compose up -d` you run yourself uses it too. Re-running
+# setup.sh refreshes it after you change modules.json.
+persist_modules_enabled() {
+    local list tmp
+    list="$(modules_enabled_list)" || return 0
+    [ -n "$list" ] || return 0
+    export LAB_MODULES_ENABLED="$list"
+    if grep -q '^LAB_MODULES_ENABLED=' .env 2>/dev/null; then
+        grep -qxF "LAB_MODULES_ENABLED=$list" .env && return 0
+        tmp="$(mktemp)" || return 0
+        # cat-over instead of mv: keeps .env's inode and permission bits.
+        awk -v line="LAB_MODULES_ENABLED=$list" \
+            '/^LAB_MODULES_ENABLED=/ { print line; next } { print }' .env > "$tmp" \
+            && cat "$tmp" > .env
+        rm -f "$tmp"
+    else
+        {
+            echo ""
+            echo "# Written by scripts/setup.sh from services/modules.json: the modules"
+            echo "# test/production start while they still run the plain base image"
+            echo "# (before your first deploy). Re-run setup.sh after changing modules.json."
+            echo "LAB_MODULES_ENABLED=$list"
+        } >> .env
+    fi
+}
+
+persist_modules_enabled
+
 # ---- Per-gateway API keys (never committed, never baked) -------------------
 # Generates a unique key per gateway into .env and writes the LOCAL gateway's
 # hash-only token resource into the bind-mounted services/config BEFORE first

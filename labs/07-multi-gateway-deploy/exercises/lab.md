@@ -68,7 +68,7 @@ projects/<yourname>/         your own project (you create it in Part 1)
 services/config/             gateway config export (devices, tags, connections, historians)
 services/modules.json        module manifest (lab 06)
 third-party-modules/         .modl files the pipeline installs (lab 06)
-jar-files/jar/               library JARs, shipped to lib/core/gateway (lab 06)
+jar-files/jar/               library JARs, shipped to the gateway's JAR directory (lab 06)
 db-migration/migrate/        golang-migrate up/down pairs (lab 06)
 local-development/secrets/   local stand-ins for the referenced secrets
 scripts/                     setup, teardown, validate, migrate, scan, reset-trial, ...
@@ -200,6 +200,7 @@ stack, the same move as every previous lab:
 | local gateway `oatmakers-gateway` | <http://localhost:8088> | `admin` / `password` |
 | local database `oatmakers-postgres` | `localhost:5432` | see `local-development/secrets/` |
 | your test gateway `oatmakers-test-gateway` (Part 0) | <http://localhost:8090> | fed by your workflow only |
+| its own database `oatmakers-test-postgres` (Part 0) | no host port | migrated by your workflow only |
 | production `oatmakers-site-7` | <https://cloud.mustrysolutions.com> | fed by `release.yaml` only |
 
 - **The local gateway bind-mounts the repo.** A save in the Designer lands
@@ -209,6 +210,11 @@ stack, the same move as every previous lab:
   `docker cp` into the container plus an authenticated scan, run by your
   own workflow on your own runner. That is why a green test deploy is
   evidence about production and not just about your laptop.
+- **Each gateway has its own database.** Your local gateway uses
+  `oatmakers-postgres`; your test gateway uses `oatmakers-test-postgres`,
+  which only your test workflow migrates. Both answer to the hostname
+  `postgres`, like production's database, so one connection setting works in
+  all three places.
 - **Referenced secrets work locally too.** `local-development/secrets/`
   holds the local stand-ins at the path the gateway's file secret provider
   (named `environment`) reads, so a connection that references `POSTGRES_PASSWORD` resolves on
@@ -294,11 +300,18 @@ About that token:
 
 `setup.sh` starts the local stack (gateway on `8088`, database on `5432`)
 and, because `LAB_USER` is set, the `test` compose profile: your test
-gateway `oatmakers-test-gateway` on `8090` and your runner
+gateway `oatmakers-test-gateway` on `8090`, its own database
+`oatmakers-test-postgres` and your runner
 `oatmakers-test-runner-<yourname>`. It also generates your API key into
 `.env` and seeds it into the test gateway **before** its first boot (the
 scan API only accepts tokens the gateway has already loaded), so always use
-`setup.sh` for the first start. It is safe to re-run.
+`setup.sh` for the first start. At the end it checks that both gateways
+accept your key. It is safe to re-run.
+
+Need a new API key (it showed up on screen, say)? Empty `IGNITION_API_KEY`
+in `.env` and run `./scripts/setup.sh` again: it generates a new key, puts
+it on both gateways and your runner, and restarts each gateway that still
+holds the old one.
 
 **3. Check that your runner is online.** Contributors cannot open
 *Settings → Actions → Runners*, so look at the runner itself:
@@ -333,9 +346,9 @@ person, each naming its own label, **is** the routing.
 
 What the workflow does is what the production deploy does, minus the
 `release.yaml` indirection: check out `main`, run the migrations against
-your local database, `docker cp` projects and config into your test
-gateway, ship modules and JARs (restart only when they changed), then ask
-the gateway for an authenticated scan.
+your test gateway's own database, `docker cp` projects and config into your
+test gateway, ship modules and JARs (restart only when they changed), then
+ask the gateway for an authenticated scan.
 
 **5. PR it in like anything else.**
 
@@ -365,7 +378,9 @@ your new workflow straight away:
   test gateway. Production uses the same mechanism:
   `runs-on: [self-hosted, demo-oatmakers]`.
 - **Observe:** your test gateway gets its files the way production does,
-  never through a bind mount of your working tree.
+  never through a bind mount of your working tree. Its database gets its
+  migrations the way production's does: from the workflow, never from
+  `scripts/migrate.sh` on your laptop.
 
 - **From now on you can also deploy a branch** to your test gateway before
   you merge it: `gh workflow run test-<yourname>.yml --ref <your-branch>`
@@ -529,6 +544,13 @@ tag from the current `main` and pin that one.
 
 **Challenge 1: add the Embr Charts module and build a chart screen**
 
+Embr Charts stays on production once a group installed it: the demo keeps
+using it. If `services/modules.json` on `main` already has a
+`com.mussonindustrial.embr.charts` entry, skip the download, the entry and
+the recreate: check that your test gateway runs the module (installed from
+the manifest alone: it shows in the gateway's module list on
+`localhost:8090`), then build the chart screen.
+
 - Download `Embr-Charts-Ignition83-6.0.1.modl` (Embr Charts 6.0.1 for
   Ignition 8.3, module id `com.mussonindustrial.embr.charts`) from
   <https://github.com/mussonindustrial/embr/releases/tag/releases%2F8.3%2F2026.6.17>
@@ -571,14 +593,15 @@ tag from the current `main` and pin that one.
   gateway does not bundle it, so the import fails until the JAR is really
   there. (Importing commons-lang3 and friends proves nothing: the image
   already has them.)
-- Make your local gateway load it: JARs come from `lib/core/gateway`, which
-  is not bind-mounted:
+- Make your local gateway load it. It bind-mounts `jar-files/jar/` into
+  its JAR directory, and JARs load at boot, so a restart is all it takes:
 
   ```bash
-  docker cp jar-files/jar/fastcsv-4.4.0.jar \
-    oatmakers-gateway:/usr/local/bin/ignition/lib/core/gateway/
-  docker restart oatmakers-gateway
+  docker compose restart gateway
   ```
+
+  Your test gateway and production keep the JARs their deploy ships in a
+  volume, so the JAR survives a container recreate there too.
 
 - Add a project script, for example `course/<yourname>/recipe`, with a
   function that parses a CSV line of ingredients:
@@ -624,13 +647,14 @@ tag from the current `main` and pin that one.
   scripts/migrate.sh up
   ```
 
-  Your test workflow migrates this same local database. Run
+  That is your local database. Your test gateway has its own, which only
+  your test workflow migrates, so trying a migration locally never breaks
+  your test runs. Your local database does remember it: run
   `scripts/migrate.sh down 1` before you switch branches or renumber, and
-  `up` again after your PR merges; otherwise every test run on `main` fails
-  with `no migration found for version N`. Pick a number higher than any on
-  `main` at merge time, not just a free one: a lower number merged after a
-  higher one already ran is silently skipped. If `main` already has your
-  number when you rebase, renumber yours.
+  `up` again after your PR merges. Pick a number higher than any on `main`
+  at merge time, not just a free one: a lower number merged after a higher
+  one already ran is silently skipped. If `main` already has your number
+  when you rebase, renumber yours.
 - Build a Perspective view that queries the seeded rows.
 - Verify on production: your page shows the rows (so the connection is
   valid and the migration ran before the screen arrived).
@@ -742,14 +766,17 @@ tag, one release PR at a time.
   for your device, connection or historian. The same folders for someone
   else's work, after a pull, are theirs: leave them.
 - **Your `test-<yourname>.yml` run fails with
-  `no migration found for version N`.** Your local database ran a
-  migration from a branch that `main` does not have. On that branch:
-  `scripts/migrate.sh down 1`, then re-run the failed run.
-- **Your test run says `Still not authorized`.** Your test gateway holds an
-  older API token than the key in your `.env` (`setup.sh` only seeds a
-  new test gateway volume). Recreate it:
-  `docker compose --profile test rm -sf test-gateway test-runner && docker volume rm oatmakers_test-gateway-data && ./scripts/setup.sh`,
-  then re-run the failed run.
+  `no migration found for version N`.** You deployed a branch with
+  `gh workflow run` and its migration is still in your test database, but
+  `main` does not have it. On that branch:
+  `scripts/migrate.sh --test down 1`, then re-run the failed run.
+- **`scripts/migrate.sh up` (or `setup.sh`) says
+  `no migration found for version N`.** The same, in your local database:
+  on that branch, `scripts/migrate.sh down 1`.
+- **Your test run says `Still not authorized`.** Your test gateway and your
+  runner hold different API keys (the key in `.env` changed without a
+  `setup.sh` run). Run `./scripts/setup.sh`: it puts the key from `.env` on
+  both and restarts the gateway. Then re-run the failed run.
 - **`CI OK` is red on a release PR.** Open the failing job: most often the
   pin points at a tag that was never pushed (`git push origin <tag>`), a
   tag on a commit that is not on `main` (tag `main` after your PR merged),

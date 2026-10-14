@@ -169,11 +169,14 @@ fix one finding.
    actionlint/ign-lint for you; those are the separate commands in this list. (Honest fine
    print: the gateway runs **Jython 2.7**; this is a fast Python-3 *parse* check, not a Jython
    validator. Write Python-3-parseable syntax and you're fine — the lab's scripts already are.)
-3. `ign-lint --config rule_config.json --files "projects/**/view.json"`: **the flagship
-   tool of this part.** Ignition-native static analysis: it parses the Perspective
-   `view.json`, walks the component tree, and checks naming conventions, binding poll
-   rates, brittle references, and the Python embedded in views, all without a running
-   gateway.
+3. `(cd ../.. && ign-lint --config labs/03-github-actions/rule_config.json --files "labs/03-github-actions/projects/**/view.json")`:
+   **the flagship tool of this part.** Ignition-native static analysis: it parses the
+   Perspective `view.json`, walks the component tree, and checks naming conventions,
+   binding poll rates, brittle references, and the Python embedded in views, all without
+   a running gateway. It runs from the **repo root**: `rule_config.json` names the lab's
+   pylint config by a repo-root-relative path (see below), and ign-lint resolves that
+   path against the folder you run it from. The parentheses run the `cd` in a subshell,
+   so your terminal stays in the lab folder.
 4. `actionlint -config-file .github/actionlint.yaml ../../.github/workflows/lab03-*.yml`: GitHub
    Actions workflow syntax + expression typing (this picks up the seeded `lab03-example.yml`).
    The workflows sit at the repo root, and `-config-file` points at this lab's config, which
@@ -185,7 +188,14 @@ the one most people here have never seen. Open `rule_config.json` and walk the r
 `NamePatternRule` (components → PascalCase, properties → camelCase, message handlers →
 kebab-case, custom methods → snake_case), `PollingIntervalRule` (a floor on binding poll
 rates — 1000 ms here), `BadComponentReferenceRule` (flags `.getSibling()` / `.getParent()`
-traversal), `PylintScriptRule`, and the rest. The clean `lab-project` passes ign-lint with
+traversal), `PylintScriptRule`, and the rest. `PylintScriptRule` runs pylint over the
+scripts inside the views with the lab's `.config/.ignition-pylintrc`: ign-lint's own bundled
+pylint config with one rule switched off, `import-outside-toplevel`. A transform or event
+script is a function body, so an import (a Java class, say) can only go inside it; the
+bundled config would flag every one. `rule_config.json` points at that file with
+`labs/03-github-actions/.config/.ignition-pylintrc`, a path relative to the repo root, which
+is why every ign-lint run (yours, the pre-commit hook, CI) starts there. Every lab from here
+on uses the same rules and the same pylint config. The clean `lab-project` passes ign-lint with
 **zero** findings — every finding you see is something `scripts/seed.sh` broke on purpose.
 
 ### You do
@@ -376,11 +386,15 @@ Then flesh out the `lint` job with the Part 1 linters, including `ign-lint`:
           flags: "-config-file labs/03-github-actions/.github/actionlint.yaml"
       - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends shellcheck
       - run: shellcheck scripts/*.sh
-      - run: ign-lint --config rule_config.json --files "projects/**/view.json"
+      - working-directory: .              # ign-lint runs from the repo root, as in Part 1
+        run: >-
+          ign-lint --config labs/03-github-actions/rule_config.json
+          --files "labs/03-github-actions/projects/**/view.json"
 ```
 
-`ign-lint` needs Python 3.10+, which is why we pin `setup-python` to `"3.12"`. Discuss as
-you go:
+`ign-lint` needs Python 3.10+, which is why we pin `setup-python` to `"3.12"`. A step-level
+`working-directory:` overrides the `defaults.run` one for that step only: `.` is the repo
+root, the same place you ran ign-lint from in Part 1. Discuss as you go:
 
 - **`permissions: contents: read`** — least privilege; the default `GITHUB_TOKEN` is too broad.
 - **`GITHUB_TOKEN`** — auto-provisioned per job, scoped to the repo, expires when the job ends.
@@ -414,6 +428,7 @@ on:
       - ".github/workflows/lab03-*.yml"
       - "labs/03-github-actions/.yamllint.yml"
       - "labs/03-github-actions/rule_config.json"
+      - "labs/03-github-actions/.config/**"
       - "labs/03-github-actions/.github/**"
   push:
     branches: [main]
@@ -424,7 +439,7 @@ on:
 
 `paths:` patterns are always relative to the **repo root**; `working-directory` doesn't
 change that. Include every config the checks read: `.yamllint.yml`, `rule_config.json`,
-and the lab's `.github/` (actionlint's config, and `ci-reference.yml` once you've set it
+`.config/` (ign-lint's pylint config) and the lab's `.github/` (actionlint's config, and `ci-reference.yml` once you've set it
 aside).
 
 **Step 2: Compose validation.** Add a final step to the lint job:
@@ -589,6 +604,7 @@ git diff --no-index .github/ci-reference.yml ../../.github/workflows/lab03-ci.ym
         - "!labs/03-github-actions/docker-compose.yml"
         - "!labs/03-github-actions/.yamllint.yml"
         - "!labs/03-github-actions/rule_config.json"
+        - "!labs/03-github-actions/.config/**"
         - "!labs/03-github-actions/.github/**"
   permissions: {}
   jobs:

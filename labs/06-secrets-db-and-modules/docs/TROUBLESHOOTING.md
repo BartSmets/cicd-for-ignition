@@ -120,6 +120,18 @@ restart means the gateway has no token on disk at all (e.g. `gateways/<gw>/confi
 re-run `scripts/setup.sh` — it re-derives every token from the keys in `.env`, seeds them, and
 restarts what needs restarting. The same applies to failing **manual** scans (`scripts/scan.sh`).
 
+## Flint reports "Endpoint not found (404)" when it scans
+
+Flint calls the gateway's scan API and then `POST /data/project-scan-endpoint/scan`,
+the endpoint of the **Project Scan Endpoint** module. A 404 means that module is not
+running on that gateway. Every gateway installs it at boot from `third-party-modules/`:
+its id `project-scan-endpoint` sits in the three module lists in `docker-compose.yaml`
+and in `services/modules.json`. Check *Platform → Modules* (it should say Running) or
+`docker logs lab06-gateway-local-development 2>&1 | grep "project-scan-endpoint"`, then
+`docker compose up -d` to recreate a gateway that predates it. A 401 from Flint means
+its token file is missing or stale: `scripts/setup.sh` writes `.flint/tokens/<env>-api.json`
+from the keys in `.env`.
+
 ## Locked out of test/production after a deploy (admin password rejected)
 
 Historically this happened when a deploy shipped the repo's copy of

@@ -48,6 +48,12 @@ services/config/resources/core/ignition/identity-provider/default/
 # This entry protects manual deploys run from a working tree, where the
 # local gateway's token sits under services/config.
 services/config/resources/core/ignition/api-token/
+# Migration logs a gateway writes at commissioning (gitignored, so never in
+# a checkout). Nothing reads them; this entry protects manual deploys run
+# from a working tree, where the local gateway's log sits under
+# services/config/resources/. A bare name, because the prune step matches
+# globs by name (find -name), not by path.
+migration-log-*.md
 # Test/production gateway state (bind mounts) — never part of a deploy payload
 /gateways/
 

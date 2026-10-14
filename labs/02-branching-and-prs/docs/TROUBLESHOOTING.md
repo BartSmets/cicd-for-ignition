@@ -52,3 +52,15 @@ The API key is wrong or lacks permission. Check the one-time setup in
 Permissions**, the value in `.env` is the full `<name>:<secret>`, and
 "Require secure connections for API Keys" is off. Or skip the key and run
 `docker compose restart`.
+
+## Flint reports "Endpoint not found (404)" when it scans
+
+Flint calls the gateway's scan API and then `POST /data/project-scan-endpoint/scan`,
+the endpoint of the **Project Scan Endpoint** module. A 404 means that module is not
+running. The gateway installs it at boot from `third-party-modules/`, so check
+*Platform → Modules* (it should say Running) or
+`docker logs lab02-ignition 2>&1 | grep "project-scan-endpoint"`. A gateway you
+created before the module was added gets it after `docker compose up -d`, which
+recreates the container with the new settings. A 401 from Flint means it has no
+valid key: put `ignition_token=<name>:<secret>` (the same key as in `.env`) in
+`.flint/tokens/local-api.json`.

@@ -100,6 +100,17 @@ image_repo() {
   printf '%s' "$repo" | tr '[:upper:]' '[:lower:]'
 }
 
+# The modules services/modules.json enables, as one comma-separated list of
+# module ids. docker-compose.yaml passes it to test/production only while they
+# run the plain base image, which carries no modules.json of its own.
+modules_enabled_list() {
+  python3 - "$PROJECT_ROOT/services/modules.json" <<'PYEOF'
+import json, sys
+modules = json.load(open(sys.argv[1]))
+print(",".join(sorted(m for m, v in modules.items() if v.get("onStartup") == "enabled")))
+PYEOF
+}
+
 # Read a single KEY from a .env-style file (default: <repo>/.env).
 # Strips optional single/double quotes around the value.
 env_value() {
