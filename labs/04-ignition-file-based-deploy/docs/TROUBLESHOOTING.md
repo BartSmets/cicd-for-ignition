@@ -58,8 +58,9 @@ turns CONNECTED within a minute.
   it waits for something to be accepted, usually a module certificate or licence. `setup.sh` waits
   for it and says "still commissioning" when it gives up. Open the gateway in your browser to see
   what it asks for. All three gateways take their acceptance from the one `services/modules.json`,
-  so if `git diff services/modules.json` shows `certFingerprint` lines removed, restore the file and
-  restart: `git checkout -- services/modules.json && docker compose restart`.
+  so if `git diff services/modules.json` shows `certFingerprint` lines removed, restore the file,
+  restart the gateways and let setup finish what it skipped:
+  `git checkout -- services/modules.json && docker compose restart && scripts/setup.sh`.
 
 ## `git status` shows lots of `resource.json` changes
 
