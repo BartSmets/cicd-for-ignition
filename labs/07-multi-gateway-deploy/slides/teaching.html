@@ -1168,7 +1168,7 @@ projects:
         <div class="code reveal" data-step="3" style="margin-top:0"><pre><span class="cm"># release.yaml</span>
  gateway: <span class="cmd2">oatmakers-site-7</span>
  projects:
-   oatmakers:  <span class="cmd2">v5.0.0</span>
+   oatmakers:  <span class="cmd2">v5.1.0</span>
 <span class="grn">+  &lt;yourname&gt;: v1.0.0</span></pre></div>
         <div class="callout reveal" data-step="4" style="margin-top:12px">
           <div class="lab" style="color:var(--bad)">CI checks every pin</div>
@@ -1212,21 +1212,21 @@ projects:
     <div class="cols2" style="grid-template-columns:.95fr 1.05fr;gap:22px;align-items:start">
       <div class="filecard">
         <div class="fh">🏷 main, with two people shipping</div>
-        <pre><span class="row">c1 ─ <span class="hl">oatmakers@v5.0.0</span>        <span class="cm">pinned in release.yaml</span></span><span class="row reveal" data-step="1">c2 ─ A: chart screen      <span class="cm">merged</span></span><span class="row reveal" data-step="2">c3 ─ B: migration + view  <span class="cm">merged</span></span><span class="row reveal" data-step="2"> </span><span class="row reveal" data-step="2">on c2: <span class="hl">oatmakers@v5.1.0</span>   <span class="cm">← A tags first</span></span><span class="row reveal" data-step="2">on c3: <span class="wrn">v5.1.0 rejected</span>     <span class="cm">← B, same number</span></span><span class="row reveal" data-step="3">on c3: <span class="grn">oatmakers@v5.2.0</span>   <span class="cm">← B: contains c2 AND c3</span></span><span class="row reveal" data-step="4"> </span><span class="row reveal" data-step="4"><span class="cm">release.yaml: oatmakers v5.2.0 (B pinned first)</span></span></pre>
+        <pre><span class="row">c1 ─ <span class="hl">oatmakers@v5.1.0</span>        <span class="cm">pinned in release.yaml</span></span><span class="row reveal" data-step="1">c2 ─ A: chart screen      <span class="cm">merged</span></span><span class="row reveal" data-step="2">c3 ─ B: migration + view  <span class="cm">merged</span></span><span class="row reveal" data-step="2"> </span><span class="row reveal" data-step="2">on c2: <span class="hl">oatmakers@v5.2.0</span>   <span class="cm">← A tags first</span></span><span class="row reveal" data-step="2">on c3: <span class="wrn">v5.2.0 rejected</span>     <span class="cm">← B, same number</span></span><span class="row reveal" data-step="3">on c3: <span class="grn">oatmakers@v5.3.0</span>   <span class="cm">← B: contains c2 AND c3</span></span><span class="row reveal" data-step="4"> </span><span class="row reveal" data-step="4"><span class="cm">release.yaml: oatmakers v5.3.0 (B pinned first)</span></span></pre>
       </div>
       <div>
         <div class="code reveal" data-step="1" style="margin-top:0"><pre><span class="cm"># the next free number: look at the tags, not only at release.yaml</span>
 git fetch --tags
 git tag -l <span class="grn">'oatmakers@*'</span> --sort=-v:refname | head -3</pre></div>
-        <div class="code reveal" data-step="2" style="margin-top:10px"><pre>git push origin oatmakers@v5.1.0
-<span class="red"> ! [rejected]  oatmakers@v5.1.0 (already exists)</span>
-git tag -d oatmakers@v5.1.0 &amp;&amp; git fetch --tags  <span class="cm"># next number</span></pre></div>
-        <div class="code reveal" data-step="4" style="margin-top:10px"><pre><span class="cm"># A, before pinning v5.1.0: is my tag inside the pinned one?</span>
+        <div class="code reveal" data-step="2" style="margin-top:10px"><pre>git push origin oatmakers@v5.2.0
+<span class="red"> ! [rejected]  oatmakers@v5.2.0 (already exists)</span>
+git tag -d oatmakers@v5.2.0 &amp;&amp; git fetch --tags  <span class="cm"># next number</span></pre></div>
+        <div class="code reveal" data-step="4" style="margin-top:10px"><pre><span class="cm"># A, before pinning v5.2.0: is my tag inside the pinned one?</span>
 git merge-base --is-ancestor \
-  oatmakers@v5.1.0 oatmakers@v5.2.0 &amp;&amp; echo <span class="grn">"already included"</span></pre></div>
+  oatmakers@v5.2.0 oatmakers@v5.3.0 &amp;&amp; echo <span class="grn">"already included"</span></pre></div>
         <div class="callout reveal" data-step="5" style="margin-top:10px">
           <div class="lab">Never lower a pin</div>
-          <p>Pinning <code>v5.1.0</code> over <code>v5.2.0</code> would quietly <b>remove B's work</b> from production. If your tag is already included, you are live: done.</p>
+          <p>Pinning <code>v5.2.0</code> over <code>v5.3.0</code> would quietly <b>remove B's work</b> from production. If your tag is already included, you are live: done.</p>
         </div>
       </div>
     </div>
@@ -1609,10 +1609,10 @@ controllers.pin=revealCtrl(19,'#pin-step',[
 controllers.stream=revealCtrl(20,'#stream-step',[
   'Two people, one shared project, one version stream. Step through what happens.',
   '<b>A merges a chart screen</b> and looks for the next free number. Look at the <b>tags</b>, not only at <span class="mono">release.yaml</span>: someone may have tagged without pinning yet.',
-  '<b>A tag race.</b> B merges a migration right after. A tags <span class="mono">v5.1.0</span> on c2; B also picks <span class="mono">v5.1.0</span> for c3 and the push is rejected. No harm done, as long as nobody moves a pushed tag.',
-  '<b>B fetches the tags and takes <span class="mono">v5.2.0</span></b> for c3. That tag contains B\'s work <b>and</b> A\'s chart: a tag carries everything merged before it.',
-  '<b>B pins <span class="mono">v5.2.0</span> first.</b> Before A pins <span class="mono">v5.1.0</span>, A checks whether it is already inside the pinned tag. It is: A\'s chart is live.',
-  '<b>Never lower a pin.</b> Pinning <span class="mono">v5.1.0</span> now would remove B\'s work from production. Already included means done.'
+  '<b>A tag race.</b> B merges a migration right after. A tags <span class="mono">v5.2.0</span> on c2; B also picks <span class="mono">v5.2.0</span> for c3 and the push is rejected. No harm done, as long as nobody moves a pushed tag.',
+  '<b>B fetches the tags and takes <span class="mono">v5.3.0</span></b> for c3. That tag contains B\'s work <b>and</b> A\'s chart: a tag carries everything merged before it.',
+  '<b>B pins <span class="mono">v5.3.0</span> first.</b> Before A pins <span class="mono">v5.2.0</span>, A checks whether it is already inside the pinned tag. It is: A\'s chart is live.',
+  '<b>Never lower a pin.</b> Pinning <span class="mono">v5.2.0</span> now would remove B\'s work from production. Already included means done.'
 ]);
 
 /* ============ wire controllers to their slides + reset on entry ============ */

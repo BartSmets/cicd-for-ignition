@@ -347,7 +347,7 @@ body{
         <div class="code" style="margin-top:12px"><pre><span class="cm"># release.yaml</span>
 gateway: <span class="cmd2">oatmakers-site-7</span>
 projects:
-  oatmakers: <span class="grn">v5.0.0</span>   <span class="cm"># + the gateway payload</span></pre></div>
+  oatmakers: <span class="grn">v5.1.0</span>   <span class="cm"># + the gateway payload</span></pre></div>
       </div>
     </div>
     <div class="goal" style="margin-top:20px">
@@ -584,7 +584,7 @@ git push origin <span class="cmd2">&lt;yourname&gt;@v1.0.0</span>
 git switch -c pin/&lt;yourname&gt;-v1.0.0
 <span class="cm"># release.yaml</span>
  projects:
-   oatmakers:  v5.0.0
+   oatmakers:  v5.1.0
 <span class="grn">+  &lt;yourname&gt;: v1.0.0</span>
 git add release.yaml
 git commit -m <span class="grn">"release: pin &lt;yourname&gt; v1.0.0"</span>
@@ -613,20 +613,20 @@ git push -u origin pin/&lt;yourname&gt;-v1.0.0</pre></div>
         <div class="step"><div class="ix p">1</div><div class="tx"><b>Claim a challenge in the room.</b> More people than challenges: pair up. Challenge 5 builds on 3 and 4.</div></div>
         <div class="step"><div class="ix p">2</div><div class="tx"><b>Work lands in <code>projects/oatmakers/</code></b> plus <code>services/</code>, <code>third-party-modules/</code>, <code>jar-files/jar/</code>, <code>db-migration/migrate/</code>. Your views in <code>Course/&lt;yourname&gt;/</code> with a page like <code>/course/&lt;yourname&gt;</code>, tags under <code>Course/</code>, tables prefixed <code>course_</code>.</div></div>
         <div class="step"><div class="ix p">3</div><div class="tx"><b>Check your test gateway first:</b> <code>gh workflow run test-&lt;yourname&gt;.yml --ref &lt;branch&gt;</code> before the merge, your workflow on <code>main</code> after it. Not working on <code>localhost:8090</code>? Fix it before you tag.</div></div>
-        <div class="step"><div class="ix p">4</div><div class="tx"><b>Finished means live:</b> merge, cut the next free <code>oatmakers@</code> tag (from <code>v5.0.0</code>: a fix <code>v5.0.1</code>, a feature <code>v5.1.0</code>), pin it by PR. The gateway payload rides the <code>oatmakers</code> pin.</div></div>
+        <div class="step"><div class="ix p">4</div><div class="tx"><b>Finished means live:</b> merge, cut the next free <code>oatmakers@</code> tag (from <code>v5.1.0</code>: a fix <code>v5.1.1</code>, a feature <code>v5.2.0</code>), pin it by PR. The gateway payload rides the <code>oatmakers</code> pin.</div></div>
       </div>
       <div>
         <div class="code" style="margin-top:0"><pre>git switch main &amp;&amp; git pull
 git fetch --tags
 git tag -l <span class="grn">'oatmakers@*'</span> --sort=-v:refname | head -3
-git tag oatmakers@v5.1.0          <span class="cm"># the next free number</span>
-git push origin oatmakers@v5.1.0
+git tag oatmakers@v5.2.0          <span class="cm"># the next free number</span>
+git push origin oatmakers@v5.2.0
 <span class="cm"># rejected? someone took it: drop yours, take the next</span>
-git tag -d oatmakers@v5.1.0 &amp;&amp; git fetch --tags</pre></div>
+git tag -d oatmakers@v5.2.0 &amp;&amp; git fetch --tags</pre></div>
         <div class="code" style="margin-top:10px"><pre><span class="cm"># release.yaml already pins a HIGHER oatmakers@ version?</span>
 <span class="cm"># check whether your tag is inside it before you pin:</span>
 git merge-base --is-ancestor \
-  oatmakers@v5.1.0 oatmakers@v5.2.0 &amp;&amp; echo <span class="grn">"already included"</span></pre></div>
+  oatmakers@v5.2.0 oatmakers@v5.3.0 &amp;&amp; echo <span class="grn">"already included"</span></pre></div>
         <div class="obs"><span class="ob">Observe</span><p><b>Already included</b> means your change ships with the higher pin: you are done, never pin backwards. No output: cut a new tag from the current <code>main</code> and pin that.</p></div>
       </div>
     </div>

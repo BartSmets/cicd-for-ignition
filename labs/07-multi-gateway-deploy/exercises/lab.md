@@ -121,7 +121,7 @@ One repository, two jobs. The seam between them is a version string:
 # release.yaml
 gateway: oatmakers-site-7
 projects:
-  oatmakers: v5.0.0       # ships projects/oatmakers + the gateway payload from oatmakers@v5.0.0
+  oatmakers: v5.1.0       # ships projects/oatmakers + the gateway payload from oatmakers@v5.1.0
 ```
 
 In the teaching you saw **option B**: split the infra part (release files,
@@ -447,7 +447,7 @@ in flight at a time. Then add one line:
 ```diff
  gateway: oatmakers-site-7
  projects:
-   oatmakers: v5.0.0
+   oatmakers: v5.1.0
 +  <yourname>: v1.0.0
 ```
 
@@ -507,16 +507,16 @@ together, on a live gateway.
   why every challenge ends with a new `oatmakers@` tag.
 
 **Finding the next free tag number.** The group starts at the
-`oatmakers: v5.0.0` pin. A fix takes the next patch (`v5.0.1`), a new
-screen or feature the next minor (`v5.1.0`). Someone may have tagged without
+`oatmakers: v5.1.0` pin. A fix takes the next patch (`v5.1.1`), a new
+screen or feature the next minor (`v5.2.0`). Someone may have tagged without
 pinning yet, so look at the tags, not only at `release.yaml`:
 
 ```bash
 git switch main && git pull
 git fetch --tags
 git tag -l 'oatmakers@*' --sort=-v:refname | head -3
-git tag oatmakers@v5.1.0          # the next free number
-git push origin oatmakers@v5.1.0
+git tag oatmakers@v5.2.0          # the next free number
+git push origin oatmakers@v5.2.0
 ```
 
 Push rejected? Someone took that number first. Your local tag still points
@@ -524,9 +524,9 @@ at your commit, and `git fetch --tags` will not overwrite it, so delete it,
 fetch, and take the next number:
 
 ```bash
-git tag -d oatmakers@v5.1.0 && git fetch --tags
+git tag -d oatmakers@v5.2.0 && git fetch --tags
 git tag -l 'oatmakers@*' --sort=-v:refname | head -3
-git tag oatmakers@v5.2.0 && git push origin oatmakers@v5.2.0
+git tag oatmakers@v5.3.0 && git push origin oatmakers@v5.3.0
 ```
 
 **Before you pin: is your change already live?** Your tag contains
@@ -535,7 +535,7 @@ everything merged before it, including other people's work. If
 whether your tag is inside it:
 
 ```bash
-git merge-base --is-ancestor oatmakers@v5.1.0 oatmakers@v5.2.0 && echo "already included"
+git merge-base --is-ancestor oatmakers@v5.2.0 oatmakers@v5.3.0 && echo "already included"
 ```
 
 `already included` means your change ships with the higher pin: you are
