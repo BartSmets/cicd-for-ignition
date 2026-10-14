@@ -359,7 +359,7 @@ overwrite, what it must merge, and what it must never touch).
 
 ---
 
-## Part 5: How this afternoon's repo deploys
+## Part 5: How this lab's repo deploys
 
 The assignment runs on one real repository,
 [`Mustry-Solutions/demo-oatmakers`](https://github.com/Mustry-Solutions/demo-oatmakers):

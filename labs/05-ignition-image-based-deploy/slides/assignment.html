@@ -875,7 +875,7 @@ IGNITION_TEST_IMAGE=cicd-lab-05-ignition:sha-&lt;new-short&gt; \
         <li>Pretend Part 2.2's change broke something on test. You need the previous version back, <b>now</b>.</li>
         <li>Deploy the <b>old</b> <code>:sha-&lt;short&gt;</code> tag you wrote down in Part 2.1: the same one-liner, older name. The old image never went away; it's a name in your image store.</li>
         <li>Verify at :8089: the view is back to its previous state, and the revision label shows the old sha.</li>
-        <li>Count the irreversible steps you just took. (Zero: both versions still exist, and you can flip between them all afternoon.)</li>
+        <li>Count the irreversible steps you just took. (Zero: both versions still exist, and you can flip between them as often as you like.)</li>
       </ol>
       <div class="side">
         <div class="code"><pre><span class="cm"># 2: rollback = the same deploy, older tag</span>
