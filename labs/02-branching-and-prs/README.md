@@ -112,6 +112,19 @@ key (optional — instructions in `.env.example`) and trigger a project scan ins
 scripts/scan.sh                 # faster reload via the gateway's scan API
 ```
 
+### Editing in VS Code with Flint
+
+The Flint extension reads `flint.config.json` and can trigger the scan for you when
+you save. On every scan it calls the gateway's own scan API and the endpoint of the
+**Project Scan Endpoint** module (`POST /data/project-scan-endpoint/scan`), which
+the gateway installs at boot from `third-party-modules/`. The module also tells an
+open Designer to reload the project, so the Designer shows your VS Code edit.
+
+Flint needs the same API key as `scripts/scan.sh`. Put it in
+`.flint/tokens/local-api.json` (gitignored) as one line,
+`ignition_token=<name>:<secret>` (the file's format is dotenv, despite the `.json`);
+`.flint/tokens/local-api.json.example` shows it.
+
 ## Lab structure
 
 The whole lab lives in one file, [`exercises/lab.md`](./exercises/lab.md): a single
@@ -132,6 +145,7 @@ labs/02-branching-and-prs/
 ├── docker-compose.yml            ← one Ignition gateway (named volume + bind-mounted projects/)
 ├── .env.example                  ← copy to .env before running
 ├── flint.config.json             ← Flint (VS Code) config: projects + local gateway
+├── third-party-modules/          ← Project Scan Endpoint .modl the gateway installs at boot (for Flint)
 ├── exercises/
 │   └── lab.md                    ← the lab (Parts 1–3)
 ├── docs/                         ← reference reading
@@ -162,7 +176,7 @@ the repo root: `flint.config.json`'s paths are relative to the workspace folder.
 A single Ignition 8.3 gateway. Two things to understand about how it's wired:
 
 - **The gateway's own config and runtime state live in a named volume** (`ignition-data`) that the gateway generates itself on first boot. It never lands in the repo — which is exactly why you never see or touch gateway config in this lab. (That's Lab 04's subject.)
-- **Only `./projects` is bind-mounted** from the repo into the gateway. So the project files you edit on your laptop *are* the project files the gateway runs.
+- **`./projects` is the one thing you edit that is bind-mounted** from the repo into the gateway. So the project files you edit on your laptop *are* the project files the gateway runs. (`./third-party-modules` is mounted too, read at boot: it holds the Project Scan Endpoint module that Flint calls, see [Editing in VS Code with Flint](#editing-in-vs-code-with-flint).)
 
 ```yaml
 services:
@@ -172,6 +186,7 @@ services:
     volumes:
       - ignition-data:/usr/local/bin/ignition/data        # gateway-owned, self-generated, not in git
       - ./projects:/usr/local/bin/ignition/data/projects   # the one thing you edit
+      - ./third-party-modules:/third-party-modules         # add-on .modl files, installed at boot
 
 volumes:
   ignition-data:

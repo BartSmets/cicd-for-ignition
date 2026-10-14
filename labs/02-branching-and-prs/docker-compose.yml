@@ -4,8 +4,10 @@
 # The gateway's own config and runtime state live in a NAMED VOLUME
 # (ignition-data) that it generates itself on first boot — deliberately kept out
 # of the repo, so you never see or touch gateway config in this lab (that arrives
-# in Lab 04). The only thing bind-mounted from the repo is ./projects, so the
-# project files you edit on your laptop are the project files the gateway runs.
+# in Lab 04). The thing you edit that is bind-mounted from the repo is
+# ./projects, so the project files you edit on your laptop are the project files
+# the gateway runs. ./third-party-modules is mounted too: it holds the one add-on
+# module the gateway installs at boot (Project Scan Endpoint, used by Flint).
 #
 # Run it:
 #   cp .env.example .env
@@ -46,6 +48,9 @@ services:
       - ignition-data:/usr/local/bin/ignition/data
       # The one thing you edit: project files, straight from the repo.
       - ./projects:/usr/local/bin/ignition/data/projects
+      # Third-party .modl files the gateway installs at boot (read from here
+      # via -Dignition.gateway.externalModulesFolder in `command` below).
+      - ./third-party-modules:/third-party-modules
     environment:
       ACCEPT_IGNITION_EULA: "Y"
       IGNITION_EDITION: standard
@@ -54,9 +59,17 @@ services:
       GATEWAY_ADMIN_USERNAME: "${GATEWAY_ADMIN_USERNAME:-admin}"
       GATEWAY_ADMIN_PASSWORD: "${GATEWAY_ADMIN_PASSWORD:-password}"
       TZ: "Europe/Brussels"
+      # Headless install of the Project Scan Endpoint module
+      # (third-party-modules/): accept its licence (MIT) and its signing
+      # certificate up front, so no install dialog ever appears. Flint calls
+      # its endpoint after a save so an open Designer reloads the project.
+      ACCEPT_MODULE_LICENSES: project-scan-endpoint
+      ACCEPT_MODULE_CERTS: project-scan-endpoint
     command: >
       -n lab02
       -m 1024
+      --
+      -Dignition.gateway.externalModulesFolder=/third-party-modules
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8088/StatusPing"]
       interval: 10s

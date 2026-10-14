@@ -55,17 +55,20 @@ x-ignition-env: &ignition-env
     com.mussonindustrial.embr.charts,
     com.mussonindustrial.embr.periscope,
     com.mustry.historian.timescaledb,
-    dev.bwdesigngroup.flint.FlintDesignerBridge
+    dev.bwdesigngroup.flint.FlintDesignerBridge,
+    project-scan-endpoint
   ACCEPT_MODULE_LICENSES: >-
     com.mussonindustrial.embr.charts,
     com.mussonindustrial.embr.periscope,
     com.mustry.historian.timescaledb,
-    dev.bwdesigngroup.flint.FlintDesignerBridge
+    dev.bwdesigngroup.flint.FlintDesignerBridge,
+    project-scan-endpoint
   ACCEPT_MODULE_CERTS: >-
     com.mussonindustrial.embr.charts,
     com.mussonindustrial.embr.periscope,
     com.mustry.historian.timescaledb,
-    dev.bwdesigngroup.flint.FlintDesignerBridge
+    dev.bwdesigngroup.flint.FlintDesignerBridge,
+    project-scan-endpoint
   GATEWAY_RESTORE_DISABLED: "true"
   GATEWAY_NETWORK_ENABLED: "true"
   TZ: "Europe/Brussels"

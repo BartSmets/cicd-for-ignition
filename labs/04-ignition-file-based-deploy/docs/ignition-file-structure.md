@@ -168,7 +168,7 @@ files live outside `data/`: the built-in modules ship in the image at
 `/third-party-modules` (`-Dignition.gateway.externalModulesFolder`).
 
 - **In git?** **No** for `data/modules/`. Module binaries are large artifacts too: pin their
-  versions and install them through your image or runner setup. (This lab commits the four
+  versions and install them through your image or runner setup. (This lab commits the five
   third-party `.modl` files under `third-party-modules/` purely so a fresh clone boots offline.)
 - `modules.json` decides which of the available modules start; the binaries come from the folders above.
 
