@@ -656,14 +656,13 @@ a{color:var(--primary-deep)}
       <li><small>Lab 02</small><b>Branching and PRs on Ignition</b><span>The Oatmakers Site 04 oat-line Perspective HMI plus two Jython libraries. You branched, opened <b>pull requests</b> and reviewed them by hand.</span></li>
       <li class="now"><small>Lab 03 · today</small><b>Hand the checks to a machine</b><span>CI runs the checks on every PR and blocks the merge when they fail.</span></li>
     </ol>
-    <div class="aside warn" style="margin-top:1.5rem"><span class="label">The gap we close today</span>Lab 02 shipped <b>no CI</b>. Every quality gate was a human remembering to run <code>scripts/validate.sh</code> before opening a PR. That worked with two people and one project; it does not scale.</div>
   </div>
 </section>
 
 <!-- TODAY -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">01</span><h2 class="title">Today's goal: from a pull request to a running gateway, automatically</h2></div>
+  <div class="sechead"><span class="num">01</span><h2 class="title">Lab 03 adds automatic checks between a pull request and <code>main</code></h2></div>
   <div class="body">
     <ol class="flow">
       <li><b>Pull request</b><span>you change project files</span></li>
@@ -673,10 +672,9 @@ a{color:var(--primary-deep)}
     </ol>
     <div class="chap" style="margin-top:2.5rem">
       <div><small>Chapter 1</small><b>Validation and linters</b><span>What a machine can check for you, and the one tool that understands Ignition.</span></div>
-      <div><small>Chapter 2</small><b>GitHub Actions</b><span>Workflows, jobs and steps, triggers, the runner model and the required check.</span></div>
+      <div><small>Chapter 2</small><b>GitHub Actions</b><span>Workflows, jobs and steps, triggers and the required check.</span></div>
       <div><small>Chapter 3</small><b>Self-hosted runners</b><span>Where CI runs when GitHub-hosted can't reach your plant network.</span></div>
     </div>
-    <div class="aside"><span class="label">This lab's gateway</span>A <b>dev gateway</b>, defined in Compose, that runs the exact project files CI checks. Shipping files into a separate gateway, a real deploy, is Lab 04.</div>
   </div>
 </section>
 
@@ -687,36 +685,10 @@ a{color:var(--primary-deep)}
   <div class="divider-body"><h2 class="divider-title">Linters: cheap, fast checks that each catch <em>one class of bug</em></h2></div>
 </section>
 
-<!-- THREE KINDS OF CHECK -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">02</span><h2 class="title">Three kinds of check, and how hard to enforce each</h2></div>
-  <div class="body">
-    <div class="compare">
-      <div class="blue">
-        <h3>1 · Syntax</h3>
-        <p><b>Does the file even parse?</b> Cheap, fast, hard to argue with. A trailing comma in <code>project.json</code> and the gateway can't load your resource.</p>
-        <div class="tools">yamllint · docker compose config<br>actionlint · scripts/validate.sh</div>
-      </div>
-      <div class="teal">
-        <h3>2 · Likely bug</h3>
-        <p><b>It parses, but the pattern is risky.</b> The linter understands what the code means. A binding that points at a sibling by relative path works today and breaks silently when that sibling is renamed.</p>
-        <div class="tools">ign-lint: brittle sibling refs, poll faster than 1000 ms<br>shellcheck: unquoted <code>rm $DIR/</code> deletes the wrong thing</div>
-      </div>
-      <div>
-        <h3>3 · Style</h3>
-        <p><b>Is it consistent?</b> Useful in a team, but the most fiddly. Tune or disable rules, <b>as long as the team agrees</b> and the config is checked in.</p>
-        <div class="tools">line-length · naming conventions<br>(PascalCase components)</div>
-      </div>
-    </div>
-    <div class="aside"><span class="label">Where teams actually are</span>Most projects have group 1 and argue about group 3. <b>Group 2 is usually missing</b>, and for Ignition almost nobody has it: a tool that reads a Perspective view barely existed. <code>ign-lint</code> is a group-2 tool. Whatever you enable, the config lives <b>in the repo</b>, so the team agreement is version-controlled.</div>
-  </div>
-</section>
-
 <!-- A LINTER IS LIKE A SPELLCHECKER -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">03</span><h2 class="title">A linter works like a spellchecker: a program, your files and a config</h2></div>
+  <div class="sechead"><span class="num">02</span><h2 class="title">A linter works like a spellchecker: a program, your files and a config</h2></div>
   <div class="body">
     <div class="trio">
       <div>
@@ -750,7 +722,7 @@ a{color:var(--primary-deep)}
 <!-- THE TOOLBELT -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">04</span><h2 class="title">The toolbelt, mapped to the files this repo tracks</h2></div>
+  <div class="sechead"><span class="num">03</span><h2 class="title">The toolbelt, mapped to the files this repo tracks</h2></div>
   <div class="body">
     <table class="table lg">
       <tr><th style="width:24%">Tool (the program)</th><th style="width:30%">Runs on (the files)</th><th>Catches</th></tr>
@@ -761,7 +733,39 @@ a{color:var(--primary-deep)}
       <tr><td><code>scripts/validate.sh</code></td><td>every <code>*.json</code> and <code>code.py</code> under <code>projects/</code></td><td>The <b>green/red PR signal</b>: valid JSON, parseable Python. Exit 0 green, 1 red</td></tr>
       <tr><td><code>docker compose config -q</code></td><td><code>docker-compose.yml</code></td><td>Compose <b>schema</b>: undefined services, port-string typos, malformed env maps</td></tr>
     </table>
-    <div class="aside"><span class="label">Gateway-free, so perfect for CI</span>No Docker, no licence, no gateway boot: each finishes in milliseconds to seconds. <code>pip install yamllint ign-lint</code> · <code>brew install shellcheck actionlint</code> (Linux: <code>apt install shellcheck</code> plus actionlint's release binary). <code>validate.sh</code> ships in the repo, and you already have <code>docker compose</code>.</div>
+  </div>
+</section>
+
+<!-- INSTALL AND RUN THE CHECKS -->
+<section class="slide">
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">04</span><h2 class="title">Install the linters, then run all five checks from the lab folder</h2></div>
+  <div class="body">
+    <div class="work c11">
+      <div class="code"><div class="code-title">Install once, pinned, in a Python 3.10+ venv</div><pre><span class="cm"># macOS</span>
+brew install shellcheck actionlint python@3.12
+python3.12 -m venv .venv &amp;&amp; source .venv/bin/activate
+
+<span class="cm"># Debian / Ubuntu / WSL</span>
+sudo apt install shellcheck python3-venv
+<span class="cm"># + actionlint's release binary (see the assignment)</span>
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+
+<span class="cm"># both</span>
+pip install yamllint==1.35.1 ign-lint==0.6.1</pre></div>
+      <div class="code"><div class="code-title">Run every check</div><pre>yamllint -c .yamllint.yml .
+shellcheck scripts/*.sh
+actionlint -config-file .github/actionlint.yaml \
+  ../../.github/workflows/lab03-*.yml
+
+<span class="cm"># ign-lint runs from the repo root;</span>
+<span class="cm"># the subshell keeps your terminal in the lab folder</span>
+(cd ../.. &amp;&amp; ign-lint \
+  --config labs/03-github-actions/rule_config.json \
+  --files <span class="cmd2">"labs/03-github-actions/projects/**/view.json"</span>)
+
+scripts/validate.sh</pre></div>
+    </div>
   </div>
 </section>
 
@@ -770,50 +774,17 @@ a{color:var(--primary-deep)}
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
   <div class="sechead"><span class="num">05</span><h2 class="title"><code>ign-lint</code>: the linter that reads a Perspective view</h2></div>
   <div class="body">
-    <div class="split r17">
-      <div class="rules">
-        <div><code>NamePatternRule</code><span>components PascalCase<span class="sev err">error</span> · properties camelCase<span class="sev wrn">warn</span> · handlers kebab-case<span class="sev wrn">warn</span> · methods snake_case<span class="sev err">error</span></span></div>
-        <div><code>PollingIntervalRule</code><span>a floor on binding poll rates, <b>1000&nbsp;ms</b> in this lab: <code>now(250)</code> is a finding</span></div>
-        <div><code>BadComponentReferenceRule</code><span>brittle traversal: <code>.getSibling()</code>, <code>.getParent()</code>, relative paths<span class="sev err">error</span></span></div>
-        <div><code>ComponentReferenceValidationRule</code><span>do relative references <b>actually resolve</b>? Checks expressions, bindings, scripts</span></div>
-        <div><code>PylintScriptRule</code><span>pylint over the Python <b>inside views</b>, with the lab's <code>.config/.ignition-pylintrc</code></span></div>
-        <div><code>UnusedCustomPropertiesRule</code><span>custom properties nothing reads</span></div>
-        <div><code>ExcessiveContextDataRule</code><span>oversized context data: big arrays, deep nesting, too many data points</span></div>
-      </div>
-      <div class="stack" style="gap:1.5rem">
-        <div>
-          <h3 class="col-head">What it is</h3>
-          <ul class="dots">
-            <li>A <b>Python package</b>: <code>pip install ign-lint==0.6.1</code>, Python 3.10+</li>
-            <li>Parses every <code>view.json</code> and walks the component tree</li>
-            <li>Checks the Python embedded in views</li>
-            <li><b>No running gateway</b> needed</li>
-          </ul>
-        </div>
-        <div class="aside"><span class="label">The pylint config</span>ign-lint's bundled config minus <code>import-outside-toplevel</code>: a transform is a function body, so its imports go inside it.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- RUN IGN-LINT -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">06</span><h2 class="title">Run <code>ign-lint</code> from the repo root, and pin the version</h2></div>
-  <div class="body">
-    <div class="code"><pre><span class="cm"># the PROGRAM: a Python package (3.10+), pinned like every other tool</span>
-pip install ign-lint==0.6.1
-
-<span class="cm"># from the lab folder: the subshell runs it from the repo root, your terminal stays put</span>
-(cd ../.. &amp;&amp; ign-lint --config labs/03-github-actions/rule_config.json \
-  --files <span class="cmd2">"labs/03-github-actions/projects/**/view.json"</span>)</pre></div>
-    <div class="cols2">
-      <div class="cmds one">
-        <div><code>--config</code><span><b>the config</b>: <code>rule_config.json</code> in the lab folder, each rule mapped to enabled plus kwargs, tuned so the clean <code>lab-project</code> passes with zero findings</span></div>
-        <div><code>--files</code><span><b>the files</b>: a quoted glob, so the shell leaves it to ign-lint</span></div>
-        <div><code>cd ../..</code><span><b>why the root</b>: <code>rule_config.json</code> names <code>.config/.ignition-pylintrc</code> by a repo-root-relative path</span></div>
-      </div>
-      <div class="aside warn"><span class="label">A note on maturity</span><b>Pre-1.0 (v0.6.1)</b>, from BW Design Group (<code>bw-design-group/ignition-lint</code>, docs at <code>bw-design-group.github.io/ignition-lint</code>). It began as <code>etknorr/ignition-lint</code>, now <b>archived read-only</b>. So: pin the version, follow where the maintained line lives, and hold onto the <b>pattern</b>, an Ignition-aware linter as a required CI check, not the tool.</div>
+    <ol class="flow nonum">
+      <li><b><code>view.json</code></b><span>every Perspective view under <code>projects/</code></span></li>
+      <li class="on"><b><code>ign-lint</code></b><span>walks the component tree and the Python inside it</span></li>
+      <li><b>Findings</b><span>per rule in <code>rule_config.json</code>, no running gateway needed</span></li>
+    </ol>
+    <div class="rules" style="margin-top:1.5rem">
+      <div><code>NamePatternRule</code><span>components PascalCase<span class="sev err">error</span> · properties camelCase<span class="sev wrn">warn</span> · handlers kebab-case<span class="sev wrn">warn</span> · methods snake_case<span class="sev err">error</span></span></div>
+      <div><code>PollingIntervalRule</code><span>a floor on binding poll rates, <b>1000&nbsp;ms</b> in this lab: <code>now(250)</code> is a finding</span></div>
+      <div><code>BadComponentReferenceRule</code><span>brittle traversal: <code>.getSibling()</code>, <code>.getParent()</code>, relative paths<span class="sev err">error</span></span></div>
+      <div><code>ComponentReferenceValidationRule</code><span>do relative references <b>actually resolve</b>? Checks expressions, bindings, scripts</span></div>
+      <div><code>PylintScriptRule</code><span>pylint over the Python <b>inside views</b>, with the lab's <code>.config/.ignition-pylintrc</code></span></div>
     </div>
   </div>
 </section>
@@ -821,7 +792,7 @@ pip install ign-lint==0.6.1
 <!-- BROKEN BINDING (build) -->
 <section class="slide" data-ctrl="binding">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">07</span><h2 class="title">A broken binding the gateway never reports, caught by <code>ign-lint</code></h2></div>
+  <div class="sechead"><span class="num">06</span><h2 class="title">A broken binding the gateway never reports, caught by <code>ign-lint</code></h2></div>
   <div class="body">
     <div class="split" style="align-items:start">
       <div class="hmi" id="hmi">
@@ -845,16 +816,14 @@ pip install ign-lint==0.6.1
   <div class="controls"><p class="step-note"></p></div>
 </section>
 
-<!-- VALIDATE.SH + WHEN LINTING HURTS -->
+<!-- VALIDATE.SH + THE DOCUMENTED MUTE -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">08</span><h2 class="title"><code>scripts/validate.sh</code> parses every file, and when linting hurts</h2></div>
+  <div class="sechead"><span class="num">07</span><h2 class="title"><code>validate.sh</code> checks that every project file parses; <code>.yamllint.yml</code> mutes a rule with a written reason</h2></div>
   <div class="body">
     <div class="cols2">
-      <div class="stack" style="gap:1.25rem">
-        <div class="code"><pre><span class="cm"># the whole check, one small script:</span>
-<span class="cm">#   1. every *.json under projects/ is valid JSON</span>
-<span class="cm">#   2. every code.py parses as Python 3</span>
+      <div class="code"><div class="code-title">scripts/validate.sh</div><pre><span class="cm"># every *.json under projects/ is valid JSON</span>
+<span class="cm"># every code.py parses as Python 3</span>
 scripts/validate.sh
 <span class="grn">✓ all project files valid</span>          <span class="cm"># exit 0</span>
 
@@ -862,27 +831,11 @@ scripts/validate.sh
 scripts/validate.sh
 <span class="red">  ✗ invalid JSON: projects/lab-project/project.json</span>
 <span class="red">✗ validation failed</span>                <span class="cm"># exit 1</span></pre></div>
-        <div class="aside"><span class="label">Not a linter, and honest fine print</span>The linters are <b>separate commands</b>; this is the cheap catch-all that runs with none of them installed. The gateway runs <b>Jython 2.7</b>: this is a Python-3 <b>parse</b> check, not a Jython validator.</div>
-      </div>
-      <div class="compare" style="grid-auto-flow:row;gap:1.75rem">
-        <div class="good">
-          <h3>Linting helps when</h3>
-          <ul class="dots">
-            <li>it catches the bug <b>every</b> dev would hit</li>
-            <li>it is fast enough to run on save or at commit</li>
-            <li>the config matches <b>your team's reality</b>, not a pasted default</li>
-          </ul>
-        </div>
-        <div class="bad">
-          <h3>Linting hurts when</h3>
-          <ul class="dots">
-            <li>it flags <b>style as errors</b> and blocks PRs</li>
-            <li>it is slower than the dev loop</li>
-            <li>the config <b>drifts from reality</b> and nobody agrees with it</li>
-          </ul>
-          <p style="font-size:var(--text-base)"><b>The cure:</b> tune the checked-in config, don't disable the linter.</p>
-        </div>
-      </div>
+      <div class="code"><div class="code-title">.yamllint.yml</div><pre>rules:
+  <span class="cm"># Compose files have legitimately long</span>
+  <span class="cm"># `environment:` lines (image tags, DB URLs,</span>
+  <span class="cm"># JVM flags) that gain nothing from wrapping</span>
+  line-length: disable</pre></div>
     </div>
   </div>
 </section>
@@ -890,13 +843,13 @@ scripts/validate.sh
 <!-- PRE-COMMIT -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">09</span><h2 class="title"><code>pre-commit</code>: the same linters, run at <code>git commit</code></h2></div>
+  <div class="sechead"><span class="num">08</span><h2 class="title"><code>pre-commit</code>: the same linters, run at <code>git commit</code></h2></div>
   <div class="body">
     <ol class="flow">
       <li><b><code>git commit</code></b><span>on your laptop</span></li>
-      <li><b>Hook dispatcher</b><span><code>scripts/git-hooks</code>, set as <code>core.hooksPath</code> by <code>scripts/setup.sh</code></span></li>
-      <li><b>Each touched lab</b><span>runs its own <code>.pre-commit-config.yaml</code></span></li>
-      <li class="on"><b>Hooks on staged files</b><span>one fails: the <b>commit is refused</b></span></li>
+      <li><b><code>scripts/git-hooks</code></b><span>set as <code>core.hooksPath</code> by <code>scripts/setup.sh</code></span></li>
+      <li><b><code>.pre-commit-config.yaml</code></b><span>of each lab the commit touches, on the staged files</span></li>
+      <li class="on"><b>A hook fails</b><span>the commit is refused</span></li>
     </ol>
     <div class="cols2" style="margin-top:1rem">
       <div class="code"><pre><span class="cm"># .pre-commit-config.yaml (ships in the lab)</span>
@@ -906,17 +859,14 @@ repos:
     hooks:
       - id: ign-lint
         files: <span class="cmd2">^labs/03-github-actions/.*view\.json$</span>
-  <span class="cm"># + yamllint, shellcheck, actionlint the same way</span>
-
-<span class="cm"># install the tool; there is no `pre-commit install`</span>
+  <span class="cm"># + yamllint, shellcheck, actionlint the same way</span></pre></div>
+      <div class="code"><pre><span class="cm"># install the tool; there is no `pre-commit install`</span>
 pip install pre-commit
 git config core.hooksPath     <span class="cm"># → scripts/git-hooks</span>
-pre-commit run --all-files --config .pre-commit-config.yaml</pre></div>
-      <ul class="checks">
-        <li><b>Pinned <code>rev</code>:</b> on first use pre-commit installs each hook into its own cache, then runs it only on <b>staged</b> files that match <code>files:</code>.</li>
-        <li><b>One hook per clone</b>, and this clone holds every lab: hence the dispatcher. <code>pip install pre-commit</code> is the only step.</li>
-        <li class="warn"><b>Skippable:</b> <code>git commit --no-verify</code> skips every hook. Handy for a broken commit on purpose, and the reason CI stays the <b>enforced</b> net.</li>
-      </ul>
+pre-commit run --all-files --config .pre-commit-config.yaml
+
+<span class="cm"># skip every hook for one commit</span>
+git commit --no-verify -am <span class="cmd2">"..."</span></pre></div>
     </div>
   </div>
 </section>
@@ -931,7 +881,7 @@ pre-commit run --all-files --config .pre-commit-config.yaml</pre></div>
 <!-- SAME SHAPE -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">10</span><h2 class="title">Your checks already have the shape of a pipeline: trigger, steps, pass or fail</h2></div>
+  <div class="sechead"><span class="num">09</span><h2 class="title">Your checks already have the shape of a pipeline: trigger, steps, pass or fail</h2></div>
   <div class="body">
     <div class="shape">
       <div class="h"></div><div class="h">Trigger</div><div class="h">Steps</div><div class="h">Pass or fail</div>
@@ -939,14 +889,13 @@ pre-commit run --all-files --config .pre-commit-config.yaml</pre></div>
       <div class="k ci">In CI<small>lab03-ci.yml</small></div><div class="ci"><b>a pull request</b></div><div class="ci">the same commands, as <code>run:</code> steps</div><div class="ci">a check on the PR</div>
       <div class="k">Deploy<small>Lab 04</small></div><div>a push to <code>main</code></div><div>ship files to a gateway, then scan</div><div>the deploy job</div>
     </div>
-    <div class="aside"><span class="label">That's the whole leap</span>The steps and the pass or fail stay identical; only the trigger changes, from <b>you remembering</b> to <b>an event</b>. You are not writing new checks, you are wrapping the ones you already ran.</div>
   </div>
 </section>
 
 <!-- ANATOMY (build) -->
 <section class="slide" data-ctrl="reveal">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">11</span><h2 class="title">Workflow, jobs and steps: <code>lab03-ci.yml</code> drawn as boxes</h2></div>
+  <div class="sechead"><span class="num">10</span><h2 class="title">Workflow, jobs and steps: <code>lab03-ci.yml</code> drawn as boxes</h2></div>
   <div class="body">
     <div class="wf reveal" data-step="0">
       <div class="wf-h"><b>workflow · <code>.github/workflows/lab03-ci.yml</code></b><span>on: pull_request + push · permissions: contents: read</span></div>
@@ -977,7 +926,7 @@ pre-commit run --all-files --config .pre-commit-config.yaml</pre></div>
 <!-- SAME CONCEPTS, DIFFERENT NAMES -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">12</span><h2 class="title">Same concepts, different names: GitHub Actions, Azure DevOps, GitLab CI</h2></div>
+  <div class="sechead"><span class="num">11</span><h2 class="title">Same concepts, different names: GitHub Actions, Azure DevOps, GitLab CI</h2></div>
   <div class="body">
     <table class="table">
       <tr><th style="width:34%">The concept</th><th class="gh">GitHub Actions</th><th>Azure DevOps</th><th>GitLab CI</th></tr>
@@ -989,17 +938,16 @@ pre-commit run --all-files --config .pre-commit-config.yaml</pre></div>
       <tr><td>The machine a job runs on<small>hosted for you, or self-hosted</small></td><td class="gh">runner</td><td>agent</td><td>runner</td></tr>
       <tr><td>How a job picks that machine</td><td class="gh">labels (<code>runs-on:</code>)</td><td>agent pool (<code>pool:</code>)</td><td>tags</td></tr>
     </table>
-    <div class="aside warn"><span class="label">One false friend: "stage"</span>In <b>Azure DevOps</b> a stage is an extra layer that <b>groups jobs</b> (pipeline, stage, job, step). In <b>GitLab</b> it is a <b>phase</b>: all jobs in a stage run together, then the next stage starts. <b>GitHub Actions</b> has no stage keyword; you order jobs with <code>needs:</code>.</div>
   </div>
 </section>
 
 <!-- TRIGGERS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">13</span><h2 class="title">Triggers: the <code>on:</code> block, with path filters</h2></div>
+  <div class="sechead"><span class="num">12</span><h2 class="title">Triggers: the <code>on:</code> block, with path filters</h2></div>
   <div class="body">
     <div class="work c11">
-      <div class="code"><pre><span class="cm"># lab03-ci.yml: the real triggers</span>
+      <div class="code"><pre><span class="cm"># .github/workflows/lab03-ci.yml (repo root)</span>
 on:
   pull_request:
     paths:
@@ -1014,15 +962,12 @@ on:
   push:
     branches: [main]
     paths: [<span class="cmd2">"labs/03-github-actions/**"</span>, …]</pre></div>
-      <div class="side">
-        <div class="cmds one">
-          <div><code>pull_request</code><span>on open and on every push to the PR branch: the workhorse for checks</span></div>
-          <div><code>push: [main]</code><span>the backstop: <code>main</code> itself stays green after merges</span></div>
-          <div><code>paths:</code><span>a README-only PR <b>never starts</b> the workflow: an empty checks panel, not even <i>Skipped</i></span></div>
-          <div><code>workflow_dispatch</code><span>a manual Run button; also <code>schedule</code> (cron) and <code>release</code></span></div>
-        </div>
-        <div class="aside warn"><span class="label">Filter discipline</span>Too narrow and view changes sneak past; too broad (<code>"**"</code>) and it's pointless. Cover what the checks read, <b>configs included</b>.</div>
-        <div class="aside"><span class="label">Monorepo</span>GitHub only reads the root <code>.github/workflows/</code>. The <code>labs/03-github-actions/</code> prefix keeps this workflow off the other labs' changes.</div>
+      <div class="cmds one">
+        <div><code>pull_request</code><span>on open and on every push to the PR branch</span></div>
+        <div><code>push: [main]</code><span>on every push or merge to <code>main</code></span></div>
+        <div><code>paths:</code><span>only when a listed file changes, configs included; patterns are repo-root-relative</span></div>
+        <div><code>workflow_dispatch</code><span>a manual <b>Run workflow</b> button in the Actions tab</span></div>
+        <div><code>.github/workflows/</code><span>at the <b>repo root</b>: the only place GitHub reads workflows</span></div>
       </div>
     </div>
   </div>
@@ -1031,7 +976,7 @@ on:
 <!-- READING LAB03-CI.YML -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">14</span><h2 class="title">Reading the lab's <code>lab03-ci.yml</code>, the file you'll build</h2></div>
+  <div class="sechead"><span class="num">13</span><h2 class="title">The finished <code>lab03-ci.yml</code> you rebuild in the exercise</h2></div>
   <div class="body">
     <div class="work c13">
       <div class="code xs"><pre>name: Lab 03 · CI
@@ -1051,10 +996,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10       <span class="cm"># not the 6 h default</span>
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7          <span class="cm"># each job starts empty</span>
       - uses: actions/setup-python@v7
         with:
-          python-version: <span class="cmd2">"3.12"</span>   <span class="cm"># quoted!</span>
+          python-version: <span class="cmd2">"3.12"</span>   <span class="cm"># quoted: ign-lint needs 3.10+</span>
       - run: pip install yamllint==1.35.1 ign-lint==0.6.1
       - run: yamllint -c .yamllint.yml . ../../.github/workflows/lab03-*.yml
       - uses: raven-actions/actionlint@v2   <span class="cm"># + with: lab03-*.yml</span>
@@ -1067,13 +1012,15 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: scripts/validate.sh</pre></div>
-      <ul class="checks sm">
-        <li><b>Two jobs, two fresh VMs, in parallel.</b> Each starts empty, so <code>checkout</code> comes first, and is destroyed when its job ends. The job ids are the <b>check names</b> a ruleset requires.</li>
-        <li><b>Steps are sequential:</b> a failing step skips the rest of its job. <code>continue-on-error</code> and <code>needs:</code> change that.</li>
-        <li><b><code>"3.12"</code> is quoted:</b> unquoted, YAML reads the float <b>3.1</b>. ign-lint needs 3.10+, so the pin matters.</li>
-        <li><b>The <code>--files</code> glob is quoted</b> so the shell leaves it to ign-lint. That step's <code>working-directory: .</code> runs it from the <b>repo root</b>, as in Part 1.</li>
-        <li><b>Compare your build</b> with <code class="wrap">git diff --no-index <span style="white-space:nowrap">.github/ci-reference.yml</span> <span style="white-space:nowrap">../../.github/workflows/lab03-ci.yml</span></code>: <code>--no-index</code> diffs any two files on disk.</li>
-      </ul>
+      <div class="code"><pre><span class="cm"># set the finished file aside,</span>
+<span class="cm"># start from a skeleton with TODOs</span>
+scripts/prepare-part2.sh
+
+<span class="cm"># when you're done: compare your</span>
+<span class="cm"># build with the reference</span>
+git diff --no-index \
+  .github/ci-reference.yml \
+  ../../.github/workflows/lab03-ci.yml</pre></div>
     </div>
   </div>
 </section>
@@ -1081,7 +1028,7 @@ jobs:
 <!-- PERMISSIONS & SECRETS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">15</span><h2 class="title">Permissions, secrets and variables: least privilege for workflow credentials</h2></div>
+  <div class="sechead"><span class="num">14</span><h2 class="title">Permissions, secrets and variables: least privilege for workflow credentials</h2></div>
   <div class="body">
     <div class="compare sm">
       <div class="blue"><h3><code>permissions: contents: read</code></h3><p>The workflow may read the repo (all <code>checkout</code> needs) and nothing else: no pushing, no issues, no releases. The default grant is broader than a lint job needs. Human access is untouched.</p></div>
@@ -1101,7 +1048,7 @@ gh secret set EXAMPLE_SECRET --body <span class="cmd2">"hunter2"</span> \
 <!-- RULESET -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">16</span><h2 class="title">Protect <code>main</code> with a ruleset that requires <code>lint</code> and <code>validate</code></h2></div>
+  <div class="sechead"><span class="num">15</span><h2 class="title">Protect <code>main</code> with a ruleset that requires <code>lint</code> and <code>validate</code></h2></div>
   <div class="body">
     <div class="cols2">
       <div class="stack" style="gap:1.25rem">
@@ -1131,7 +1078,7 @@ gh secret set EXAMPLE_SECRET --body <span class="cmd2">"hunter2"</span> \
 <!-- CLASSIC VS RULESETS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">17</span><h2 class="title">Classic branch protection vs rulesets: the lab uses a ruleset</h2></div>
+  <div class="sechead"><span class="num">16</span><h2 class="title">Classic branch protection vs rulesets: the lab uses a ruleset</h2></div>
   <div class="body">
     <table class="table lg">
       <tr><th style="width:15%"></th><th style="width:40%">Classic branch protection</th><th>Ruleset (what the lab uses)</th></tr>
@@ -1147,7 +1094,7 @@ gh secret set EXAMPLE_SECRET --body <span class="cmd2">"hunter2"</span> \
 <!-- THE SKIPPED-CHECK TRAP -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">18</span><h2 class="title">A README-only PR is blocked by the required checks, and a no-op twin workflow unblocks it</h2></div>
+  <div class="sechead"><span class="num">17</span><h2 class="title">A README-only PR is blocked by the required checks, and a no-op twin workflow unblocks it</h2></div>
   <div class="body">
     <div class="stack" style="gap:2rem">
       <div>
@@ -1175,7 +1122,7 @@ gh secret set EXAMPLE_SECRET --body <span class="cmd2">"hunter2"</span> \
 <!-- THE NO-OP TWIN -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">19</span><h2 class="title">Build the no-op twin with <code>paths:</code> and <code>!</code> negations</h2></div>
+  <div class="sechead"><span class="num">18</span><h2 class="title">Build the no-op twin with <code>paths:</code> and <code>!</code> negations</h2></div>
   <div class="body">
     <div class="code xs" style="max-width:70rem"><pre><span class="cm"># .github/workflows/lab03-ci-noop.yml</span>
 name: Lab 03 · CI (no-op twin)
@@ -1213,7 +1160,7 @@ jobs:
 <!-- SELF-HOSTED ARCHITECTURE -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">20</span><h2 class="title">A self-hosted runner polls GitHub outbound, so nothing opens inbound</h2></div>
+  <div class="sechead"><span class="num">19</span><h2 class="title">A self-hosted runner polls GitHub outbound, so nothing opens inbound</h2></div>
   <div class="body">
     <div class="net">
       <div class="zone">
@@ -1243,28 +1190,16 @@ jobs:
 <!-- THE ONE RULE -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">21</span><h2 class="title">The one rule for self-hosted runners, and the guardrails</h2></div>
+  <div class="sechead"><span class="num">20</span><h2 class="title">The one rule for self-hosted runners, and the guardrails</h2></div>
   <div class="body">
-    <div class="cols2">
-      <div class="stack" style="gap:1.75rem">
-        <div class="aside bad"><span class="label">Never do this</span><b>Never attach a self-hosted runner to a public repo that accepts fork PRs.</b> The runner executes arbitrary workflow code inside your network: a malicious PR edits the workflow, and the result is exfiltrated secrets, a backdoor, a pivot into the PLC network.</div>
-        <div>
-          <h3 class="col-head">Same concept, other names</h3>
-          <div class="cmds one">
-            <div><code>GitLab</code><span>Runner</span></div>
-            <div><code>Azure DevOps</code><span>self-hosted agent</span></div>
-            <div><code>Jenkins</code><span>agent (or node)</span></div>
-            <div><code>TeamCity</code><span>build agent</span></div>
-          </div>
-        </div>
-      </div>
-      <ul class="checks">
-        <li><b>Ephemeral runners</b> are destroyed after every job: a compromised job leaves nothing behind.</li>
-        <li><b>Private repos only</b>, restricted workflow triggers, approval for first-time contributors.</li>
-        <li><b>Isolate the runner:</b> its own subnet, only the outbound access it needs. No production credentials on the host; short-lived tokens via OIDC.</li>
-        <li><b>It only has what you put on it:</b> no preinstalled shellcheck or Python. "Works on <code>ubuntu-latest</code>" stops being true.</li>
-        <li><b>Where it sits for Ignition:</b> a dedicated build host with network access <b>to</b> the gateway, not on the gateway server. Hands-on in Labs 04 and 06.</li>
-      </ul>
+    <p class="statement" style="font-size:var(--text-2xl);max-width:52ch">Never attach a self-hosted runner to a <em>public repo that accepts fork PRs</em>: a malicious PR runs its code inside your network.</p>
+    <div class="cmds">
+      <div><code>Ephemeral</code><span>destroyed after every job: nothing left behind</span></div>
+      <div><code>Private repos</code><span>trusted contributors, approval for first-timers</span></div>
+      <div><code>Isolated</code><span>own subnet, only the outbound access it needs</span></div>
+      <div><code>No prod credentials</code><span>short-lived tokens per job</span></div>
+      <div><code>Bare</code><span>only the tools you install on it</span></div>
+      <div><code>For Ignition</code><span>a build host that can reach the gateway, not the gateway server</span></div>
     </div>
   </div>
 </section>
@@ -1272,7 +1207,7 @@ jobs:
 <!-- REGISTER A RUNNER -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">22</span><h2 class="title">Register an ephemeral runner in Docker with a short-lived token</h2></div>
+  <div class="sechead"><span class="num">21</span><h2 class="title">Register an ephemeral runner in Docker, route one job to it, tear it down</h2></div>
   <div class="body">
     <div class="work c11b">
       <div class="code"><pre><span class="cm"># your repo, detected from the clone</span>
@@ -1289,15 +1224,24 @@ docker run -d --rm --name lab03-runner \
   -e LABELS=<span class="cmd2">"self-hosted,local-lab03"</span> \
   -e EPHEMERAL=true \
   myoung34/github-runner:latest
+<span class="cm"># EPHEMERAL: one job, then it deregisters and exits</span>
 
 docker logs -f lab03-runner   <span class="cm"># "Listening for Jobs"</span></pre></div>
-      <ul class="checks sm" style="gap:.9rem">
-        <li><b>The token:</b> <code>gh api</code> mints a registration token with your existing login, valid for about an hour. The <code>myoung34/github-runner</code> image wraps GitHub's runner agent.</li>
-        <li><b>Labels route jobs.</b> <code>runs-on: [self-hosted, local-lab03]</code> waits for a runner with <b>all</b> those labels. A typo: queued forever.</li>
-        <li><b><code>EPHEMERAL=true</code>:</b> one job, then the runner deregisters and the container exits (<code>--rm</code> removes it).</li>
-        <li><b>Where to look:</b> <code>docker logs</code> shows the runner's side only; the job's output is in the <b>run log</b>, <code>gh run view --log</code>.</li>
-        <li><b>Production route:</b> Settings › Actions › Runners › New self-hosted runner gives the commands to install the agent on a host (<code>config.sh</code>, then <code>run.sh</code>, usually as a service).</li>
-      </ul>
+      <div class="code"><pre><span class="cm"># .github/workflows/lab03-runner-demo.yml</span>
+on: workflow_dispatch
+jobs:
+  hello:
+    runs-on: [self-hosted, local-lab03]  <span class="cm"># the labels</span>
+    steps:
+      - run: echo "ran on $(hostname)"
+
+<span class="cm"># run it; the job's output is in the run log</span>
+gh workflow run lab03-runner-demo.yml
+gh run list --workflow lab03-runner-demo.yml --limit 1
+gh run view &lt;run-id&gt; --log | grep <span class="cmd2">"ran on"</span>
+
+<span class="cm"># tear down</span>
+docker rm -f lab03-runner</pre></div>
     </div>
   </div>
 </section>
@@ -1307,7 +1251,7 @@ docker logs -f lab03-runner   <span class="cm"># "Listening for Jobs"</span></pr
   <div class="glow ambient" aria-hidden="true"></div>
   <header class="topbar"><img class="logo" src="logos/OriginalLight.png" alt="Mustry Solutions"></header>
   <div class="divider-body">
-    <h2 class="divider-title">Next: break the project on purpose, and let <em>the machines</em> find it</h2>
+    <h2 class="divider-title">Next: fix the planted bugs with the linters, then make <em>CI block a red PR</em></h2>
     <ol class="flow" style="max-width:76rem">
       <li><b>We-do</b><span><code>scripts/seed.sh</code> plants seven bugs. We run every linter live and fix one each, build <code>lab03-ci.yml</code>, open a PR, mask a secret and register an ephemeral runner.</span></li>
       <li class="on"><b>You-do</b><span>Hunt the rest, read the documented mute in <code>.yamllint.yml</code>, then finish the workflow in your own repo: path filters, Compose check, a ruleset that blocks a red PR.</span></li>
