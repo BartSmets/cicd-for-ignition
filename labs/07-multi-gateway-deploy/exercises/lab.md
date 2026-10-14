@@ -25,7 +25,7 @@ and again until the loop feels like muscle memory.
 The full teaching content is written out in
 [`docs/multi-gateway-deployments.md`](../docs/multi-gateway-deployments.md),
 and the production gateway is described in
-[`docs/capstone-gateway.md`](../docs/capstone-gateway.md).
+[`docs/production-gateway.md`](../docs/production-gateway.md).
 
 ## Goal
 

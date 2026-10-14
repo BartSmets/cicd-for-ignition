@@ -70,6 +70,6 @@ The server accepts key-only SSH from Mustry, exposes only SSH, HTTP and HTTPS,
 and the gateway sits behind a TLS reverse proxy; it never faces the internet
 directly. The gateway's own server stack is deployed the same way you deploy
 projects: from a Git repo, through a pipeline, with secrets kept out of
-version control. The infrastructure under your capstone practices what the
+version control. The infrastructure under Lab 07 practices what the
 course preaches. Curious how it is built? Ask us for a walkthrough after the
 course.
