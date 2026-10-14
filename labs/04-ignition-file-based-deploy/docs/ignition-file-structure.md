@@ -139,7 +139,11 @@ diff services/config/resources/local-development/ignition/database-connection/Ti
      services/config/resources/production/ignition/database-connection/TimescaleDB/config.json
 ```
 
-Everything one mode does *not* override falls through to `core`. This is a platform feature, not
+Everything one mode does *not* override falls through to `core`. An override replaces the **whole**
+resource, not single fields: a field the mode's copy leaves out takes Ignition's default, not the
+`core` value. That is why each mode carries a full copy of `ignition/system-properties/`, each with
+its own `systemName` (`lab04-local`, `lab04-test`, `lab04-production`): a deploy ships all of them,
+and every gateway keeps its own name. This is a platform feature, not
 tied to any deploy strategy: it works the same whether you deploy by copying files (this lab) or by
 baking an image (Lab 05).
 

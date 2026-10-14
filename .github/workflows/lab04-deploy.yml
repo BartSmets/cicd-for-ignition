@@ -124,10 +124,17 @@ jobs:
       - name: Ship projects and config into gateway container
         # Wipe-then-copy so a deleted-in-repo resource also disappears from the
         # gateway ("deleted in repo → deleted on gateway"). We wipe projects/ AND
-        # config/, but preserve the subtrees the gateway owns and that
-        # .deployignore prunes (so they are NOT copied back):
-        #   config/local/ and config/resources/local/  — per-instance identity
-        #     (UUID, OPC-UA keystores, machine-local system props)
+        # config/resources/ (the only part of config/ the repo ships), but
+        # preserve the subtrees the gateway owns:
+        #   everything in config/ next to resources/: the gateway's runtime
+        #     state, never in the payload. config/local/ is per-instance
+        #     identity (UUID, OPC-UA keystores); config/ignition/tags/ is the
+        #     tag value store (valueStore.idb). The running gateway keeps that
+        #     store open: deleting it makes every later value write fail with
+        #     "path to .../config/ignition/tags/valueStore.idb does not exist"
+        #     until the next restart, and loses the stored tag values.
+        #   config/resources/local/: per-instance identity (machine-local
+        #     system props), pruned by .deployignore so it is never copied back
         #   config/resources/core/ignition/user-source/{default,opcua-module}/
         #     and identity-provider/default/ — the gateway-owned INTERNAL
         #     identity; users.json holds THIS gateway's admin password hash.
@@ -141,17 +148,17 @@ jobs:
         #     a live gateway breaks every login (NoSuchFileException on a blob)
         #     until a successful config scan or a restart rebuilds it.
         # Wiping any of those would strip state nothing in the checkout can
-        # restore. Everything else under config/ IS repo-owned and is wiped
-        # and copied fresh — including security-properties (permission policy)
-        # and any identity resources you added yourself (database/AD user
-        # sources, SAML/OIDC providers — those hold no password data).
+        # restore. Everything else under config/resources/ IS repo-owned and
+        # is wiped and copied fresh, including security-properties
+        # (permission policy), the per-mode system-properties that give each
+        # gateway its own name, and any identity resources you added yourself
+        # (database/AD user sources, SAML/OIDC providers: those hold no
+        # password data).
         run: |
           set -euo pipefail
           docker exec "$IGNITION_CONTAINER" sh -c "
             set -eu
             rm -rf '$GATEWAY_DATA_PATH/projects/'*
-            find '$GATEWAY_DATA_PATH/config' -mindepth 1 -maxdepth 1 \
-              ! -name local ! -name resources -exec rm -rf {} +
             if [ -d '$GATEWAY_DATA_PATH/config/resources' ]; then
               find '$GATEWAY_DATA_PATH/config/resources' -mindepth 1 -maxdepth 1 \
                 ! -name local ! -name core ! -name .resources -exec rm -rf {} +
