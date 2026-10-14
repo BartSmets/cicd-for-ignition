@@ -28,7 +28,6 @@ You should leave this lab able to:
 - Explain why a secret that has ever been pushed is **burned** — the fix is *rotate*, not *delete*
 - Climb the secrets ladder: `.env` + Compose interpolation → **file-based secrets** (`/run/secrets/`) → Ignition 8.3 secret providers (embedded vs **referenced**)
 - Wire the whole path: **GitHub secret → secret file written by the deploy workflow → file-type secret provider → referenced secret in gateway config** (the production pattern)
-- Name the alternative: committed **ciphertexts with shared encryption keys**, managed with the 8.3 secrets-management key CLI tool (`ignition-secrets-tool.sh`)
 - Explain why `db-init/` is bootstrap, not deployment
 - Write a schema change as a **golang-migrate up/down pair** (`0002_name.up.sql` / `.down.sql`, like our file-based production repo), apply it with `migrate up`, and read the `schema_migrations` ledger
 - Wire a migrate step into `lab06-deploy.yml` **before** the ship step, and say why the order matters
@@ -47,26 +46,14 @@ scripts/validate.sh       # green before you start
 Stop the previous lab's stack first (`docker compose down` in its folder):
 every Docker lab uses the same ports and container names.
 
-The warm-up, Parts 1C–1D and 2B need your fork with Actions enabled (same setup
-as Lab 04): the pipeline is what deploys, writes the secret files and runs the
-migrations. The workflows live at the course repo's root, not in this folder:
+In `.env`, change two lines: `RUNNER_REPO_URL` points at your fork and
+`RUNNER_GITHUB_PAT` holds your Lab 04 token. Leave the database passwords as
+shipped: Part 1 builds on them. Check that `gh repo set-default --view` prints
+`<you>/cicd-for-ignition`; every `gh secret set` in this lab names your fork
+with `-R <you>/cicd-for-ignition`.
+
+The workflows live at the course repo's root, not in this folder:
 `../../.github/workflows/lab06-{ci,deploy,release}.yml`.
-
-> **Enable Actions on your fork first — this one is not optional.** Open your
-> fork's *Actions* tab and click the green **"I understand my workflows, go
-> ahead and enable them"** button. A fresh fork ships with every automatic
-> trigger switched off, and the failure mode is silent: your PR, your merge and
-> your `lab06-v*` tag produce **no workflow run and no error message anywhere**. If a
-> step below says "watch the run" and the Actions tab is empty, this is why.
-> (`./course-setup.sh` at the repo root does the same thing for you; re-run it
-> if you're not sure.)
-
-Also make sure `gh` points at your fork for `gh pr create`:
-`gh repo set-default <you>/cicd-for-ignition`, the one-time course setup step
-(check with `gh repo set-default --view`). `gh secret set` does not use that
-default: in a clone with two remotes (`origin` = your fork, `upstream` = the
-course repo) it stops with `multiple remotes detected`. That is why every
-`gh secret set` in this lab names the repo with `-R <you>/cicd-for-ignition`.
 
 ---
 
@@ -180,8 +167,6 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
   `POSTGRES_PASSWORD`. Edit the JSON by hand: the gateway UI cannot open
   this provider until its module is installed. Re-run the grep; only the
   OPC UA connection is left.
-
-  Finally, grep the exported config to prove no value leaked.
 - **1C.** Build the fix for test, in two halves: add the **test
   deployment-mode override** for `TimescaleDB_Reports`
   (`…resources/test/ignition/database-connection/TimescaleDB_Reports/config.json`,
@@ -206,9 +191,7 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
   deployed yet.
 - **1D.** The full deploy moment, every station separately: **branch**
   (`feature/fix-test-db-connections`) → **commit & push** (your diff **adds** no
-  secret value — `scripts/validate.sh`'s secret scan is the check. Grepping the
-  diff for the password does hit, on the `-` lines: you are *deleting* the dummy
-  defaults that were already committed in `docker-compose.yaml`) → **open the
+  secret value: `scripts/validate.sh`'s secret scan is the check) → **open the
   PR** → **watch the PR validate** (`lab06-ci.yml` green) →
   **merge** → **watch the pipeline deploy** (materialize secret files → ship
   them into the gateway → ship projects and config → scan → smoke check) →
@@ -422,9 +405,9 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
 - **Gate:** all three modules Running on test **and** production, hands-free (*Platform → Modules* shows all three Running), the TimescaleDB Historian provider Running on both (*Services → Historians*), and production's connections Valid with its ledger at 2 after the `lab06-v1.1.0` release.
 
 ### Stretch (optional)
-- **S1.** The internal secret provider, and where it breaks: create an **internal secret provider** on the local gateway, store `REPORTING_PASSWORD` in it (the gateway encrypts it and keeps the ciphertext in its own config) and point `TimescaleDB_Reports` at it in core **and** in the test override from 1C (it overrides the password field, so a core-only change never reaches test). Locally it stays Valid; ship it and test faults: the ciphertext only decrypts on the gateway that created it. Explore `ignition-secrets-tool.sh` (shared root key + KEK under `data/config/ignition/keys/`) as the escape hatch, then revert to the referenced secret. What is "the secret" now, and who owns it?
+- **S1.** The internal secret provider, and where it breaks: create an **internal secret provider** on the local gateway, store `REPORTING_PASSWORD` in it (the gateway encrypts it and keeps the ciphertext in its own config) and point `TimescaleDB_Reports` at it in core **and** in the test override from 1C (it overrides the password field, so a core-only change never reaches test). Locally it stays Valid; ship it and test faults: the ciphertext only decrypts on the gateway that created it. Then revert to the referenced secret from Part 1.
 - **S2.** Expand-contract rename: `0003` add + backfill, screen switch, `0004` drop.
-- **S3.** Add a `gitleaks` job to `lab06-ci.yml`; test it with a fake-key PR (red), then close the PR without merging. `fetch-depth: 0` gives the scanner the PR's full commit range: on a pull request gitleaks scans **every commit in the PR**, so a key added in one commit and deleted in the next still fails. The job needs its own `permissions:` because the workflow default is `contents: read` only, and the action lists the PR's commits and comments on the leak:
+- **S3.** Add a `gitleaks` job to `lab06-ci.yml`; test it with a fake-key PR (red), then close the PR without merging. With `fetch-depth: 0` gitleaks scans **every commit in the PR**, so a key added in one commit and deleted in the next still fails:
 
   ```yaml
   gitleaks:
@@ -444,10 +427,7 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
   The teaching's second kind of JAR, done for real: `jar-files/jar/` carries
   `commons-csv-1.14.1.jar` (pinned, checksummed in its README), and your job
   is to get it onto the gateway classpath (`lib/core/gateway/`) via the
-  pipeline, then prove it works from a Perspective screen. (commons-csv on
-  purpose: the Ignition image already bundles commons-lang3, commons-text,
-  guava and friends under `lib/core/common/`, so importing those would
-  succeed without you shipping anything — see `jar-files/jar/README.md`.)
+  pipeline, then prove it works from a Perspective screen.
 
   1. **Prove the gap first.** In any lab project, add a view with a **Text
      Field** and a **Label** next to it, wired through a view custom
@@ -470,9 +450,7 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
          return " | ".join(records[0]) if records else ""
      ```
 
-     The imports sit inside the transform because a transform is a function
-     body; the lab's `.config/.ignition-pylintrc` switches off pylint's
-     `import-outside-toplevel` for exactly that reason.
+     The imports sit inside the transform: a transform is a function body.
 
      The binding errors (`No module named csv`): the class isn't on the
      gateway classpath yet. (Perspective bindings run **on the gateway**, so
@@ -538,10 +516,7 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
   4. **Ship it.** PR with the view, the compose volume **and** the workflow
      change → merge → watch the run ship the JAR and restart test → open the
      view on test (`http://localhost:8089`) and see the CSV parse on a
-     gateway you never touched. Note what step 2 did *not* give you: the
-     bind mount only exists on a machine with your working tree — on a real
-     server there is none, so the pipeline re-ships the JAR on every change,
-     which is the point.
+     gateway you never touched.
   - **Gate:** typing a CSV line in the text field shows the parsed fields on
     **test**, the JAR got there through the pipeline, and the run log shows a
     restart on the JAR deploy but none on your next config-only deploy.
@@ -549,5 +524,5 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
 ## Debrief
 
 - One surprise, one question, per room.
-- Which secrets approach fits your plant: references + files, or ciphertexts + shared keys? What does each make easy, and what does each make dangerous?
-- The production ordering question from Demo 3: migrations after the scan, `continueOnError: true` — what incident does that setup eventually produce?
+- Why must the migrate step never be `continueOnError`?
+- The production ordering question from Demo 3: migrations after the scan, with `continueOnError: true`. What incident does that setup eventually produce?

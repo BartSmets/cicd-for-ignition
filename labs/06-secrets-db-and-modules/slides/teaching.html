@@ -582,18 +582,22 @@ a{color:var(--primary-deep)}
   </div>
 </section>
 
-<!-- 01 · THE FOUR GAPS -->
+<!-- 01 · WHAT THIS LAB ADDS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">01</span><h2 class="title">The four things this lab adds to the pipeline: secrets, schema, modules and JARs</h2></div>
+  <div class="sechead"><span class="num">01</span><h2 class="title">What this lab adds to the Lab 04 pipeline: secrets, the database schema, modules and JARs</h2></div>
   <div class="body">
+    <ol class="flow">
+      <li><b>Pull request</b><span><code>lab06-ci.yml</code> validates</span></li>
+      <li><b>Merge to <code>main</code></b><span><code>lab06-deploy.yml</code> deploys test</span></li>
+      <li><b><code>lab06-v*</code> tag</b><span><code>lab06-release.yml</code> runs the same deploy on production</span></li>
+    </ol>
     <div class="compare">
-      <div class="bad"><span class="kicker">Gap 1</span><h3>Secrets</h3><p>The gateway's DB password, the API keys your deploy scans with, the runner's PAT. They configure the system but <b>can't be committed</b>. Where do they live: locally, in Compose, in the gateway, in CI?</p></div>
-      <div class="blue"><span class="kicker">Gap 2</span><h3>The database</h3><p>Your screens read and write tables. The <b>schema</b> lives in a Docker volume: nothing versions it, nothing deploys it. Today it becomes files in the repo, shipped by the same pipeline.</p></div>
-      <div class="teal"><span class="kicker">Gap 3</span><h3>Third-party modules</h3><p>MQTT drivers, charting modules, historians: <code>.modl</code> binaries the gateway needs at boot. Who versions them, how do they reach the gateway, who accepts the license?</p></div>
-      <div class="amber"><span class="kicker">Gap 4</span><h3>JAR files</h3><p>JDBC drivers and Java libraries your scripts call. In 8.3 some are config resources, some sit on the gateway classpath: both ship with the deploy.</p></div>
+      <div class="bad"><span class="kicker">Part 1</span><h3>Secrets</h3><p>Database passwords and API keys configure the gateway, but <b>can't be committed</b>.</p></div>
+      <div class="blue"><span class="kicker">Part 2</span><h3>Database schema</h3><p>Tables live in a Docker volume: <b>nothing versions or deploys them</b> yet.</p></div>
+      <div class="teal"><span class="kicker">Part 3</span><h3>Third-party modules</h3><p><code>.modl</code> files the gateway loads at boot, each with a license to accept.</p></div>
+      <div class="amber"><span class="kicker">Part 3</span><h3>JAR files</h3><p>JDBC drivers and the Java libraries your scripts import.</p></div>
     </div>
-    <div class="aside" style="max-width:72rem"><span class="label">Builds on the Lab 04 and 05 stack</span>Local, test and production gateways, the <code>.env.example</code> convention and the <code>db-init/</code> folder. Routing is unchanged: <b>push to <code>main</code> deploys test, a <code>lab06-v*</code> tag deploys production</b>. <code>lab06-release.yml</code> is a thin caller of the one <code>lab06-deploy.yml</code>, so the steps you add today ship to both gateways.</div>
   </div>
 </section>
 
@@ -612,7 +616,7 @@ a{color:var(--primary-deep)}
     <div class="compare lg">
       <div class="good"><span class="kicker">Kind 1</span><h3>Public</h3><p>Port numbers, module lists, project names, timeouts, <code>modules.json</code>.</p><div class="home"><b>Committed</b>, plain, in the repo</div></div>
       <div class="amber"><span class="kicker">Kind 2</span><h3>Per-environment</h3><p>Gateway URLs, database <i>names</i>, container names. Same shape, different value per environment.</p><div class="home"><b>Committed defaults</b> plus env vars or GitHub environment <i>variables</i></div></div>
-      <div class="bad"><span class="kicker">Kind 3</span><h3>Secret</h3><p>Passwords, API keys, PATs, private keys, keystores. Anyone holding the value <i>is</i> you.</p><div class="home"><b>Never committed</b>: <code>.env</code>, Docker secrets, secret providers, GitHub <i>secrets</i></div></div>
+      <div class="bad"><span class="kicker">Kind 3</span><h3>Secret</h3><p>Passwords, API keys, PATs, private keys, keystores. Anyone holding the value <i>is</i> you.</p><div class="home"><b>Never committed</b>: <code>.env</code>, secret files, secret providers, GitHub <i>secrets</i></div></div>
     </div>
   </div>
 </section>
@@ -620,7 +624,7 @@ a{color:var(--primary-deep)}
 <!-- 03 · A PUSHED SECRET IS BURNED (interactive) -->
 <section class="slide" data-ctrl="reveal">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">03</span><h2 class="title">Why a pushed secret must be rotated, not just deleted</h2></div>
+  <div class="sechead"><span class="num">03</span><h2 class="title">A pushed secret stays in Git history: rotate it, don't just delete the line</h2></div>
   <div class="body">
     <div class="cols2">
       <div class="stack">
@@ -634,199 +638,175 @@ git commit -m <span class="cmd2">"oops, remove key"</span>
 git log -p | grep ak_live
 <span class="red">+ IGNITION_API_KEY = "ak_live_9f3ce81b..."</span>  <span class="cm"># still there</span></pre></div>
       </div>
-      <div class="stack" style="gap:1.5rem">
-        <div class="aside bad reveal" data-step="4"><span class="label">The only correct response</span><b>1. Rotate the credential, immediately.</b> The old value is public now: make it worthless.<br><b>2. Then, optionally, scrub history</b> (<code>git filter-repo</code>, BFG). On a shared remote that is best-effort: forks, clones and CI caches keep copies.<br>Deleting the line and force-pushing <b>without rotating</b> is theatre.</div>
-        <div class="aside reveal" data-step="4"><span class="label">Prevention beats response</span>Scanners catch the 09:14 commit <b>before</b> it lands: <code>scripts/validate.sh</code> scans the payload for known secret values locally, and <b>gitleaks</b> checks every commit of a PR in CI (wiring that job is a stretch goal).</div>
+      <div class="stack">
+        <div class="aside bad reveal" data-step="4"><span class="label">What to do</span><b>Rotate the credential, immediately:</b> the old value is public now, so make it worthless. Scrubbing history afterwards is optional and never complete: every clone and fork keeps a copy.</div>
       </div>
     </div>
   </div>
   <div class="controls"><p class="step-note">
-    <span data-at="0">Step through the leak everyone commits once, and why "removing" it fixes nothing.</span>
+    <span data-at="0">Step through a leaked key, and why deleting the line fixes nothing.</span>
     <span data-at="1">Monday 09:14: an API key is committed <b>"just to make it work"</b>, and pushed.</span>
-    <span data-at="2">Monday 09:40: delete the line, commit, push. <b>Crisis averted?</b></span>
-    <span data-at="3">No. Commits are <b>immutable snapshots</b>: the key sits in history, in every clone and fork. <code>git log -p</code> reads it right back.</span>
-    <span data-at="4">So: <b>rotate first</b>, scrub second, and add a scanner so the 09:14 commit never leaves a laptop again.</span>
+    <span data-at="2">Monday 09:40: delete the line, commit, push. <b>Fixed?</b></span>
+    <span data-at="3">No. The key sits in history, in every clone and fork: <code>git log -p</code> reads it right back.</span>
+    <span data-at="4"><b>Rotate first.</b> A pushed secret is a burned secret.</span>
   </p></div>
 </section>
 
 <!-- 04 · THE SECRETS LADDER (interactive) -->
 <section class="slide" data-ctrl="reveal">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">04</span><h2 class="title">The secrets ladder: four rungs, from hardcoded to referenced</h2></div>
+  <div class="sechead"><span class="num">04</span><h2 class="title">The secrets ladder: four places a secret can live, each leaking less than the one below</h2></div>
   <div class="body">
     <div class="ladder">
       <div class="rung r0 reveal" data-step="1"><span class="rn">0</span><div class="rt"><b>Hardcoded in the repo</b><span>plaintext in <code>docker-compose.yaml</code> or committed config</span></div><div class="leak"><b>Leaks into:</b> Git history, every clone, every fork. Never acceptable.</div></div>
       <div class="rung r1 reveal" data-step="2"><span class="rn">1</span><div class="rt"><b>Env vars via <code>.env</code> and Compose interpolation</b><span>what labs 02 to 05 already do</span></div><div class="leak"><b class="ok">Out of Git.</b> <b>Still leaks into:</b> <code>docker inspect</code>, <code>compose config</code>, the process env.</div></div>
-      <div class="rung r2 reveal" data-step="3"><span class="rn">2</span><div class="rt"><b>File-based secrets</b><span>files mounted read-only at <code>/run/secrets/&lt;name&gt;</code></span></div><div class="leak"><b class="ok">Not in inspect, not in the process env.</b> A plaintext file on the host: the infra side owns and fills it.</div></div>
-      <div class="rung r3 reveal" data-step="4"><span class="rn">3</span><div class="rt"><b>Ignition 8.3 secret providers</b><span>gateway config <b>references</b> a secret instead of containing it</span></div><div class="leak"><b class="ok">Config becomes portable</b> across local, test and production. Rungs 2 and 3 together are how our production gateways run.</div></div>
+      <div class="rung r2 reveal" data-step="3"><span class="rn">2</span><div class="rt"><b>File-based secrets</b><span>files mounted read-only at <code>/run/secrets/&lt;name&gt;</code></span></div><div class="leak"><b class="ok">Not in inspect, not in the process env.</b> Each environment fills its own file.</div></div>
+      <div class="rung r3 reveal" data-step="4"><span class="rn">3</span><div class="rt"><b>Ignition 8.3 secret providers</b><span>gateway config <b>references</b> a secret instead of containing it</span></div><div class="leak"><b class="ok">The same config works on every gateway.</b> This lab ends on rungs 2 and 3 together.</div></div>
     </div>
   </div>
   <div class="controls"><p class="step-note">
-    <span data-at="0">Each rung fixes the leak of the one below it. You need to <b>know which rung you're on</b>.</span>
-    <span data-at="1"><b>Rung 0, hardcoded.</b> In the repo, in history, in every fork. The rung you never stand on.</span>
-    <span data-at="2"><b>Rung 1, <code>.env</code> plus interpolation.</b> Out of Git, still visible to <code>docker inspect</code>. Where the labs have lived so far.</span>
-    <span data-at="3"><b>Rung 2, file-based secrets.</b> A file, not an env var, filled per environment. Works the same in Compose and Kubernetes.</span>
-    <span data-at="4"><b>Rung 3, secret providers.</b> Config stores a <b>reference</b> that a provider resolves from those files: the production pattern.</span>
+    <span data-at="0">Each rung fixes the leak of the one below it.</span>
+    <span data-at="1"><b>Rung 0, hardcoded.</b> In the repo, in history, in every fork.</span>
+    <span data-at="2"><b>Rung 1, <code>.env</code> plus interpolation.</b> Out of Git, still visible to <code>docker inspect</code>.</span>
+    <span data-at="3"><b>Rung 2, file-based secrets.</b> A file, not an env var, filled per environment.</span>
+    <span data-at="4"><b>Rung 3, secret providers.</b> Config stores a <b>reference</b> that a provider resolves from those files.</span>
   </p></div>
 </section>
 
-<!-- 05 · RUNG 1 -->
+<!-- 05 · ENV VAR TO SECRET FILE -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">05</span><h2 class="title">Rung 1: <code>.env</code> files and Compose interpolation, and where they leak</h2></div>
+  <div class="sechead"><span class="num">05</span><h2 class="title">Move a password from an env var to a secret file, and out of <code>docker inspect</code></h2></div>
   <div class="body">
     <div class="cols2">
-      <ul class="checks">
-        <li><b><code>.env</code> is gitignored; <code>.env.example</code> is committed.</b> The example documents every variable with a safe placeholder. Every lab ships one.</li>
-        <li><b>Compose interpolates</b> <code>${VAR:-default}</code> at <i>parse</i> time: safe defaults for the lab, real values from your <code>.env</code>.</li>
-        <li class="no"><b>The ceiling:</b> the value still lands in the container's <b>environment</b>, visible in <code>docker inspect</code>, <code>docker compose config</code> and to any code that can dump env.</li>
-      </ul>
-      <div class="stack" style="gap:1.5rem">
-        <div class="code"><pre><span class="cm"># docker-compose.yaml: this lab's starting point</span>
-environment:
-  GATEWAY_ADMIN_PASSWORD: <span class="cmd2">"${GATEWAY_ADMIN_PASSWORD_LOCAL:-password}"</span>
-  POSTGRES_PASSWORD: <span class="cmd2">"${POSTGRES_PASSWORD:-lab06-postgres-pw}"</span>
+      <div class="stack">
+        <div class="col-head">Rung 1: env var</div>
+        <div class="code sm"><pre><span class="cm"># docker-compose.yaml</span>
+services:
+  timescaledb:
+    environment:
+      POSTGRES_PASSWORD: <span class="cmd2">"${POSTGRES_PASSWORD:-lab06-postgres-pw}"</span>
 
-<span class="cm"># where the leak shows:</span>
-docker inspect lab06-timescaledb \
-  | grep POSTGRES_PASSWORD        <span class="red"># plaintext</span></pre></div>
-        <div class="aside"><span class="label">Verdict</span><b>Perfectly fine for a laptop lab.</b> Not where you stop for shared test and production machines: that's rung 2.</div>
+docker inspect lab06-timescaledb | grep PASSWORD
+<span class="red">  POSTGRES_PASSWORD=lab06-postgres-pw</span>
+<span class="cm">  # the value, in plaintext</span></pre></div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- 06 · RUNG 2 -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">06</span><h2 class="title">Rung 2, file-based secrets: a file, not an env var</h2></div>
-  <div class="body">
-    <div class="split-r">
-      <div class="code sm"><pre><span class="cm"># docker-compose.yaml</span>
+      <div class="stack">
+        <div class="col-head">Rung 2: secret file</div>
+        <div class="code sm"><pre><span class="cm"># docker-compose.yaml</span>
 secrets:
   postgres_password:
     file: ./secrets/postgres_password.txt   <span class="cm"># gitignored</span>
-
 services:
   timescaledb:
     secrets: [postgres_password]
     environment:
-      <span class="cm"># official postgres image: _FILE suffix</span>
-      POSTGRES_PASSWORD_FILE: <span class="cmd2">/run/secrets/postgres_password</span></pre></div>
-      <ul class="checks">
-        <li><b>Not in <code>docker inspect</code></b>, not in the process env: the value only exists as a mounted file the process reads at startup.</li>
-        <li><b>Portable.</b> Compose <code>secrets:</code>, Kubernetes secret volumes and plain bind mounts all end at a small read-only file at a known path. Ignition's secret provider reads it directly.</li>
-        <li><b>Clean handover to infra.</b> The repo commits <b>paths and names</b> (plus <code>*.example</code> dummies); infra fills the real files per environment. Our production repo ships committed dummy values for local test, so a fresh clone just works.</li>
-        <li><b>CI can write these files too:</b> a deploy workflow turns GitHub secrets into password files for the gateway container. More on that later in this part.</li>
-      </ul>
+      <span class="cm"># the postgres image reads the _FILE suffix</span>
+      POSTGRES_PASSWORD_FILE: <span class="cmd2">/run/secrets/postgres_password</span>
+
+docker inspect lab06-timescaledb | grep PASSWORD
+<span class="grn">  POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password</span>
+<span class="cm">  # only the path</span></pre></div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- DIVIDER · 8.3 SECRET PROVIDERS -->
-<section class="slide dark">
-  <div class="glow ambient" aria-hidden="true"></div>
-  <header class="topbar"><img class="logo" src="logos/OriginalLight.png" alt="Mustry Solutions"></header>
-  <div class="divider-body"><h2 class="divider-title">Ignition 8.3 secret providers: <em>embedded</em> and <em>referenced</em> secrets</h2></div>
-</section>
-
-<!-- 07 · EMBEDDED VS REFERENCED -->
+<!-- 06 · EMBEDDED VS REFERENCED -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">07</span><h2 class="title">Embedded vs referenced secrets</h2></div>
+  <div class="sechead"><span class="num">06</span><h2 class="title">Embedded vs referenced secrets in Ignition 8.3</h2></div>
   <div class="body">
     <div class="compare lg">
       <div class="warn"><h3>Embedded secret</h3>
         <ul class="dots">
-          <li>The value is <b>encrypted by this gateway</b> and stored inside its own config.</li>
-          <li>Fine for one hand-managed gateway: set it once in the UI, done.</li>
-          <li><b>The catch:</b> the ciphertext only decrypts on the gateway that produced it. On a fresh container it is a <b>broken reference</b>.</li>
-          <li>For a pipeline that promotes the <i>same</i> config from local to production: a dead end, <b>unless you manage the keys yourself</b> (the exception, later in this part).</li>
+          <li>The gateway <b>encrypts the value</b> and stores the ciphertext in its own config.</li>
+          <li>It only decrypts on a gateway with <b>the same encryption keys</b>: on test it faults.</li>
         </ul>
+        <div class="home">Fine for one gateway you manage by hand</div>
       </div>
       <div class="good"><h3>Referenced secret</h3>
         <ul class="dots">
-          <li>Config stores a <b>reference</b>: "get <code>MSSQL_PASSWORD</code> from provider <code>PlantSecrets</code>", never the value.</li>
-          <li>A <b>file-type secret provider</b> resolves it at runtime from a file: rungs 2 and 3 snap together at <code>/run/secrets/&lt;name&gt;</code>.</li>
-          <li>Our production setup: one file-type provider, about 16 named secrets, every DB connection and auth profile pointing at it by name.</li>
-          <li>Committed config holds <b>no secret material</b>: diff it, review it, deploy it anywhere.</li>
+          <li>Config stores a <b>reference</b>: a provider name and a secret name, never the value.</li>
+          <li>A <b>file-type secret provider</b> resolves it from a file at <code>/run/secrets/</code>.</li>
         </ul>
+        <div class="home">What a pipeline needs: <b>no secret material in Git</b></div>
       </div>
     </div>
-    <div class="aside"><span class="label">Rule of thumb</span><b>Embedded = pet gateway. Referenced = pipeline.</b> If a gateway's config is in Git (after labs 04 and 05, yours is), its secrets should be referenced.</div>
   </div>
 </section>
 
-<!-- 08 · PORTABILITY -->
+<!-- 07 · PORTABILITY -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">08</span><h2 class="title">One referenced config resolves a different value on each gateway</h2></div>
+  <div class="sechead"><span class="num">07</span><h2 class="title">One committed reference, and each gateway reads the value from its own file</h2></div>
   <div class="body">
     <div class="port">
       <div class="filecard">
-        <div class="fh">database-connection config.json, committed</div>
+        <div class="fh">TimescaleDB config.json, committed</div>
         <pre>"password": {
   "type": <span class="hl">"Referenced"</span>,
   "data": {
-    "providerName": <span class="hl">"PlantSecrets"</span>,
-    "secretName": <span class="hl">"MSSQL_PASSWORD"</span>
+    "providerName": <span class="hl">"LabSecrets"</span>,
+    "secretName": <span class="hl">"POSTGRES_PASSWORD"</span>
   }
 }
 <span class="cm">a name, not a value</span></pre>
       </div>
       <div class="arr" aria-hidden="true"></div>
       <div>
-        <div class="envrow"><span class="tag">local</span><span class="v"><code>/run/secrets/MSSQL_PASSWORD</code> holds <b>a committed dummy value</b>, so a fresh clone just works</span></div>
-        <div class="envrow"><span class="tag test">test</span><span class="v">the same path holds <b>the file infra filled on the test host</b></span></div>
-        <div class="envrow"><span class="tag production">production</span><span class="v">the same path holds <b>the production value</b>, which only production ever holds</span></div>
+        <div class="envrow"><span class="tag">local</span><span class="v"><code>/run/secrets/postgres_password</code> is mounted from <b>your <code>secrets/postgres_password.txt</code></b></span></div>
+        <div class="envrow"><span class="tag test">test</span><span class="v">the same path, written by the deploy from <b>the <code>lab06-gateway-test</code> secret</b></span></div>
+        <div class="envrow"><span class="tag production">production</span><span class="v">the same path, written from <b>the <code>lab06-gateway-production</code> secret</b></span></div>
       </div>
     </div>
-    <div class="aside" style="max-width:72rem"><span class="label">You already use this model in CI</span>One workflow file, and the <code>lab06-gateway-test</code> and <code>lab06-gateway-production</code> GitHub <b>environments</b> each supply their own <code>IGNITION_API_KEY</code>. Referenced secrets bring the same idea inside the gateway.</div>
   </div>
 </section>
 
-<!-- 09 · FILE-TYPE PROVIDER IN THE UI -->
+<!-- 08 · FILE-TYPE PROVIDER -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">09</span><h2 class="title">Create a file-type secret provider in the 8.3 gateway UI</h2></div>
+  <div class="sechead"><span class="num">08</span><h2 class="title">Create a file-type secret provider and point the connection's password at it</h2></div>
   <div class="body">
+    <ol class="flow lg">
+      <li><b>Provider <code>LabSecrets</code></b><span>type <b>File</b>: it holds paths, never values</span></li>
+      <li><b>Secret <code>POSTGRES_PASSWORD</code></b><span>reads <code>/run/secrets/postgres_password</code></span></li>
+      <li class="on"><b>Connection password</b><span><b>Embedded</b> becomes <b>Referenced</b>: provider plus secret name</span></li>
+    </ol>
     <div class="cols2">
-      <div class="stack" style="gap:1.75rem">
-        <div class="compare">
-          <div class="good"><h3>Type File</h3><p>Each secret is a name pointing at a file the gateway reads when it needs it: <code>POSTGRES_PASSWORD</code> to <code>/run/secrets/postgres_password</code>. The provider holds <b>paths, never values</b>.</p></div>
-          <div class="warn"><h3>Type Internal</h3><p>You type the value into the gateway, which stores it <b>encrypted under its own keys</b>. The connection holds a reference, but the ciphertext only decrypts on that gateway, like an embedded secret. Stretch S1 breaks it on test.</p></div>
-        </div>
-        <div class="aside"><span class="label">Then re-point the connection</span>A secret provider is ordinary 8.3 config (<code>ignition/secret-provider</code>). The connection's password changes from <b>Embedded</b> (the value, encrypted, in the connection) to <b>Referenced</b> (provider plus secret name).</div>
-      </div>
-      <div class="code"><div class="code-title">secret-provider/LabSecrets/config.json</div><pre><span class="cm"># what lands on disk</span>
-"profile":  { "type": <span class="cmd2">"file"</span> },
+      <div class="code"><div class="code-title">secret-provider/LabSecrets/config.json</div><pre>"profile":  { "type": <span class="cmd2">"file"</span> },
 "settings": { "files": {
   "POSTGRES_PASSWORD": {
     "filePath": <span class="cmd2">"/run/secrets/postgres_password"</span>,
     "fileType": "CLEARTEXT" } } }</pre></div>
+      <div class="compare">
+        <div class="warn"><h3>Type Internal</h3><p>You type the value into the gateway, which encrypts it under its own keys. Like an embedded secret, it only decrypts there.</p></div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- 10 · CORE COLLECTION + PER-MODE PASSWORDS -->
+<!-- 09 · CORE COLLECTION + PER-MODE PASSWORDS + SWEEP -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">10</span><h2 class="title">Move the provider to core and point every deployment mode's password at it</h2></div>
+  <div class="sechead"><span class="num">09</span><h2 class="title">Save the provider in core, re-point every deployment mode, then sweep for embedded secrets</h2></div>
   <div class="body">
     <div class="cols2">
       <div class="stack" style="gap:1.5rem">
         <ul class="checks">
-          <li class="no"><b>The UI saves into the active mode's collection.</b> The local gateway runs <code>-Dignition.config.mode=local-development</code>, so a new provider lands in <code>resources/local-development/</code>, which never deploys. Move it to <code>core</code>: that is what test and production inherit.</li>
-          <li class="no"><b>Every override has its own password field.</b> <code>TimescaleDB</code> has local-development, test and production overrides: re-point the password in <b>each</b>, or that mode keeps its old embedded secret. <b>Create Override</b> in the connection adds one for another mode.</li>
-          <li class="no"><b>Sweep for the secret you didn't know about.</b> Any committed resource can embed a ciphertext, and one whose module isn't loaded yet stays silent until it is. Ask git, re-point what you own.</li>
+          <li class="no"><b>The UI saves into the active mode.</b> Local runs <code>local-development</code>, which never deploys: move the provider to <code>core</code>.</li>
+          <li class="no"><b>Every override has its own password.</b> Re-point it in each mode. <b>Create Override</b> adds a mode to a connection.</li>
+          <li class="no"><b>Any committed resource can embed a secret.</b> Ask git, re-point what you own.</li>
         </ul>
         <div>
           <div class="col-head">What test resolves</div>
           <div class="chain"><span class="lnk">external</span><span class="sep">then</span><span class="lnk">core</span><span class="sep">then</span><span class="lnk">test</span><span class="sep">never</span><span class="lnk no">local-development</span></div>
         </div>
       </div>
-      <div class="stack" style="gap:1.5rem">
-        <div class="code sm"><pre><span class="cm"># where it must live, and where the passwords are</span>
+      <div class="code sm"><pre><span class="cm"># after every UI change: which collection did it land in?</span>
+git status
+
+<span class="cm"># where it must live, and where the passwords are</span>
 resources/<span class="grn">core</span>/ignition/secret-provider/LabSecrets/
 resources/core/.../TimescaleDB/config.json        <span class="cm"># Referenced</span>
 resources/test/.../TimescaleDB/config.json        <span class="cm"># Referenced too:</span>
@@ -835,109 +815,70 @@ resources/local-development/.../TimescaleDB/...   <span class="cm"># has its own
 
 <span class="cm"># sweep: which committed config still embeds a secret?</span>
 git grep -l '"Embedded"' -- services/config</pre></div>
-        <div class="aside"><span class="label">Check with git, not with the UI</span>After every UI change, <code>git status</code> tells you which collection it went into. Green locally proves nothing about test.</div>
-      </div>
     </div>
   </div>
 </section>
 
-<!-- 11 · SECRETS IN GITHUB ACTIONS -->
+<!-- 10 · GITHUB SECRETS BECOME FILES -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">11</span><h2 class="title">Secrets in GitHub Actions: scoped per environment, kept out of logs</h2></div>
-  <div class="body">
-    <div class="cols2">
-      <ul class="checks">
-        <li><b>Environment-scoped, not repo-wide.</b> <code>lab06-gateway-production</code> holds the production values; a PR build against test can't even see them. Add <b>required reviewers</b> on the production environment for a human gate.</li>
-        <li><b>Masking is a seatbelt, not a licence.</b> Actions replaces known secret values with <code>***</code> in logs, but don't <code>echo</code> them, don't <code>set -x</code> around them, don't write them into artifacts.</li>
-        <li><b>Forks don't get secrets.</b> <code>pull_request</code> runs from forks see empty secrets by design: one more reason deploys trigger on <code>push</code> or a tag, never on a PR.</li>
-      </ul>
-      <div class="stack" style="gap:1.5rem">
-        <div class="code"><pre><span class="cm"># lab06-deploy.yml</span>
-jobs:
-  deploy:
-    runs-on: [self-hosted, lab06]
-    environment: <span class="cmd2">lab06-gateway-test</span>   <span class="cm"># scoping</span></pre></div>
-        <div class="aside bad"><span class="label">Never</span><code>run: echo ${{ secrets.X }}</code>, and never interpolate a secret straight into a <b>shell command line</b>. Pass it through <code>env:</code> and write it with <code>printf</code>, so it stays out of the run log.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 12 · GITHUB SECRETS BECOME FILES -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">12</span><h2 class="title">The deploy workflow turns GitHub secrets into secret files in the gateway</h2></div>
+  <div class="sechead"><span class="num">10</span><h2 class="title">The deploy workflow writes each environment's GitHub secrets to files in the gateway</h2></div>
   <div class="body">
     <ol class="flow">
-      <li><b>GitHub secret</b><span>one source of truth, per environment</span></li>
-      <li class="on"><b>Materialize</b><span>file in the workspace, <code>umask 177</code> <b>before</b> the value lands</span></li>
-      <li><b>Ship</b><span>pre-wired step copies it to <code>/run/secrets/</code> in the container</span></li>
+      <li><b>GitHub secret</b><span>on the <code>lab06-gateway-test</code> or <code>-production</code> environment</span></li>
+      <li class="on"><b>Materialize</b><span>a file in the workspace, <code>umask 177</code> first</span></li>
+      <li><b>Ship</b><span>copied to <code>/run/secrets/</code> in the container</span></li>
       <li><b>Provider</b><span>reads the file by name</span></li>
       <li><b>Reference</b><span>in the committed config</span></li>
     </ol>
     <div class="split-r">
-      <div class="aside warn"><span class="label">The files live in that container</span>A recreated container starts without them until the next deploy writes them again. Our production boot script does the same thing: <code>umask</code> and <code>chmod 0600</code> <b>before</b> the value is written.</div>
-      <div class="code sm"><pre>- name: Materialize secret files
-  env:
-    POSTGRES_PASSWORD: <span class="cmd2">${{ secrets.POSTGRES_PASSWORD }}</span>
-  run: |
-    umask 177                    <span class="cm"># files land 0600</span>
-    mkdir -p secrets
-    printf '%s' "$POSTGRES_PASSWORD" \
-      &gt; secrets/postgres_password.txt
-- name: Ship secret files into gateway container
-  run: |                         <span class="cm"># (abridged)</span>
-    docker exec -u root "$IGNITION_CONTAINER" \
-      install -d -o 2003 -g 0 -m 750 /run/secrets
-    docker cp secrets/postgres_password.txt \
-      "$IGNITION_CONTAINER:/run/secrets/postgres_password"</pre></div>
+      <ul class="checks">
+        <li><b>Pass a secret through <code>env:</code></b> and write it with <code>printf</code>. Never put <code>${{ secrets.X }}</code> in a <code>run:</code> line or an <code>echo</code>.</li>
+        <li class="warn"><b>The files live in the container.</b> A recreated container has none until the next deploy writes them again.</li>
+      </ul>
+      <div class="code sm"><pre><span class="cm"># lab06-deploy.yml (abridged)</span>
+environment: <span class="cmd2">lab06-gateway-${{ inputs.target || 'test' }}</span>
+steps:
+  - name: Materialize secret files
+    env:
+      POSTGRES_PASSWORD: <span class="cmd2">${{ secrets.POSTGRES_PASSWORD }}</span>
+    run: |
+      umask 177                    <span class="cm"># files land 0600</span>
+      mkdir -p secrets
+      printf '%s' "$POSTGRES_PASSWORD" \
+        &gt; secrets/postgres_password.txt
+  - name: Ship secret files into gateway container
+    run: |
+      docker cp secrets/postgres_password.txt \
+        "$IGNITION_CONTAINER:/run/secrets/postgres_password"</pre></div>
     </div>
   </div>
 </section>
 
-<!-- 13 · THE NEVER-COMMIT LIST -->
+<!-- 11 · THE NEVER-COMMIT LIST -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">13</span><h2 class="title">The never-commit list for an Ignition repo</h2></div>
+  <div class="sechead"><span class="num">11</span><h2 class="title">What never goes into an Ignition repo, and the scan that checks it</h2></div>
   <div class="body">
     <div class="cols2">
       <ul class="checks">
-        <li class="no"><b><code>.env</code></b>, any real one. (<code>.env.example</code> with placeholders: yes, please.)</li>
+        <li class="no"><b><code>.env</code></b>, any real one. <code>.env.example</code> with placeholders is committed.</li>
         <li class="no"><b><code>secrets/</code> contents</b>: only the <code>*.example</code> files are tracked.</li>
         <li class="no"><b>PATs and API keys</b>: <code>ghp_...</code>, runner registration tokens, gateway API keys.</li>
-        <li class="no"><b>Gateway backups (<code>.gwbk</code>)</b> from real systems: users, DB connections and keystores in one bundle.</li>
+        <li class="no"><b>Gateway backups (<code>.gwbk</code>)</b> from real systems: users, DB connections and keystores in one file.</li>
         <li class="no"><b>Keystores and TLS private keys</b>: <code>ssl.pfx</code>, <code>metro-keystore</code>, <code>*.p12</code>.</li>
       </ul>
-      <div class="stack" style="gap:1.5rem">
-        <div class="code"><pre><span class="cm"># .gitignore: the relevant lines</span>
+      <div class="code"><pre><span class="cm"># .gitignore: the relevant lines</span>
 .env
 secrets/*
 !secrets/*.example
 *.gwbk
 
-<span class="cm"># the secret scan (plus the CI linters)</span>
-./scripts/validate.sh <span class="cm"># no secrets where they shouldn't be = green</span></pre></div>
-        <div class="aside"><span class="label">Enforcement, not vigilance</span><code>scripts/validate.sh</code> runs a <b>secret scan</b> (tracked files under <code>secrets/</code>, known values in the payload) and <code>lab06-ci.yml</code> repeats it on every PR: a leaked key fails the build before a reviewer sees it. A <b>gitleaks</b> job over every commit of a PR is stretch S3.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 14 · THE EXCEPTION: MANAGED KEYS -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">14</span><h2 class="title">The one exception: committed ciphertexts, if you manage the gateway keys</h2></div>
-  <div class="body">
-    <ol class="flow lg">
-      <li><b>Key CLI tool</b><span>8.3 ships <code>ignition-secrets-tool.sh</code></span></li>
-      <li><b>Root key and KEKs</b><span>JSON files under <code>data/config/ignition/keys/</code></span></li>
-      <li><b>Same keys everywhere</b><span>infra distributes them, the way redundant pairs already share them</span></li>
-      <li class="on"><b>Ciphertext travels</b><span>committed embedded secrets decrypt on every gateway</span></li>
-    </ol>
-    <div class="cols2">
-      <div class="aside warn"><span class="label">The keys become the secret</span>An alternative to file-based secrets, not a shortcut: infra distributes the keys, and they <b>never</b> go in Git.</div>
-      <div class="aside"><span class="label">Docs</span><a href="https://www.docs.inductiveautomation.com/docs/8.3/platform/security/secrets-management/secrets-management-key-cli-tool" target="_blank" rel="noopener">Secrets Management Key CLI Tool</a>. Stretch S1 puts this trade-off next to Part 1's referenced secrets.</div>
+<span class="cm"># the secret scan: tracked files under secrets/,</span>
+<span class="cm"># known values in the payload</span>
+./scripts/validate.sh
+<span class="cm"># lab06-ci.yml runs the same scan on every PR</span>
+<span class="cm"># stretch S3: gitleaks checks every commit of a PR</span></pre></div>
     </div>
   </div>
 </section>
@@ -949,10 +890,10 @@ secrets/*
   <div class="divider-body"><h2 class="divider-title">Part 2: version and deploy the <em>database schema</em> with your screens</h2></div>
 </section>
 
-<!-- 15 · SCHEMA DRIFT -->
+<!-- 12 · SCHEMA DRIFT -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">15</span><h2 class="title">Schema drift: a screen ships without the table it needs</h2></div>
+  <div class="sechead"><span class="num">12</span><h2 class="title">Schema drift: a screen ships without the table it needs</h2></div>
   <div class="body">
     <div class="cols2">
       <div class="filecard">
@@ -972,21 +913,19 @@ secrets/*
       </div>
     </div>
     <ul class="checks">
-      <li class="no"><b>"Worked on test."</b> Because someone <i>manually</i> created the table on test. Production was never told. The screen errors on release night.</li>
-      <li class="no"><b>No history.</b> Who changed the column type? When? Why? Hand-run SQL has no <code>git log</code>.</li>
-      <li><b>The fix is the same as always:</b> schema changes become <b>files in the repo</b>, reviewed in the same PR as the screens that need them, applied by the pipeline.</li>
+      <li class="no"><b>"Worked on test"</b>, because someone created the table there by hand. Production was never told.</li>
+      <li><b>Schema changes become files in the repo</b>, reviewed in the same PR as the screens that need them, applied by the pipeline.</li>
     </ul>
   </div>
 </section>
 
-<!-- 16 · DB-INIT -->
+<!-- 13 · DB-INIT -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">16</span><h2 class="title"><code>db-init/</code>: bootstrap, not deployment</h2></div>
+  <div class="sechead"><span class="num">13</span><h2 class="title"><code>db-init/</code> runs once, on an empty volume: it creates databases, it never changes them</h2></div>
   <div class="body">
     <div class="cols2">
-      <div class="stack" style="gap:1.5rem">
-        <div class="code"><pre><span class="cm"># docker-compose.yaml: the timescaledb service</span>
+      <div class="code"><pre><span class="cm"># docker-compose.yaml: the timescaledb service</span>
 volumes:
   - ./db-init:/docker-entrypoint-initdb.d:ro
 
@@ -994,22 +933,19 @@ volumes:
 CREATE DATABASE ignition_test;
 CREATE DATABASE ignition_production;
 CREATE ROLE reporting LOGIN PASSWORD '...';</pre></div>
-        <div class="aside warn"><span class="label">The one rule</span>Postgres runs <code>/docker-entrypoint-initdb.d</code> <b>once, on first init of an empty data volume.</b> Volume already exists? <b>Nothing runs.</b> Ever again.</div>
-      </div>
       <ul class="checks">
-        <li><b>Great for:</b> creating the databases, the app user, extensions: the "day zero" shape of a <i>fresh</i> environment.</li>
-        <li class="no"><b>Useless for:</b> changing a database that already has data. Editing <code>db-init/</code> after first boot changes <i>nothing</i> on any running environment.</li>
-        <li class="no"><b>The trap:</b> "I added the table to db-init and it worked!", because you also wiped your volume. Production doesn't get its volume wiped.</li>
-        <li><b>So:</b> day-zero shape goes in <code>db-init/</code>. Every change after that is a <b>migration</b>.</li>
+        <li><b>Day zero:</b> the databases, the users and the extensions of a <i>fresh</i> environment.</li>
+        <li class="no"><b>Volume already exists? Nothing runs.</b> Editing <code>db-init/</code> after first boot changes nothing on test or production.</li>
+        <li><b>Every change after day zero is a migration.</b></li>
       </ul>
     </div>
   </div>
 </section>
 
-<!-- 17 · MIGRATIONS (interactive) -->
+<!-- 14 · MIGRATIONS (interactive) -->
 <section class="slide" data-ctrl="reveal">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">17</span><h2 class="title">Migrations: numbered SQL files, applied in order, tracked in the database</h2></div>
+  <div class="sechead"><span class="num">14</span><h2 class="title">Migrations: numbered SQL files, applied in order, tracked in the database</h2></div>
   <div class="body">
     <div class="mig">
       <div class="files">
@@ -1039,42 +975,42 @@ INSERT INTO production_kpi ... ;  <span class="cm">-- seed rows</span></pre>
         <div class="le"><span class="k pend">0003</span><span><b>downtime add shift</b>: <i>pending on production, applies on the next deploy</i></span></div>
       </div>
     </div>
-    <div class="aside reveal" data-step="5" style="max-width:none"><span class="label">The rules, from the production repo's docs/MIGRATIONS.md</span><b>Always pairs</b> (<code>up</code> applies, <code>down</code> undoes). <b>Never edit a migration after it deployed anywhere</b>: fix mistakes with a new number. Each database tracks its own position in <code>schema_migrations</code>, so every environment catches up at its own pace.</div>
+    <div class="aside reveal" data-step="5" style="max-width:none"><span class="label">The two rules</span><b>Always pairs:</b> <code>up</code> applies, <code>down</code> undoes. <b>Never edit a migration after it deployed anywhere:</b> fix mistakes with a new number.</div>
   </div>
   <div class="controls"><p class="step-note">
-    <span data-at="0">We use <b>golang-migrate</b>, like our file-based production repo. Build the ledger step by step.</span>
+    <span data-at="0">We use <b>golang-migrate</b>. Build the ledger step by step.</span>
     <span data-at="1"><b>0001, the first pair.</b> The <code>production_kpi</code> table this lab ships with, as an up/down pair.</span>
-    <span data-at="2"><b>0002, a change.</b> A new table, as a new pair. 0001 is <b>never edited</b>: history only appends.</span>
+    <span data-at="2"><b>0002, a change.</b> A new table, as a new pair. 0001 is <b>never edited</b>.</span>
     <span data-at="3"><b>0003, another change.</b> Each pair is numbered; order is the contract.</span>
-    <span data-at="4"><code>migrate up</code> compares the files with <b>schema_migrations</b> in the target DB and applies only what's missing.</span>
-    <span data-at="5">Versioned, append-only, paired, tracked per environment. <b>It's Git for your schema.</b></span>
+    <span data-at="4"><code>migrate up</code> compares the files with <b>schema_migrations</b> in the target database and applies only what's missing.</span>
+    <span data-at="5">Versioned, append-only, paired, tracked per database: <b>Git for your schema.</b></span>
   </p></div>
 </section>
 
-<!-- 18 · THE PIPELINE WITH A DB STEP -->
+<!-- 15 · THE PIPELINE WITH A DB STEP -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">18</span><h2 class="title">The deploy pipeline, now with a database step before the screens ship</h2></div>
+  <div class="sechead"><span class="num">15</span><h2 class="title">The deploy migrates the database before the screens ship</h2></div>
   <div class="body">
     <ol class="flow">
-      <li><b>Validate</b><span>already done on the PR by <code>lab06-ci.yml</code>; the deploy does not repeat it</span></li>
-      <li><b>Checkout</b><span>the merged commit on <code>main</code>, or the <code>lab06-v*</code> tag</span></li>
-      <li class="on"><b>Migrate DB</b><span>new: <code>migrate up</code> against the <b>target</b> environment's database; fails, run stops</span></li>
-      <li><b>Ship files</b><span>prune per <code>.deployignore</code>, <code>docker cp</code> into the gateway</span></li>
-      <li><b>Scan</b><span><code>POST /scan</code>: projects and config, no restart</span></li>
-      <li><b>Verify</b><span><code>StatusPing</code> answers, the gateway is up</span></li>
+      <li><b>Secret files</b><span>written and shipped</span></li>
+      <li><b>Modules</b><span>shipped, restart if changed</span></li>
+      <li class="on"><b>Migrate DB</b><span><code>migrate up</code> on the <b>target</b> environment's database</span></li>
+      <li><b>Ship projects and config</b><span><code>docker cp</code> into the gateway</span></li>
+      <li><b>Scan</b><span>projects and config reload, no restart</span></li>
+      <li><b>Smoke check</b><span><code>StatusPing</code> answers</span></li>
     </ol>
-    <div class="cols2">
-      <div class="aside good"><span class="label">Why migrate before ship</span><b>Old screens tolerate a new table; new screens don't tolerate a missing one.</b> A half-failed run leaves production on old screens plus new, unused schema: a safe place to stop.</div>
-      <div class="aside warn"><span class="label">On failure</span>A failing migrate step <b>fails the whole run</b>: no screens ship. Fix forward with a new migration. Our file-based production pipeline runs migrations <b>after</b> the scan, with <code>continueOnError</code>: spot what can go wrong with that in the We-do.</div>
+    <div class="compare">
+      <div class="good"><h3>The migration fails: the run stops</h3><p>No screen ships. The gateway keeps the old screens, which never needed the new table.</p></div>
+      <div class="bad"><h3>A screen ships before its table</h3><p>The new screen queries a table that isn't there yet, and errors until the migration runs.</p></div>
     </div>
   </div>
 </section>
 
-<!-- 19 · EXPAND, SWITCH, CONTRACT -->
+<!-- 16 · EXPAND, SWITCH, CONTRACT -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">19</span><h2 class="title">Rename a column without breaking a live screen: expand, then contract</h2></div>
+  <div class="sechead"><span class="num">16</span><h2 class="title">Rename a column without breaking a live screen: expand, switch, contract</h2></div>
   <div class="body">
     <div class="cols3 ec">
       <div><small>Deploy 1</small><h3>Expand</h3>
@@ -1082,29 +1018,23 @@ INSERT INTO production_kpi ... ;  <span class="cm">-- seed rows</span></pre>
 ALTER TABLE downtime_log
   ADD COLUMN cause TEXT;
 UPDATE downtime_log
-  SET cause = reason;   <span class="cm">-- backfill</span>
-<span class="cm">-- .down.sql:</span>
-<span class="cm">-- ALTER TABLE downtime_log</span>
-<span class="cm">--   DROP COLUMN cause;</span></pre></div>
-        <p>Old screens still read <code>reason</code> and keep working; nothing reads <code>cause</code> yet.</p>
+  SET cause = reason;   <span class="cm">-- backfill</span></pre></div>
+        <p>Old screens still read <code>reason</code>.</p>
       </div>
       <div><small>Deploy 2</small><h3>Switch</h3>
         <div class="code sm"><pre><span class="cm">-- the screens read the new column</span>
 SELECT <span class="cmd2">cause</span>, minutes, area
   FROM downtime_log ...</pre></div>
-        <p>A normal screen PR. Both columns exist, so the deploy is safe in either order.</p>
+        <p>A normal screen PR: both columns exist.</p>
       </div>
       <div><small>Deploy 3</small><h3>Contract</h3>
         <div class="code sm"><pre><span class="cm">-- 0004_downtime_drop_reason.up.sql</span>
 ALTER TABLE downtime_log
-  DROP COLUMN reason;
-<span class="cm">-- .down.sql: ADD COLUMN reason TEXT;</span>
-<span class="cm">--   UPDATE downtime_log</span>
-<span class="cm">--   SET reason = cause;</span></pre></div>
-        <p>Only once <b>every</b> environment runs the new screens, production included.</p>
+  DROP COLUMN reason;</pre></div>
+        <p>Once <b>every</b> environment runs the new screens.</p>
       </div>
     </div>
-    <div class="aside bad" style="max-width:72rem"><span class="label">One-step rename</span><code>RENAME COLUMN</code> in a single migration: the migrate step runs first, and every screen still selecting <code>reason</code> errors until the ship step lands. On a slow or failed run, that is your outage. Stretch S2 practises the safe way.</div>
+    <div class="aside bad" style="max-width:72rem"><span class="label">One-step rename</span><code>RENAME COLUMN</code> in one migration breaks every screen that still selects <code>reason</code>, from the migrate step until the new screens ship.</div>
   </div>
 </section>
 
@@ -1115,34 +1045,33 @@ ALTER TABLE downtime_log
   <div class="divider-body"><h2 class="divider-title">Part 3: version and deploy <em>third-party modules and JAR files</em> instead of installing them by hand</h2></div>
 </section>
 
-<!-- 20 · MODULES: COMMIT, LOAD, SHIP -->
+<!-- 17 · MODULES: COMMIT, LOAD, SHIP -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">20</span><h2 class="title">Third-party modules: commit the .modl and load it from a folder</h2></div>
+  <div class="sechead"><span class="num">17</span><h2 class="title">Third-party modules: commit the .modl and load it from a folder</h2></div>
   <div class="body">
     <ol class="flow lg">
-      <li><b>Commit the binary</b><span>the <code>.modl</code> goes in <code>third-party-modules/</code>, tracked like any file (Git LFS in the real repos; these are small enough to commit directly)</span></li>
-      <li><b>The folder is wired</b><span>every gateway's compose <code>command:</code> passes the external modules folder flag; the gateway loads from it at boot</span></li>
-      <li><b>Ship it like everything else</b><span>file-based: the pipeline copies the folder to the gateway host. Image-based: one <code>COPY</code> layer, like yesterday's Dockerfile</span></li>
+      <li><b>Commit the binary</b><span>the <code>.modl</code> goes in <code>third-party-modules/</code>, tracked like any file</span></li>
+      <li><b>Load from the folder</b><span>every gateway's <code>command:</code> points at it; modules load at boot</span></li>
+      <li><b>Ship it</b><span>the deploy copies the modules and restarts the gateway when they changed</span></li>
     </ol>
-    <div class="code" style="max-width:62rem"><pre><span class="cm"># docker-compose.yaml, every gateway's command: (already there, nothing to change)</span>
+    <div class="code" style="max-width:62rem"><pre><span class="cm"># docker-compose.yaml, every gateway's command: (already there)</span>
 -Dignition.gateway.externalModulesFolder=<span class="cmd2">/third-party-modules</span>
 <span class="cm"># /third-party-modules is where the repo folder is mounted in the container</span></pre></div>
-    <div class="aside"><span class="label">Same pattern in both production repos</span>The binary lives in Git, a JVM flag points the gateway at the folder, and license acceptance is data, not a click. Next slide.</div>
   </div>
 </section>
 
-<!-- 21 · LICENSE ACCEPTANCE -->
+<!-- 18 · LICENSE ACCEPTANCE -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">21</span><h2 class="title">Accept the license in config: the gateway writes the fingerprint and hash for you</h2></div>
+  <div class="sechead"><span class="num">18</span><h2 class="title">Accept the license in config: the gateway writes the fingerprint and hash for you</h2></div>
   <div class="body">
     <div class="split-r">
       <ol class="steps">
         <li><b>List the module id</b> in all three compose env vars.</li>
         <li><b>Add a minimal entry</b> to <code>modules.json</code>: only <code>filename</code> and <code>onStartup</code>.</li>
-        <li><b>Boot once.</b> The gateway accepts headlessly and <b>writes <code>certFingerprint</code> and <code>licenseAgreementHash</code> back</b> into <code>modules.json</code>. You never type or guess them.</li>
-        <li><b>Commit what it wrote.</b> Now a <i>fresh</i> gateway with no env vars accepts from config alone.</li>
+        <li><b>Boot once.</b> The gateway accepts headlessly and <b>writes <code>certFingerprint</code> and <code>licenseAgreementHash</code></b> into <code>modules.json</code>.</li>
+        <li><b>Commit what it wrote.</b> A <i>fresh</i> gateway now accepts from config alone.</li>
       </ol>
       <div class="code sm"><pre><span class="cm"># 1: compose env vars: the module id in all three</span>
 GATEWAY_MODULES_ENABLED:  <span class="cmd2">..., com.mussonindustrial.embr.charts</span>
@@ -1158,38 +1087,24 @@ ACCEPT_MODULE_CERTS:      <span class="cmd2">..., com.mussonindustrial.embr.char
 <span class="cm"># 3: boot once: the gateway ADDS these itself</span>
   <span class="cmd2">"certFingerprint": "e5a3cf3f06627c175b68b0122ac8f2c3f9c992e2",</span>
   <span class="cmd2">"licenseAgreementHash": 3266212556</span>
-<span class="cm"># 4: commit them: fresh gateways accept headlessly, every boot</span></pre></div>
+<span class="cm"># 4: commit them</span></pre></div>
     </div>
   </div>
 </section>
 
-<!-- 22 · COMMISSIONING FAILURE MODES -->
+<!-- 19 · COMMISSIONING: FAILURE AND RECOVERY -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">22</span><h2 class="title">What an unaccepted module and a wiped data volume do to a gateway's first boot</h2></div>
+  <div class="sechead"><span class="num">19</span><h2 class="title">A module without its acceptance stops the gateway at commissioning: how to recover</h2></div>
   <div class="body">
-    <div class="compare lg">
-      <div class="bad"><h3>Enabled but not accepted</h3><p>A module in <code>GATEWAY_MODULES_ENABLED</code> without its acceptance (the env lists or the derived <code>modules.json</code> fields) parks the gateway at commissioning: <code>StatusPing</code> says <code>"details":"COMMISSIONING"</code> until a human clicks accept. On a server nobody watches, that gateway is down.</p></div>
-      <div class="bad"><h3>Wiped volume, surviving config tree</h3><p>Commissioning finds the committed <code>security-properties</code> but no internal identity on disk, plays safe: it creates a <code>temp</code> user source and identity provider and rewrites <code>security-properties</code> to use them. That drops the <code>APIToken</code> permissions: every scan now gets <b>403</b>.</p></div>
+    <div class="compare">
+      <div class="bad"><h3>Enabled, not accepted</h3><p><code>StatusPing</code> answers <code>"details":"COMMISSIONING"</code> until someone clicks accept. On a server nobody watches, the gateway is down.</p></div>
+      <div class="bad"><h3>Wiped volume, committed config</h3><p>Commissioning creates a <code>temp</code> identity and rewrites <code>security-properties</code>. The scan API loses its permissions: <b>403</b>.</p></div>
     </div>
-    <div class="aside warn" style="max-width:72rem"><span class="label">The real-world lesson</span>A fresh data volume runs <b>commissioning</b> on first boot. Wiping it while the config tree survives is how you lock yourself out. <code>scripts/setup.sh</code> choreographs a first boot to avoid it; a bare <code>docker compose up</code> on a wiped volume does not. Part 3's negative test makes you live through it once.</div>
-  </div>
-</section>
-
-<!-- 23 · RECOVERY -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">23</span><h2 class="title">Recover a gateway stuck at commissioning, in this order</h2></div>
-  <div class="body">
-    <ol class="flow lg">
-      <li><b>Acceptance back</b><span>let the gateway reach RUNNING first: until then the <code>temp</code> identity does not exist, so there is nothing to undo</span></li>
-      <li><b>Undo commissioning</b><span>restore <code>security-properties</code> from git, delete the <code>temp</code> folders</span></li>
-      <li class="on"><b>Restart and scan</b><span>HTTP 200 again</span></li>
-    </ol>
-    <div class="code"><pre><span class="cm"># 1: acceptance back, boot to RUNNING</span>
+    <div class="code"><pre><span class="cm"># 1: acceptance back first, boot to RUNNING</span>
 git checkout -- docker-compose.yaml services/modules.json
 docker compose up -d gateway-local-development
-<span class="cm"># 2: undo what commissioning did, then restart</span>
+<span class="cm"># 2: then undo what commissioning did, and restart</span>
 git checkout -- services/config/resources/core/ignition/security-properties/
 rm -rf services/config/resources/core/ignition/{user-source,identity-provider}/temp
 docker restart lab06-gateway-local-development
@@ -1197,61 +1112,35 @@ docker restart lab06-gateway-local-development
   </div>
 </section>
 
-<!-- 24 · TWO KINDS OF JAR -->
+<!-- 20 · TWO KINDS OF JAR -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">24</span><h2 class="title">JAR files: JDBC drivers are config resources, other libraries go on the classpath</h2></div>
+  <div class="sechead"><span class="num">20</span><h2 class="title">JAR files: JDBC drivers ship inside the config tree, library JARs go on the classpath</h2></div>
   <div class="body">
-    <div class="compare lg wrap">
-      <div class="blue"><span class="kicker">Kind 1</span><h3>JDBC drivers: part of the 8.3 config tree</h3>
-        <ul class="dots">
-          <li>In 8.3 a database driver is a <b>config resource</b>: the JAR sits <i>inside</i> the resource folder, next to its <code>config.json</code>.</li>
-          <li>Committed and deployed in production: <code>config/resources/core/ignition/database-driver/PostgreSQL/postgresql-42.7.2.jar</code>, with <code>resource.json</code> listing the JAR in its <code>"files"</code>.</li>
-          <li><b>It ships with the ordinary config copy.</b> Deploy the config tree and the driver arrives with it.</li>
-        </ul>
-      </div>
-      <div class="amber"><span class="kicker">Kind 2</span><h3>Library JARs: on the gateway classpath</h3>
-        <ul class="dots">
-          <li>Java libraries your gateway scripts call. Our image-based production repo ships <code>amqp-client</code> (RabbitMQ) and an SMB client, with their <b>pinned dependency JARs</b>.</li>
-          <li>They live in <code>modules/jar/</code> with a README recording <b>where each JAR came from</b> (the Maven Central command), and get copied to <code>lib/core/gateway/</code>.</li>
-          <li>The classpath is read at <b>boot</b>: shipping a JAR means a restart. <b>Pin the versions, commit the binaries:</b> the gateway has no package manager, your repo is the lockfile.</li>
-        </ul>
-      </div>
+    <div class="compare wrap">
+      <div class="blue"><span class="kicker">Kind 1</span><h3>JDBC drivers</h3><p>An 8.3 <b>config resource</b>: the JAR sits next to its <code>config.json</code> in <code>database-driver/PostgreSQL/</code> and ships with the config copy.</p></div>
+      <div class="amber"><span class="kicker">Kind 2</span><h3>Library JARs</h3><p>Java libraries your gateway scripts import. <b>Pinned and committed</b>, copied to <code>lib/core/gateway/</code>, loaded at boot.</p></div>
     </div>
-  </div>
-</section>
-
-<!-- 25 · THIS LAB'S LIBRARY JAR -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">25</span><h2 class="title">This lab's library JAR: commons-csv, from the repo to a gateway script</h2></div>
-  <div class="body">
     <ol class="flow lg">
       <li><b>In the repo</b><span><code>jar-files/jar/commons-csv-1.14.1.jar</code></span></li>
       <li><b>On the classpath</b><span>copied to <code>lib/core/gateway/</code></span></li>
       <li><b>Restart</b><span>library JARs load at boot, like modules</span></li>
-      <li class="on"><b>Import it</b><span>from any gateway-scoped script, Perspective bindings included</span></li>
+      <li class="on"><b>Import it</b><span>in any gateway-scoped script: <code>from org.apache.commons.csv import CSVFormat</code></span></li>
     </ol>
-    <div class="cols2">
-      <div class="code"><pre><span class="cm"># a gateway-scoped script, once the JAR is on the classpath</span>
-from org.apache.commons.csv import CSVFormat</pre></div>
-      <div class="aside"><span class="label">Why commons-csv</span>The Ignition image does <b>not</b> bundle it. commons-lang3, commons-text and guava it does, so those import fine without you shipping anything. Stretch S4 ships it through the pipeline and puts it on a screen.</div>
-    </div>
-    <div class="aside good" style="max-width:72rem"><span class="label">One rule covers all of Part 3</span>Modules and JARs are <b>deployable state, exactly like a view or a config file</b>. If the gateway needs it to run, it lives in the repo, travels through the pipeline, and a fresh gateway comes up complete with no hands on it.</div>
   </div>
 </section>
 
-<!-- 26 · PERSPECTIVE BINDINGS + LINT -->
+<!-- 21 · PERSPECTIVE BINDINGS + LINT -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">26</span><h2 class="title">Perspective property bindings and script transforms, and what the CI linter accepts</h2></div>
+  <div class="sechead"><span class="num">21</span><h2 class="title">A Perspective property binding with a script transform, in the shape the CI linter accepts</h2></div>
   <div class="body">
     <div class="cols2">
       <ul class="checks">
-        <li><b>Property binding:</b> a component property follows another property by path, for example <code>view.custom.line</code>. Ticking <b>bidirectional</b> lets an input write back into it.</li>
-        <li><b>Script transform:</b> Jython that runs <b>on the gateway</b> after the binding, gets the bound <code>value</code> and returns what the property shows. It is a function body, so imports go <b>inside</b> it; the gateway's classpath decides what imports.</li>
-        <li class="no"><b>No sibling paths.</b> ign-lint's BadComponentReferenceRule rejects <code>../TextField.props.text</code>: share state through a <b>view custom property</b> (text field bidirectional to <code>view.custom.line</code>, label bound to it).</li>
-        <li class="no"><b>Warnings fail the job too.</b> Keep custom property names plain lowerCamel words (<code>line</code>; NamePatternRule flags <code>csvLine</code>). The lab's <code>.config/.ignition-pylintrc</code> already allows the import inside a transform.</li>
+        <li><b>Property binding:</b> a component property follows a path such as <code>view.custom.line</code>. <b>Bidirectional</b> lets an input write back into it.</li>
+        <li><b>Script transform:</b> Jython that runs <b>on the gateway</b>, gets the bound <code>value</code> and returns what the property shows. Imports go <b>inside</b> it.</li>
+        <li class="no"><b>No sibling paths:</b> ign-lint rejects <code>../TextField.props.text</code>. Share state through a <b>view custom property</b>.</li>
+        <li class="no"><b>Warnings fail the lint job too:</b> keep custom property names plain, <code>line</code>, not <code>csvLine</code>.</li>
       </ul>
       <div class="code sm"><pre><span class="cm"># view.json, abridged: the label's binding</span>
 "custom": { "line": "" },
@@ -1280,16 +1169,16 @@ from org.apache.commons.csv import CSVFormat</pre></div>
     <div class="cols2" style="max-width:78rem">
       <div><div class="col-head">We-do</div>
         <ul class="dots">
-          <li>The leak-is-forever demo, live in a scratch repo</li>
+          <li>A leaked key, live in a scratch repo</li>
           <li>One credential climbing the ladder: <code>.env</code>, secret file, referenced secret</li>
           <li>A migration as an up/down pair, applied with <code>migrate up</code></li>
-          <li>A real production pipeline doing all of it, with one flaw to spot</li>
+          <li>A production pipeline doing all of it, with one flaw to spot</li>
         </ul>
       </div>
       <div><div class="col-head">You-do: <code>exercises/lab.md</code></div>
         <ul class="dots">
           <li><b>Warm-up:</b> deploy to test and production, find both db-connections Faulted</li>
-          <li><b>Part 1:</b> secret files, a file-based provider, referenced secrets, a full PR-to-pipeline deploy, then a <code>lab06-v1.0.0</code> tag</li>
+          <li><b>Part 1:</b> secret files, a file-type provider, referenced secrets, a full PR-to-pipeline deploy, then a <code>lab06-v1.0.0</code> tag</li>
           <li><b>Part 2:</b> write migration <code>0002</code>; the pipeline migrates test before it ships your screen</li>
           <li><b>Part 3:</b> three third-party modules to test, released with a <code>lab06-v1.1.0</code> tag</li>
         </ul>
