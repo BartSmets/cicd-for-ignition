@@ -289,7 +289,7 @@ workflow  ──contains──▶  jobs  ──contains──▶  steps  ──r
    │                       │                      │
    │                       │                      └── env, working-directory…
    │                       └── runs-on, needs, strategy, permissions
-   └── on (triggers), permissions, concurrency
+   └── on (triggers), permissions
 ```
 
 > **Monorepo note: where workflows live.** GitHub only reads workflows from
@@ -633,11 +633,6 @@ git diff --no-index .github/ci-reference.yml ../../.github/workflows/lab03-ci.ym
   `echo "leak? ${{ secrets.EXAMPLE_SECRET }}"`, push, and read the log — it prints
   `leak? ***`. Delete the echo step afterwards; the exercise is watching the masking work,
   not keeping a leak around.
-- **Cancel superseded runs.** Add a workflow-level `concurrency:` group
-  (`group: lab03-${{ github.workflow }}-${{ github.ref }}`, `cancel-in-progress: true`) so a
-  force-push doesn't leave a stale run burning minutes — the `concurrency` box from the
-  mental-model diagram, in practice. Prove it: push two commits in quick succession and
-  watch the first run flip to *cancelled*.
 
 ### Debrief
 

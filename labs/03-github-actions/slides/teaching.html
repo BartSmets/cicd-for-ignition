@@ -1078,63 +1078,30 @@ jobs:
   </div>
 </section>
 
-<!-- CONCURRENCY -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">15</span><h2 class="title"><code>concurrency:</code> cancel a run that a newer push made stale</h2></div>
-  <div class="body">
-    <div class="cols2">
-      <div class="stack" style="gap:1.5rem">
-        <div>
-          <h3 class="col-head">Where each key lives</h3>
-          <div class="layers">
-            <div class="layer"><span class="ln">workflow</span><span class="lt"><code>on</code> (triggers), <code>permissions</code>, <b><code>concurrency</code></b></span></div>
-            <div class="layer"><span class="ln">jobs</span><span class="lt"><code>runs-on</code>, <code>needs</code>, <code>strategy</code>, <code>permissions</code></span></div>
-            <div class="layer"><span class="ln">steps</span><span class="lt"><code>env</code>, <code>working-directory</code></span></div>
-          </div>
-        </div>
-        <div class="code"><pre><span class="cm"># workflow level, next to on: and permissions:</span>
-concurrency:
-  group: <span class="cmd2">lab03-${{ github.workflow }}-${{ github.ref }}</span>
-  cancel-in-progress: true</pre></div>
-      </div>
-      <ul class="checks">
-        <li><b>A group is just a string.</b> Runs that compute the same string share one lane; <code>cancel-in-progress: true</code> cancels the older run instead of queueing it.</li>
-        <li><b><code>github.ref</code> gives every PR its own lane</b> (<code>refs/pull/12/merge</code>): your pushes cancel your stale run, never someone else's.</li>
-        <li><b>What you see:</b> push two commits quickly and the first run flips to <b>cancelled</b>; only the newest commit gets a verdict.</li>
-        <li><b>In this course:</b> the Lab 03 workflow leaves it out on purpose (a stretch goal); the Lab 04-06 CI workflows all use it.</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
 <!-- PERMISSIONS & SECRETS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">16</span><h2 class="title">Permissions, secrets and variables: least privilege for workflow credentials</h2></div>
+  <div class="sechead"><span class="num">15</span><h2 class="title">Permissions, secrets and variables: least privilege for workflow credentials</h2></div>
   <div class="body">
     <div class="compare sm">
       <div class="blue"><h3><code>permissions: contents: read</code></h3><p>The workflow may read the repo (all <code>checkout</code> needs) and nothing else: no pushing, no issues, no releases. The default grant is broader than a lint job needs. Human access is untouched.</p></div>
       <div class="good"><h3>Secrets</h3><p>Encrypted at rest, injected on demand, and <b>masked as <code>***</code></b> in logs. In the We-do we add one, echo it, and watch GitHub censor it live.</p></div>
       <div><h3>Variables</h3><p>The unencrypted sibling: fine for a gateway URL, never for a password. If it would hurt in a screenshot, it's a secret.</p></div>
     </div>
-    <div class="cols2" style="align-items:center">
-      <div class="code"><pre><span class="cm"># create a repo secret from the terminal</span>
+    <div class="code" style="max-width:60rem"><pre><span class="cm"># create a repo secret from the terminal</span>
 gh secret set EXAMPLE_SECRET --body <span class="cmd2">"hunter2"</span> \
   -R <span class="cmd2">"$(gh repo set-default --view)"</span>
 
 <span class="cm"># read it in a step; GitHub masks the value</span>
       - run: echo <span class="cmd2">"leak? ${{ secrets.EXAMPLE_SECRET }}"</span>
 <span class="cm"># log: leak? ***</span></pre></div>
-      <div class="aside"><span class="label">Why the <code>-R</code></span>Your clone has two remotes. <code>gh pr create</code> follows <code>gh repo set-default</code>, but <code>gh secret set</code> refuses to guess (<i>"multiple remotes detected"</i>). <code>-R "$(gh repo set-default --view)"</code> names the repo you already picked.</div>
-    </div>
   </div>
 </section>
 
 <!-- RULESET -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">17</span><h2 class="title">Protect <code>main</code> with a ruleset that requires <code>lint</code> and <code>validate</code></h2></div>
+  <div class="sechead"><span class="num">16</span><h2 class="title">Protect <code>main</code> with a ruleset that requires <code>lint</code> and <code>validate</code></h2></div>
   <div class="body">
     <div class="cols2">
       <div class="stack" style="gap:1.25rem">
@@ -1164,7 +1131,7 @@ gh secret set EXAMPLE_SECRET --body <span class="cmd2">"hunter2"</span> \
 <!-- CLASSIC VS RULESETS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">18</span><h2 class="title">Classic branch protection vs rulesets, and why the lab uses a ruleset</h2></div>
+  <div class="sechead"><span class="num">17</span><h2 class="title">Classic branch protection vs rulesets: the lab uses a ruleset</h2></div>
   <div class="body">
     <table class="table lg">
       <tr><th style="width:15%"></th><th style="width:40%">Classic branch protection</th><th>Ruleset (what the lab uses)</th></tr>
@@ -1174,36 +1141,43 @@ gh secret set EXAMPLE_SECRET --body <span class="cmd2">"hunter2"</span> \
       <tr><td>Targets</td><td>One branch-name pattern per rule</td><td class="pick">Patterns, or <i>Include default branch</i>; rulesets stack on one branch</td></tr>
       <tr><td>Switch off</td><td>Delete the rule</td><td class="pick">Enforcement <i>Disabled</i>, or delete the ruleset</td></tr>
     </table>
-    <div class="aside"><span class="label">Why we switched</span>The lab's proof is "even the repo owner cannot push to <code>main</code>, and can still merge a green PR alone". A ruleset with an <b>empty bypass list</b> and <b>0 approvals</b> gives exactly that; a classic rule needs two non-default ticks. Both screens enforce together if you use both.</div>
   </div>
 </section>
 
 <!-- THE SKIPPED-CHECK TRAP -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">19</span><h2 class="title">Why a docs-only PR hangs on <i>Expected</i> once checks are required</h2></div>
+  <div class="sechead"><span class="num">18</span><h2 class="title">A README-only PR is blocked by the required checks, and a no-op twin workflow unblocks it</h2></div>
   <div class="body">
-    <ol class="flow">
-      <li><b>README-only PR</b><span>touches nothing the checks read</span></li>
-      <li><b>No workflow starts</b><span>the <code>paths:</code> filter keeps <code>lab03-ci.yml</code> asleep</span></li>
-      <li><b>No check run</b><span>nothing named <code>lint</code> or <code>validate</code> ever reports</span></li>
-      <li class="on"><b><i>Expected</i> forever</b><span>a required check that never reports doesn't pass: merge blocked</span></li>
-    </ol>
-    <div class="compare" style="margin-top:1.5rem">
-      <div class="blue"><h3>The real CI · <code>lab03-ci.yml</code></h3><p><code>paths:</code> = what the checks read. Reports real <code>lint</code> and <code>validate</code> results.</p></div>
-      <div class="good"><h3>The no-op twin · <code>lab03-ci-noop.yml</code></h3><p>The <b>opposite</b> filter, the <b>same job names</b>, each just an <code>echo</code>. Reports an instant green on exactly the PRs the real CI skips.</p></div>
+    <div class="stack" style="gap:2rem">
+      <div>
+        <h3 class="col-head">Only <code>lab03-ci.yml</code></h3>
+        <ol class="flow">
+          <li><b>PR changes only README.md</b><span>a file the checks don't read</span></li>
+          <li><b><code>lab03-ci.yml</code> doesn't start</b><span>its <code>paths:</code> filter skips the PR</span></li>
+          <li><b><code>lint</code> and <code>validate</code> never report</b><span>no workflow, no check</span></li>
+          <li class="on"><b>Merge blocked</b><span>the PR waits on <i>Expected</i> forever</span></li>
+        </ol>
+      </div>
+      <div>
+        <h3 class="col-head">Plus <code>lab03-ci-noop.yml</code></h3>
+        <ol class="flow">
+          <li><b>PR changes only README.md</b><span>a file the checks don't read</span></li>
+          <li><b><code>lab03-ci-noop.yml</code> starts</b><span>its filter is the opposite one</span></li>
+          <li><b>Jobs <code>lint</code> and <code>validate</code> pass</b><span>each just runs an <code>echo</code></span></li>
+          <li class="on"><b>Merge allowed</b><span>the required names reported green</span></li>
+        </ol>
+      </div>
     </div>
-    <div class="aside"><span class="label">GitHub's documented fix</span><i>Handling skipped but required checks</i>, in the docs on troubleshooting required status checks. A required check matches on the <b>job name</b>, so the twin satisfies it.</div>
   </div>
 </section>
 
 <!-- THE NO-OP TWIN -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">20</span><h2 class="title">Build the no-op twin with <code>paths:</code> and <code>!</code> negations</h2></div>
+  <div class="sechead"><span class="num">19</span><h2 class="title">Build the no-op twin with <code>paths:</code> and <code>!</code> negations</h2></div>
   <div class="body">
-    <div class="work c115">
-      <div class="code xs"><pre><span class="cm"># .github/workflows/lab03-ci-noop.yml</span>
+    <div class="code xs" style="max-width:70rem"><pre><span class="cm"># .github/workflows/lab03-ci-noop.yml</span>
 name: Lab 03 · CI (no-op twin)
 on:
   pull_request:
@@ -1226,12 +1200,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "No validate-relevant files changed."</pre></div>
-      <ul class="checks">
-        <li class="no"><b>Not <code>paths-ignore:</code></b>, the way GitHub's docs write it: in a monorepo that also matches <b>every other lab's</b> PR and hands them a fake green <code>lint</code> and <code>validate</code>.</li>
-        <li><b><code>paths:</code> with <code>!</code> negations:</b> patterns apply in order, and a later <code>!</code> removes files an earlier one matched. The twin runs only for a change in this lab <b>and</b> outside the real filter.</li>
-        <li class="warn"><b>The caveat:</b> a PR that touches docs <b>and</b> code starts both workflows, and two check runs report under each name.</li>
-      </ul>
-    </div>
   </div>
 </section>
 
@@ -1245,7 +1213,7 @@ jobs:
 <!-- SELF-HOSTED ARCHITECTURE -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">21</span><h2 class="title">A self-hosted runner polls GitHub outbound, so nothing opens inbound</h2></div>
+  <div class="sechead"><span class="num">20</span><h2 class="title">A self-hosted runner polls GitHub outbound, so nothing opens inbound</h2></div>
   <div class="body">
     <div class="net">
       <div class="zone">
@@ -1275,7 +1243,7 @@ jobs:
 <!-- THE ONE RULE -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">22</span><h2 class="title">The one rule for self-hosted runners, and the guardrails</h2></div>
+  <div class="sechead"><span class="num">21</span><h2 class="title">The one rule for self-hosted runners, and the guardrails</h2></div>
   <div class="body">
     <div class="cols2">
       <div class="stack" style="gap:1.75rem">
@@ -1304,7 +1272,7 @@ jobs:
 <!-- REGISTER A RUNNER -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">23</span><h2 class="title">Register an ephemeral runner in Docker with a short-lived token</h2></div>
+  <div class="sechead"><span class="num">22</span><h2 class="title">Register an ephemeral runner in Docker with a short-lived token</h2></div>
   <div class="body">
     <div class="work c11b">
       <div class="code"><pre><span class="cm"># your repo, detected from the clone</span>

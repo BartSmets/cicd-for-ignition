@@ -689,9 +689,6 @@ scripts/validate.sh         <span class="cm"># JSON + code.py parses</span></pre
       <div class="side">
         <div class="code"><pre><span class="cm"># 7: commit everything, the new file included</span>
 git add -A &amp;&amp; git commit -m <span class="cmd2">"fix: part 1 linter findings"</span></pre></div>
-        <div class="aside warn"><span class="label">No delete-cheats</span>Don't silence ign-lint by deleting the Clock, the Kiln binding or the Power tile: only the <b>reference</b>, the <b>poll rate</b> and the <b>name</b> were broken. Prove the view still loads: <code>docker compose restart</code> (or <code>scripts/scan.sh</code> with an API key), then reload the Overview page.</div>
-        <div class="aside good"><span class="label">Gate</span>Every linter silent and <code>scripts/validate.sh</code> exits 0 <b>before</b> Part 2, or your first CI run is red.</div>
-        <div class="aside"><span class="label">Debrief</span>Which of these linters would have caught <b>your team's most recent real bug</b>?</div>
       </div>
     </div>
   </div>
@@ -715,7 +712,7 @@ git add -A &amp;&amp; git commit -m <span class="cmd2">"fix: part 1 linter findi
 <!-- PART 2 · 0 · SKELETON -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART 2 · 0</span><h2 class="title">Set the reference aside and scaffold the workflow skeleton</h2></div>
+  <div class="sechead"><span class="num p2">PART 2 · 0</span><h2 class="title">Swap the finished workflow for a skeleton you complete yourself</h2></div>
   <div class="body">
     <div class="work">
       <div class="side">
@@ -761,7 +758,7 @@ jobs:
 <!-- PART 2 · 0 · VALIDATE + FIRST RUN -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART 2 · 0</span><h2 class="title">Fill the <code>validate</code> job and watch it run on a throwaway PR</h2></div>
+  <div class="sechead"><span class="num p2">PART 2 · 0</span><h2 class="title">Write the <code>validate</code> job and watch it run on a test PR</h2></div>
   <div class="body">
     <div class="work">
       <div class="side">
@@ -796,7 +793,7 @@ gh pr close ci/first-run --delete-branch   <span class="cm"># close it unmerged<
 <!-- PART 2 · 0 · LINT JOB -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART 2 · 0</span><h2 class="title">Fill the <code>lint</code> job with the Part 1 linters</h2></div>
+  <div class="sechead"><span class="num p2">PART 2 · 0</span><h2 class="title">Write the <code>lint</code> job: the Part 1 linters, now running in CI</h2></div>
   <div class="body">
     <div class="work wide">
       <div class="code xs"><pre>  lint:
@@ -833,7 +830,7 @@ gh pr close ci/first-run --delete-branch   <span class="cm"># close it unmerged<
 <!-- PART 2 · 1 · PATH FILTERS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART 2 · 1</span><h2 class="title">Narrow the path filters and add a push backstop on <code>main</code></h2></div>
+  <div class="sechead"><span class="num p2">PART 2 · 1</span><h2 class="title">Run CI only when a file the checks read changes, and on every push to <code>main</code></h2></div>
   <div class="body">
     <div class="work">
       <div class="side">
@@ -1143,14 +1140,13 @@ git commit -am <span class="cmd2">"test: should be blocked"</span>
 <!-- STRETCH 2 · EXTRAS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num opt">OPTIONAL · 2</span><h2 class="title">Stretch 2: a Run button, a masked secret, cancelled stale runs</h2></div>
+  <div class="sechead"><span class="num opt">OPTIONAL · 2</span><h2 class="title">Stretch 2: a Run button and a masked secret</h2></div>
   <div class="body">
     <div class="work">
       <div class="side">
         <ol class="steps">
           <li data-n="A"><b>Add the manual Run button:</b> <code>workflow_dispatch:</code> under <code>on:</code>, merged to <code>main</code> through a PR. The Actions tab grows a <b>Run workflow</b> button.</li>
           <li data-n="B"><b>Watch GitHub censor a secret</b> in your fork: create <code>EXAMPLE_SECRET</code> (the <code>-R</code> names your fork: two remotes), echo it in a step, read <code>***</code> in the log. Delete the echo step afterwards.</li>
-          <li data-n="C"><b>Cancel superseded runs:</b> add the <code>concurrency</code> group, push two commits quickly, watch the first run flip to <b>cancelled</b>.</li>
         </ol>
         <div class="aside"><span class="label">Watch it happen</span>Each extra has a <b>visible payoff within one push</b>. No payoff, not done yet.</div>
       </div>
@@ -1162,13 +1158,7 @@ gh secret set EXAMPLE_SECRET --body <span class="cmd2">"hunter2"</span> \
   -R <span class="cmd2">"$(gh repo set-default --view)"</span>
 <span class="cm">#    then add a step, push, and read the log:</span>
       - run: echo <span class="cmd2">"leak? ${{ secrets.EXAMPLE_SECRET }}"</span>
-<span class="cm">#    log prints: leak? ***</span>
-
-<span class="cm"># C: cancel superseded runs (workflow level)</span>
-concurrency:
-  group: <span class="cmd2">lab03-${{ github.workflow }}-${{ github.ref }}</span>
-  cancel-in-progress: true
-<span class="cm">#    push twice fast: first run cancelled</span></pre></div>
+<span class="cm">#    log prints: leak? ***</span></pre></div>
     </div>
   </div>
 </section>
