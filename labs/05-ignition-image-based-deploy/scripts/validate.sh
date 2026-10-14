@@ -141,7 +141,7 @@ run_optional "shellcheck (scripts/*.sh)" shellcheck "install shellcheck from you
 # ign-lint runs from the repo root, like CI: rule_config.json names its pylint
 # config with a repo-root-relative path.
 lab_rel="${PROJECT_ROOT#"$repo_root"/}"
-# shellcheck disable=SC2329  # invoked through run_optional
+# shellcheck disable=SC2329,SC2317  # invoked through run_optional
 ign_lint_views() {
   (cd "$repo_root" && ign-lint --config "$lab_rel/rule_config.json" --files "$lab_rel/projects/**/view.json")
 }
