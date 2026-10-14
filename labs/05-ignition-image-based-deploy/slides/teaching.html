@@ -3,413 +3,676 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lab 05 Teaching: Deploying Ignition as a custom Docker image</title>
+<title>Lab 05 · Teaching · CI/CD for Ignition</title>
 <link rel="icon" type="image/png" href="logos/favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* deck-kit:css:begin v1 */
+/* Mustry deck style, canonical CSS for the CI/CD for Ignition decks. Do not edit
+   inside the deck-kit markers: change src/ of the deck kit (instructor repo, deck-kit/) and run
+   tools/build-kit.mjs and tools/sync-kit.mjs. Sources: mustry-design-system 6cffb20 (tokens.css, components/deck), mustry-cockpit e45c5c7 (quotation cover motion, files last changed in cf79d93). */
+/* ============================================================================
+   Fonts: Geist and Geist Mono (SIL OFL 1.1, deck-assets/fonts/OFL.txt), the
+   design system's faces, bundled so the deck renders offline and in the PDF
+   renderer (no external network). Latin + latin-ext subsets of fontsource 5.3.0.
+   ========================================================================== */
+@font-face{font-family:"Geist Variable";font-style:normal;font-display:block;font-weight:100 900;src:url("deck-assets/fonts/geist-latin-wght-normal.woff2") format("woff2-variations");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Geist Variable";font-style:normal;font-display:block;font-weight:100 900;src:url("deck-assets/fonts/geist-latin-ext-wght-normal.woff2") format("woff2-variations");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Geist Mono Variable";font-style:normal;font-display:block;font-weight:100 900;src:url("deck-assets/fonts/geist-mono-latin-wght-normal.woff2") format("woff2-variations");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Geist Mono Variable";font-style:normal;font-display:block;font-weight:100 900;src:url("deck-assets/fonts/geist-mono-latin-ext-wght-normal.woff2") format("woff2-variations");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+/* ============================================================================
+   Tokens: copied from mustry-design-system src/styles/tokens.css (layer 1 and
+   the deck surface). Bare HSL triplets, used as hsl(var(--token)).
+   ========================================================================== */
 :root{
-  --navy:#0e1b2e;
-  --navy2:#15233a;
-  --blue:#2563eb;
-  --blue-d:#1d4ed8;
-  --peri:#93a9f0;
-  --peri2:#a8bef7;
-  --peri-soft:#e8eefc;
-  --bg:#eef1f6;
-  --panel:#ffffff;
-  --panel2:#f5f8fc;
-  --line:#e3e9f1;
-  --line2:#d3dcea;
-  --txt:#15233a;
-  --txt-dim:#5a6a7e;
-  --txt-faint:#94a2b4;
-  --good:#16a34a; --good-soft:#e3f6ea;
-  --warn:#d97706; --warn-soft:#fbf0db;
-  --teal:#3bbdb4;
-  --teal-l:#5fd6cd;
-  --shadow:0 1px 2px rgba(14,27,46,.05),0 10px 30px -16px rgba(14,27,46,.28);
+  --mustry-blue-50:223.3 90% 92.2%;
+  --mustry-blue-100:224.7 93.2% 88.4%;
+  --mustry-blue-200:224.5 92.1% 80.2%;
+  --mustry-blue-300:224.3 91.5% 72.2%;
+  --mustry-blue-400:224.6 92.3% 64.3%;
+  --mustry-blue-500:224.5 91.9% 56.3%;
+  --mustry-blue-600:224.5 92.2% 45.3%;
+  --mustry-blue-700:224.3 92% 34.3%;
+  --mustry-blue-800:224.6 91.6% 23.3%;
+  --mustry-blue-900:225.3 90.5% 12.4%;
+  --brand-soft:224.6 92.7% 78.6%;
+  --neutral-0:0 0% 100%;
+  --neutral-25:210 25% 98.4%;
+  --neutral-50:216 33.3% 97.1%;
+  --neutral-100:217.5 28.6% 94.5%;
+  --neutral-200:216.9 25.5% 90%;
+  --neutral-300:217.1 24.1% 82.9%;
+  --neutral-400:217.2 17% 66.5%;
+  --neutral-500:217.2 12.2% 46.5%;
+  --neutral-600:214.6 13.3% 38.4%;
+  --neutral-700:216.5 16.1% 28%;
+  --neutral-800:218.2 22.4% 19.2%;
+  --neutral-900:219 30.3% 12.9%;
+  --neutral-950:223.8 44.8% 11.4%;
+  --chart-1-light:224.5 91.9% 56.3%;
+  --chart-2-light:325.1 86.9% 48%;
+  --chart-3-light:32.1 94.6% 43.7%;
+  --chart-4-light:174.7 83.9% 31.6%;
+  --chart-5-light:262.1 83.3% 57.8%;
+  --chart-6-light:142.4 71.8% 29.2%;
+  --chart-1-dark:223.8 91.8% 66.7%;
+  --chart-2-dark:330.5 79.2% 56.7%;
+  --chart-3-dark:36.4 87.2% 42.9%;
+  --chart-4-dark:173.6 79.9% 37.1%;
+  --chart-5-dark:259.7 82.7% 66.1%;
+  --chart-6-dark:145.3 66.2% 39.4%;
+  --status-good-light:142.1 76.2% 36.3%;
+  --status-warning-light:26 90.5% 37.1%;
+  --status-serious-light:17.5 88.3% 40.4%;
+  --status-critical-light:0 72.2% 50.6%;
+  --status-good-dark:142.1 70.6% 45.3%;
+  --status-warning-dark:37 91.3% 55.1%;
+  --status-serious-dark:27 96% 61%;
+  --status-critical-dark:0 90.6% 70.8%;
+  --font-sans:"Geist Variable","Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Geist Mono Variable","Geist Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  --font-display:var(--font-sans);
+  --text-2xs:.625rem;--text-xs:.75rem;--text-sm:.875rem;--text-base:1rem;--text-lg:1.125rem;
+  --text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--text-5xl:3rem;--text-6xl:3.75rem;
+  --radius:.75rem;--radius-sm:calc(var(--radius) - 4px);--radius-md:calc(var(--radius) - 2px);--radius-lg:var(--radius);
+  --radius-xl:.75rem;--radius-2xl:1rem;--radius-3xl:1.25rem;
+  --shadow-xs:0 1px 2px rgb(16 23 42 / .05);
+  --shadow-sm:0 1px 2px rgb(16 23 42 / .05),0 2px 8px -4px rgb(16 23 42 / .12);
+  --shadow-md:0 1px 2px rgb(16 23 42 / .05),0 10px 30px -16px rgb(16 23 42 / .28);
+  --shadow-lg:0 18px 40px rgb(16 23 42 / .08),0 6px 18px rgb(16 23 42 / .05);
+  --duration-instant:75ms;--duration-fast:150ms;--duration-base:200ms;--duration-slow:300ms;
+  --duration-slower:500ms;--duration-deliberate:800ms;
+  --ease-out:cubic-bezier(.16,1,.3,1);--ease-in:cubic-bezier(.7,0,.84,0);
+  --ease-in-out:cubic-bezier(.65,0,.35,1);--ease-spring:cubic-bezier(.34,1.56,.64,1);
+  --deck-pad-x:4rem;--deck-pad-top:4rem;--deck-pad-bottom:2.5rem;--deck-gap:1.5rem;
+  --deck-gradient:radial-gradient(120% 120% at 80% -10%,hsl(var(--mustry-blue-900)) 0%,hsl(var(--neutral-950)) 55%);
+
+  /* Deck aliases (the deck surface of the design system, light). */
+  --plane:hsl(var(--neutral-100));
+  --panel:hsl(var(--neutral-0));
+  --panel-2:hsl(var(--neutral-50));
+  --ink:hsl(var(--neutral-900));
+  --ink-strong:hsl(var(--neutral-950));
+  --muted:hsl(var(--neutral-600));
+  --faint:hsl(var(--neutral-400));
+  --line:hsl(var(--neutral-200));
+  --line-2:hsl(var(--neutral-300));
+  --primary:hsl(var(--mustry-blue-500));
+  --primary-deep:hsl(var(--mustry-blue-600));
+  --primary-tint:hsl(var(--mustry-blue-500) / .1);
+  --soft:hsl(var(--brand-soft));
+  --navy:hsl(var(--neutral-950));
+  --teal:hsl(var(--chart-4-light));
+  --magenta:hsl(var(--chart-2-light));
+  --amber:hsl(var(--chart-3-light));
+  --violet:hsl(var(--chart-5-light));
+  --good:hsl(var(--status-good-light));
+  --warn:hsl(var(--status-warning-light));
+  --bad:hsl(var(--status-critical-light));
+  --code-ink:hsl(var(--neutral-200));
 }
+
+/* ============================================================================
+   Base. The root size follows the viewport (16px at 1440x900, 19.2px at
+   1920x1080) so slides use the room on a projector without a scaled stage.
+   Every size below is in rem.
+   ========================================================================== */
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{
-  background:var(--navy);
-  color:var(--txt);
-  font-family:'Libre Franklin',sans-serif;
-  -webkit-font-smoothing:antialiased;
-  overflow:hidden;
-}
-.mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+html{font-size:clamp(13px,min(calc(100vh / 56.25),calc(100vw / 90)),21px);height:100%}
+body{height:100%;background:var(--navy);color:var(--ink);font-family:var(--font-sans);font-feature-settings:"rlig" 1,"calt" 1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow:hidden;line-height:1.45}
+img,svg{display:block}
+b,strong{font-weight:700;color:var(--ink-strong)}
+em{font-style:normal;color:var(--primary-deep)}
+code,.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+:not(pre)>code{font-size:.9em;color:var(--primary-deep);background:var(--primary-tint);border-radius:var(--radius-sm);padding:.05em .3em;white-space:nowrap}
+a{color:var(--primary-deep)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
 
-/* ---- deck mechanics ---- */
-.deck{height:100vh;width:100vw;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+/* ---- deck mechanics ----------------------------------------------------- */
+.deck{height:100vh;height:100dvh;width:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth;scrollbar-width:none}
 .deck::-webkit-scrollbar{display:none}
-.slide{
-  height:100vh;width:100vw;scroll-snap-align:start;scroll-snap-stop:always;
-  display:flex;flex-direction:column;position:relative;
-  padding:64px 64px 40px;background:var(--bg);
+.slide{position:relative;isolation:isolate;display:flex;flex-direction:column;height:100vh;height:100dvh;width:100%;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always;padding:var(--deck-pad-top) var(--deck-pad-x) var(--deck-pad-bottom);background:var(--plane)}
+.slide.dark{background:var(--deck-gradient);color:hsl(var(--neutral-0))}
+
+/* ---- slide chrome ------------------------------------------------------- */
+.topbar{display:flex;align-items:center;flex:none;min-height:2.25rem;margin-bottom:2rem}
+.topbar .logo{height:1.75rem;width:auto}
+.cover-page .topbar .logo{height:2.5rem}
+.sechead{display:flex;align-items:center;gap:.875rem;flex:none;margin-bottom:1.75rem}
+.num{flex:none;font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;letter-spacing:.02em;line-height:1.4;color:hsl(var(--neutral-0));background:var(--primary);border-radius:.5rem;padding:.2rem .6rem;white-space:nowrap}
+.title{font-family:var(--font-display);font-size:var(--text-4xl);font-weight:800;line-height:1.12;letter-spacing:-.025em;color:var(--ink-strong);text-wrap:balance}
+.title code{font-size:.85em}
+.body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:var(--deck-gap)}
+.body.top{justify-content:flex-start}
+
+/* ---- cover, divider, closing (dark) ------------------------------------ */
+.cover-body,.divider-body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2rem;position:relative}
+.cover-title{font-family:var(--font-display);font-size:var(--text-6xl);font-weight:800;line-height:1.02;letter-spacing:-.03em;color:hsl(var(--neutral-0));max-width:15ch;text-wrap:balance}
+.divider-title{font-family:var(--font-display);font-size:var(--text-5xl);font-weight:800;line-height:1.05;letter-spacing:-.03em;color:hsl(var(--neutral-0));max-width:20ch;text-wrap:balance}
+.dark .title{color:hsl(var(--neutral-0))}
+.cover-title em,.divider-title em,.dark .title em{color:var(--soft)}
+.dark b,.dark strong{color:hsl(var(--neutral-0))}
+.dark em{color:var(--soft)}
+.dark :not(pre)>code{color:hsl(var(--neutral-0));background:hsl(var(--neutral-0) / .1)}
+.cover-meta{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;font-size:var(--text-base);color:hsl(var(--neutral-300))}
+.pill{display:inline-block;border:1px solid var(--line-2);border-radius:999px;padding:.3rem .85rem;font-size:var(--text-sm);font-weight:600;color:var(--ink);background:var(--panel);white-space:nowrap}
+.dark .pill{border-color:hsl(var(--neutral-0) / .18);background:hsl(var(--neutral-0) / .04);color:hsl(var(--neutral-100))}
+.pill.blue{background:var(--primary);border-color:var(--primary);color:#fff}
+
+/* A slow drifting glow behind dark dividers and closing slides. */
+.glow{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.glow::before,.glow::after{content:"";position:absolute;border-radius:50%;filter:blur(80px);opacity:.5}
+.glow::before{width:46vw;height:46vw;right:-10vw;top:-18vw;background:hsl(var(--mustry-blue-700))}
+.glow::after{width:34vw;height:34vw;right:22vw;bottom:-22vw;background:hsl(var(--mustry-blue-800))}
+.motion:not(.motion-paused) .slide.is-active .glow::before{animation:glow-a 26s var(--ease-in-out) infinite alternate}
+.motion:not(.motion-paused) .slide.is-active .glow::after{animation:glow-b 31s var(--ease-in-out) infinite alternate}
+@keyframes glow-a{to{transform:translate(-6vw,5vw) scale(1.12)}}
+@keyframes glow-b{to{transform:translate(5vw,-4vw) scale(.9)}}
+
+/* ============================================================================
+   Content components. Open, typographic layouts first; panels only to group.
+   ========================================================================== */
+.t-lg{font-size:var(--text-xl);line-height:1.45}
+.t-md{font-size:var(--text-lg);line-height:1.45}
+.t-sm{font-size:var(--text-base);line-height:1.45}
+.muted{color:var(--muted)}
+.dark .muted{color:hsl(var(--neutral-300))}
+.label{font-size:var(--text-sm);font-weight:700;color:var(--primary-deep)}
+.dark .label{color:var(--soft)}
+.statement{font-size:var(--text-3xl);font-weight:700;line-height:1.25;letter-spacing:-.02em;color:var(--ink-strong);max-width:32ch;text-wrap:balance}
+.statement em{color:var(--primary)}
+.dark .statement{color:hsl(var(--neutral-0))}
+.dark .statement em{color:var(--soft)}
+
+/* Grids. */
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:2.25rem;align-items:start}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;align-items:start}
+.split{display:grid;grid-template-columns:1.1fr 1fr;gap:2.75rem;align-items:center}
+.split-r{display:grid;grid-template-columns:1fr 1.2fr;gap:2.75rem;align-items:center}
+.stack{display:flex;flex-direction:column;gap:1rem}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem}
+.center{align-items:center}
+.stretch{align-items:stretch}
+
+/* Checks: the tick list (design system CheckList), for statements that need a sentence. */
+.checks{list-style:none;display:flex;flex-direction:column;gap:1rem}
+.checks>li{position:relative;padding-left:2.4rem;font-size:var(--text-lg);line-height:1.45;color:var(--muted)}
+.checks>li::before{content:"";position:absolute;left:0;top:.05em;width:1.5rem;height:1.5rem;border-radius:.5rem;background:var(--primary-tint)}
+.checks>li::after{content:"";position:absolute;left:.3rem;top:calc(.05em + .3rem);width:.9rem;height:.9rem;background:var(--primary);-webkit-mask:var(--i-check) center/contain no-repeat;mask:var(--i-check) center/contain no-repeat}
+.checks>li.no::before{background:hsl(var(--status-critical-light) / .1)}
+.checks>li.no::after{background:var(--bad);-webkit-mask-image:var(--i-x);mask-image:var(--i-x)}
+.checks>li.warn::before{background:hsl(var(--status-warning-light) / .12)}
+.checks>li.warn::after{background:var(--warn);-webkit-mask-image:var(--i-warn);mask-image:var(--i-warn)}
+.checks.lg>li{font-size:var(--text-xl)}
+.dark .checks>li{color:hsl(var(--neutral-300))}
+.dark .checks>li::before{background:hsl(var(--brand-soft) / .16)}
+.dark .checks>li::after{background:var(--soft)}
+:root{
+  --i-check:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E");
+  --i-x:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E");
+  --i-warn:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round'%3E%3Cpath d='M12 5v9M12 19v.5'/%3E%3C/svg%3E");
 }
-.slide.dark{background:radial-gradient(120% 120% at 80% -10%,#1c3358 0%,#0e1b2e 55%)}
 
-/* progress + nav */
-.hud{position:fixed;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.08);z-index:50}
-.hud .bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--peri));width:0;transition:width .3s}
-.pager{position:fixed;right:22px;bottom:18px;z-index:50;font-size:11px;color:var(--txt-faint);font-family:'IBM Plex Mono'}
-.pager.on-dark{color:rgba(255,255,255,.55)}
-.hint{position:fixed;left:22px;bottom:16px;z-index:50;font-size:10.5px;color:var(--txt-faint);letter-spacing:.3px}
-.hint.on-dark{color:rgba(255,255,255,.4)}
+/* Dots: a quiet bullet list (design system DoesList), for short labels. */
+.dots{list-style:none;display:flex;flex-direction:column;gap:.7rem}
+.dots>li{position:relative;padding-left:1.25rem;font-size:var(--text-lg);line-height:1.4;color:var(--ink)}
+.dots>li::before{content:"";position:absolute;left:0;top:.55em;width:.45rem;height:.45rem;border-radius:50%;background:var(--primary)}
+.dark .dots>li{color:hsl(var(--neutral-200))}
+.dark .dots>li::before{background:var(--soft)}
 
-/* ---- logo ---- */
-.brandrow{display:flex;align-items:center;gap:13px}
-.logo-img{height:30px;width:auto;display:block}
-.logo-img.logo-lg{height:44px}
+/* Flow: a left-to-right process on a line, with connectors that draw in.
+   <ol class="flow"><li><b>Teaching</b><span>concepts</span></li>...</ol>
+   Add class "on" to an li to ring it as "you are here". */
+.flow{list-style:none;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:0;counter-reset:flow;position:relative}
+.flow>li{position:relative;padding:3rem 1.25rem 0 0;counter-increment:flow;display:flex;flex-direction:column;gap:.35rem}
+.flow>li::before{content:counter(flow,decimal-leading-zero);position:absolute;left:0;top:0;width:2.25rem;height:2.25rem;border-radius:50%;display:grid;place-items:center;font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;color:var(--primary-deep);background:var(--panel);border:2px solid var(--primary);z-index:1}
+.flow>li::after{content:"";position:absolute;left:2.25rem;right:0;top:1.075rem;height:2px;background:var(--line-2);transform-origin:left center}
+.flow>li:last-child::after{display:none}
+.flow>li>b{font-size:var(--text-xl);font-weight:800;letter-spacing:-.01em;line-height:1.2}
+.flow>li>span{font-size:var(--text-base);color:var(--muted);line-height:1.4}
+.flow>li.on::before{background:var(--primary);color:#fff}
+.flow>li.on>b{color:var(--primary-deep)}
+.flow.nonum>li::before{content:"";width:1rem;height:1rem;top:.625rem}
+.flow.nonum>li::after{left:1rem;top:1.075rem}
+.dark .flow>li::before{background:var(--navy);border-color:var(--soft);color:var(--soft)}
+.dark .flow>li::after{background:hsl(var(--neutral-0) / .2)}
+.dark .flow>li>span{color:hsl(var(--neutral-300))}
+.dark .flow>li.on::before{background:var(--soft);color:var(--navy)}
+.dark .flow>li.on>b{color:var(--soft)}
+.motion:not(.motion-paused) .slide.is-active .flow>li::after{animation:draw-x var(--duration-deliberate) var(--ease-out) both;animation-delay:calc(var(--i,0) * 160ms + 200ms)}
+.flow>li:nth-child(2){--i:1}.flow>li:nth-child(3){--i:2}.flow>li:nth-child(4){--i:3}.flow>li:nth-child(5){--i:4}.flow>li:nth-child(6){--i:5}
+@keyframes draw-x{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 
-/* slide chrome */
-.eyebrow{font-size:11px;letter-spacing:2.4px;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:14px}
-.dark .eyebrow{color:var(--peri2)}
-.title{font-weight:800;font-size:40px;line-height:1.04;letter-spacing:-1px;color:var(--navy)}
-.dark .title{color:#fff}
-.lead{font-size:16px;color:var(--txt-dim);line-height:1.5;max-width:760px;margin-top:14px}
-.dark .lead{color:#c4cfde}
-.sechead{display:flex;align-items:baseline;gap:14px;margin-bottom:26px}
-.sechead .num{font-family:'IBM Plex Mono';font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:5px 11px;border-radius:8px;letter-spacing:.5px}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:48px}
-.topbar .stage{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt-faint);font-weight:600}
-.topbar .stage.on-dark{color:rgba(255,255,255,.5)}
+/* Layers: a stacked architecture, label column left, content right. */
+.layers{display:flex;flex-direction:column}
+.layers>.layer{display:grid;grid-template-columns:12rem 1fr;gap:1.5rem;align-items:center;padding:1rem 0;border-top:1px solid var(--line-2)}
+.layers>.layer:last-child{border-bottom:1px solid var(--line-2)}
+.layer>.ln{font-weight:800;font-size:var(--text-lg);color:var(--ink-strong)}
+.layer>.lt{font-size:var(--text-lg);color:var(--muted)}
 
-/* ---- cover ---- */
-.cover{flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px}
-.cover .big{font-weight:800;font-size:54px;line-height:1.04;letter-spacing:-1.4px;color:#fff;max-width:20ch}
-.cover .big em{font-style:normal;color:var(--peri2)}
-.cover .sub{font-size:17px;color:#aebbcd;max-width:64ch;line-height:1.55;margin-top:18px}
+/* Compare: two or three open columns with a coloured rule (old .vs/.vscard). */
+.compare{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2.5rem}
+.compare>div{border-top:3px solid var(--line-2);padding-top:1rem;display:flex;flex-direction:column;gap:.75rem}
+.compare>.good{border-top-color:var(--good)}
+.compare>.bad{border-top-color:var(--bad)}
+.compare>.blue{border-top-color:var(--primary)}
+.compare h3{font-size:var(--text-xl);font-weight:800;letter-spacing:-.01em;color:var(--ink-strong)}
+.compare>.good h3{color:var(--good)}
+.compare>.bad h3{color:var(--bad)}
 
-/* ---- generic layout ---- */
-.body{flex:1;display:flex;flex-direction:column;justify-content:center}
-.cols{display:grid;gap:22px}
-.split{display:grid;grid-template-columns:1.15fr 1fr;gap:28px;align-items:start}
-.cols2{display:grid;grid-template-columns:1fr 1fr;gap:28px}
-.cols3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px}
+/* Stat: one big number with a label. */
+.stat{display:flex;flex-direction:column;gap:.25rem}
+.stat>b{font-size:var(--text-6xl);font-weight:800;letter-spacing:-.04em;line-height:1;color:var(--primary)}
+.stat>span{font-size:var(--text-lg);color:var(--muted)}
 
-/* bullets */
-.checks{display:flex;flex-direction:column;gap:13px;margin-top:6px}
-.checks li{list-style:none;display:flex;gap:13px;align-items:flex-start;font-size:14.5px;color:var(--txt-dim);line-height:1.5}
-.checks li b{color:var(--txt);font-weight:700}
-.ck{flex:none;width:22px;height:22px;border-radius:7px;background:var(--peri-soft);display:grid;place-items:center;margin-top:1px}
-.ck svg{width:12px;height:12px;color:var(--blue)}
-.dark .checks li{color:#c4cfde}
-.dark .checks li b{color:#fff}
-.dark .ck{background:rgba(147,169,240,.18)}
-.dark .ck svg{color:var(--peri2)}
+/* Aside: a labelled note on the plane (old .callout and .goal). Use sparingly. */
+.aside{border-left:3px solid var(--primary);padding:.15rem 0 .15rem 1.1rem;font-size:var(--text-lg);line-height:1.45;color:var(--muted);max-width:60rem}
+.aside>.label{display:block;font-size:var(--text-base);margin-bottom:.3rem}
+.aside.warn{border-left-color:var(--warn)}.aside.warn>.label{color:var(--warn)}
+.aside.good{border-left-color:var(--good)}.aside.good>.label{color:var(--good)}
+.aside.bad{border-left-color:var(--bad)}.aside.bad>.label{color:var(--bad)}
+.dark .aside{color:hsl(var(--neutral-300));border-left-color:var(--soft)}
 
-.callout{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px 24px;box-shadow:var(--shadow);margin-top:22px}
-.callout .lab{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--warn);font-weight:700;margin-bottom:9px}
-.callout p{font-size:14.5px;color:var(--txt-dim);line-height:1.55}
-.callout p b{color:var(--txt);font-weight:700}
-.callout code{font-family:'IBM Plex Mono';font-size:13px;color:var(--blue-d)}
+/* Panel: a white panel on the deck plane, to group a visual. */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-2xl);box-shadow:var(--shadow-md);padding:1.5rem 1.75rem}
+.panel>h3,.col-head{font-size:var(--text-lg);font-weight:800;letter-spacing:-.01em;color:var(--ink-strong);margin-bottom:.75rem}
 
-/* code block */
-.code{background:var(--navy);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);margin-top:6px;overflow:auto}
-.code pre{font-family:'IBM Plex Mono';font-size:13.5px;color:#dbe6f5;line-height:1.7}
-.code .cm{color:#7d93ad}
-.code .cmd2{color:var(--peri2)}
-.code .hl{color:var(--teal-l)}
+/* Code: always navy (design system CodeBlock). Commands stay exact. */
+.code{background:var(--navy);border-radius:var(--radius-xl);box-shadow:var(--shadow-md);overflow:hidden;min-width:0}
+.code>.code-title{font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;color:var(--soft);padding:.6rem 1.25rem;border-bottom:1px solid hsl(var(--neutral-0) / .1)}
+.code>pre{font-family:var(--font-mono);font-size:var(--text-base);line-height:1.6;color:var(--code-ink);padding:1rem 1.25rem;white-space:pre;overflow:hidden}
+.code.sm>pre{font-size:var(--text-sm)}
+.code .cm,.code .tok-comment{color:hsl(var(--neutral-400))}
+.code .cmd2,.code .tok-accent{color:var(--soft)}
+.code .hl{color:hsl(var(--status-warning-dark))}
+.code .grn,.code .tok-add{color:#7ED8A2}
+.code .red,.code .tok-del{color:#F08A8A}
 
-/* small panel with heading */
-.does{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
-.does .hd{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:12px}
-.does ul{display:flex;flex-direction:column;gap:9px}
-.does li{list-style:none;display:flex;gap:11px;align-items:flex-start;font-size:14px;color:var(--txt);line-height:1.4}
-.does li .d{flex:none;width:7px;height:7px;border-radius:50%;background:var(--blue);margin-top:7px}
-.does li span b{font-weight:700}
-.does code{font-family:'IBM Plex Mono';font-size:12px;color:var(--blue-d)}
+/* File card: a file's contents, lighter than code (design system FileCard). */
+.filecard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-xl);box-shadow:var(--shadow-md);overflow:hidden}
+.filecard>.fh{font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;color:var(--primary-deep);padding:.6rem 1.1rem;border-bottom:1px solid var(--line)}
+.filecard>pre{font-family:var(--font-mono);font-size:var(--text-base);line-height:1.6;color:var(--ink);padding:.9rem 1.1rem;white-space:pre-wrap}
+.filecard .cm{color:var(--faint)}
+.filecard .hl{color:var(--primary-deep);font-weight:600}
 
-/* ---- image / dockerfile / container flow (dark interactive) ---- */
-.triflow{flex:1;display:grid;grid-template-columns:auto auto auto auto auto;gap:20px;align-items:center;justify-content:center;min-height:0}
-.tf-arr{font-family:'IBM Plex Mono';text-align:center}
-.tf-arr .a{font-size:26px;color:var(--peri2)}
-.tf-arr .t{font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;font-weight:600;color:#9fb6cf;margin-top:4px}
-.tf-col{display:flex;flex-direction:column;gap:12px;align-items:center}
-.tf-cap{font-size:12.5px;color:#9fb6cf;max-width:26ch;text-align:center;line-height:1.5}
-.tf-cap b{color:#fff}
-.tf-file{border:1px solid rgba(255,255,255,.2);border-radius:12px;background:rgba(255,255,255,.04);padding:14px 16px;width:255px}
-.tf-file .fh{font-family:'IBM Plex Mono';font-size:11px;color:var(--peri2);margin-bottom:8px}
-.tf-file pre{font-family:'IBM Plex Mono';font-size:11.5px;color:#dbe6f5;line-height:1.65}
-.tf-file pre .cm{color:#7d93ad}
-.tf-stack{display:flex;flex-direction:column-reverse;gap:6px;width:235px}
-.tf-layer{border:2px solid var(--teal);border-radius:9px;padding:8px 12px;font-family:'IBM Plex Mono';font-size:11.5px;color:#dbe6f5;background:rgba(59,189,180,.06)}
-.tf-layer.base{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.04)}
-.tf-layer.rw{border-color:var(--warn);border-style:dashed;background:rgba(217,119,6,.12);color:#f0b765}
-.tf-box{border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:12px}
-.tf-box .bh{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono';font-size:10.5px;color:#9fb6cf;margin-bottom:8px;text-transform:uppercase;letter-spacing:.6px}
-.tf-box .bh .run{width:8px;height:8px;border-radius:50%;background:var(--good)}
-.tf-box .tf-stack{width:215px}
-.tf-ghost{opacity:.5}
+/* Commands: a command with its meaning, in hairline rows (old .cmds). */
+.cmds{display:grid;grid-template-columns:1fr 1fr;column-gap:3rem}
+.cmds>div{display:grid;grid-template-columns:minmax(0,auto) 1fr;gap:1rem;align-items:baseline;padding:.6rem 0;border-bottom:1px solid var(--line-2)}
+.cmds code{font-family:var(--font-mono);font-size:var(--text-base);font-weight:600;color:var(--primary-deep);background:none;padding:0;white-space:nowrap}
+.cmds span{font-size:var(--text-base);color:var(--muted);line-height:1.35}
+.cmds.one{grid-template-columns:1fr}
 
-/* section divider */
-.divider{flex:1;display:flex;flex-direction:column;justify-content:center}
-.divider .q{font-weight:800;font-size:52px;line-height:1.05;letter-spacing:-1.4px;color:#fff;max-width:22ch}
-.divider .q em{font-style:normal;color:var(--peri2)}
-.divider .sub2{font-size:18px;color:#aebbcd;margin-top:18px;max-width:60ch;line-height:1.5}
+/* Table: open, hairlines only (old .tbl). */
+.table{width:100%;border-collapse:collapse;font-size:var(--text-base)}
+.table th{text-align:left;font-size:var(--text-sm);font-weight:700;color:var(--muted);padding:.55rem .9rem .55rem 0;border-bottom:2px solid var(--line-2)}
+.table td{padding:.65rem .9rem .65rem 0;border-bottom:1px solid var(--line-2);vertical-align:top;color:var(--muted);line-height:1.4}
+.table td:first-child{color:var(--ink-strong);font-weight:700}
 
-/* generic reveal: elements fade/rise in when .show is added */
-.reveal{opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease}
+/* Steps: numbered instructions for We-do and You-do slides (old .steps/.step). */
+.steps{list-style:none;display:flex;flex-direction:column;gap:.85rem;counter-reset:step}
+.steps>li{position:relative;padding-left:2.6rem;font-size:var(--text-lg);line-height:1.4;color:var(--muted);counter-increment:step}
+.steps>li::before{content:attr(data-n);position:absolute;left:0;top:-.1rem;width:1.8rem;height:1.8rem;border-radius:50%;display:grid;place-items:center;font-family:var(--font-mono);font-size:var(--text-sm);font-weight:700;color:var(--primary-deep);background:var(--primary-tint)}
+.steps>li:not([data-n])::before{content:counter(step)}
+.steps.alt>li::before{color:hsl(var(--chart-4-light));background:hsl(var(--chart-4-light) / .12)}
+
+/* Track: a plan on a line (old .pmap/.road), each stop a short label set. */
+.track{list-style:none;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2rem;position:relative;padding-top:2.25rem}
+.track::before{content:"";position:absolute;left:0;right:0;top:.6rem;height:2px;background:var(--line-2)}
+.track>li{position:relative;display:flex;flex-direction:column;gap:.4rem}
+.track>li::before{content:"";position:absolute;left:0;top:-2.05rem;width:1.15rem;height:1.15rem;border-radius:50%;background:var(--panel);border:3px solid var(--primary)}
+.track>li.now::before{background:var(--primary)}
+.track>li>small{font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;color:var(--primary-deep)}
+.track>li>b{font-size:var(--text-xl);font-weight:800;letter-spacing:-.01em;line-height:1.2}
+.track>li>span{font-size:var(--text-base);color:var(--muted)}
+.motion:not(.motion-paused) .slide.is-active .track::before{animation:draw-x 1.2s var(--ease-out) both;transform-origin:left center}
+
+/* Interactive build steps. */
+.reveal{opacity:0;transform:translateY(.6rem);transition:opacity var(--duration-slower) var(--ease-out),transform var(--duration-slower) var(--ease-out)}
 .reveal.show{opacity:1;transform:none}
+.vshow{opacity:0;transition:opacity .55s ease}
+.vshow.on{opacity:1}
+.vpop{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(.5);transition:opacity .45s ease,transform .45s var(--ease-spring)}
+.vpop.on{opacity:1;transform:scale(1)}
+.vdraw{opacity:0;transition:opacity .5s ease}
+.vdraw.on{opacity:1}
+/* SVG line that draws in on slide entry: add pathLength="1" to the element. */
+.draw{stroke-dasharray:1;stroke-dashoffset:0}
+.motion:not(.motion-paused) .slide.is-active .draw{animation:draw-line 1.2s var(--ease-out) both}
+@keyframes draw-line{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 
-/* control bar for interactive slides */
-.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:14px;margin-top:auto;border-top:1px solid rgba(255,255,255,.08)}
-.controls .lead-step{font-size:13.5px;color:#c4cfde;margin-right:auto;max-width:60ch;line-height:1.45}
-.controls .lead-step b{color:var(--txt)}
-.dark .controls .lead-step b{color:#fff}
-.btn{font-family:'IBM Plex Mono';font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:#dbe4f0;padding:9px 16px;border-radius:10px;cursor:pointer;transition:.15s}
-.btn:hover:not(:disabled){background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.4)}
-.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
-.btn.primary:hover:not(:disabled){background:var(--blue-d)}
-.btn:disabled{opacity:.32;cursor:default}
+/* Diagram canvas: an SVG that fills the remaining slide height. */
+.viz{position:relative;flex:1;min-height:0}
+.viz>svg{position:absolute;inset:0;width:100%;height:100%}
+.viz-row{flex:1;min-height:0;display:flex;gap:2.5rem;align-items:stretch}
 
-/* ---- advantages/disadvantages panels ---- */
-.mvr{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:14px}
-.mvr .panelbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:20px 22px}
-.mvr .panelbox .ph{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.mvr .panelbox .ph .dot{width:10px;height:10px;border-radius:50%}
-.mvr .panelbox .ph h4{font-size:16px;font-weight:800;letter-spacing:-.3px}
-.mvr .panelbox .ph .sub{font-family:'IBM Plex Mono';font-size:11px;color:var(--txt-faint);margin-left:auto}
-.mvr .panelbox ul{display:flex;flex-direction:column;gap:8px}
-.mvr .panelbox li{list-style:none;display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--txt-dim);line-height:1.45}
-.mvr .panelbox li b{color:var(--txt)}
-.mvr .panelbox li .pm{flex:none;font-family:'IBM Plex Mono';font-size:12px;font-weight:600;width:18px;height:18px;border-radius:6px;display:grid;place-items:center;margin-top:2px}
-.mvr .panelbox li .pm.plus{background:var(--good-soft);color:var(--good)}
-.mvr .panelbox li .pm.minus{background:var(--warn-soft);color:var(--warn)}
-.mvr .panelbox code{font-family:'IBM Plex Mono';font-size:12px;color:var(--blue-d)}
+/* SVG text and shapes on light slides. */
+.sv-t{font-family:var(--font-sans);font-weight:600;fill:var(--ink)}
+.sv-m{font-family:var(--font-mono);font-weight:500;fill:var(--muted)}
+.sv-strong{font-family:var(--font-sans);font-weight:800;fill:var(--ink-strong)}
+.sv-blue{fill:var(--primary-deep)}
+.sv-box{fill:var(--panel);stroke:var(--line-2);stroke-width:1.5}
+.sv-line{stroke:var(--line-2);stroke-width:2;fill:none}
 
-/* ---- image layer stack (dark slide) ---- */
-.lstack-wrap{flex:1;display:flex;align-items:center;justify-content:center;gap:56px;min-height:0}
-.lstack{display:flex;flex-direction:column-reverse;gap:10px;width:560px}
-.lstack .layer{border:2px solid var(--teal);border-radius:12px;padding:13px 18px;display:flex;align-items:center;gap:14px;background:rgba(59,189,180,.06);transition:border-color .4s,background .4s,opacity .4s}
-.lstack .layer .lname{font-family:'IBM Plex Mono';font-size:14px;font-weight:600;color:#dbe6f5}
-.lstack .layer .ldesc{font-size:12px;color:#9fb6cf;margin-left:auto;text-align:right}
-.lstack .layer.base{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.04);padding:18px}
-.lstack .layer .badge{font-family:'IBM Plex Mono';font-size:10.5px;font-weight:600;letter-spacing:.6px;padding:3px 9px;border-radius:6px;opacity:0;transition:opacity .4s}
-.lstack .layer.cached{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.03)}
-.lstack .layer.cached .badge{opacity:1;background:rgba(22,163,74,.2);color:#6fdc9a}
-.lstack .layer.busted{border-color:var(--warn);background:rgba(217,119,6,.12)}
-.lstack .layer.busted .badge{opacity:1;background:rgba(217,119,6,.25);color:#f0b765}
-.lstack-side{max-width:420px;display:flex;flex-direction:column;gap:14px}
-.lstack-side .rule{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,.04)}
-.lstack-side .rule .rh{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--peri2);font-weight:700;margin-bottom:8px}
-.lstack-side .rule p{font-size:13.5px;color:#c4cfde;line-height:1.5}
-.lstack-side .rule p b{color:#fff}
-.lstack-side .rule code{font-family:'IBM Plex Mono';font-size:12px;color:var(--teal-l)}
+/* Git graph diagrams (labs 01 and 02): commits, edges, branch pointers, HEAD. */
+.gnode{fill:var(--panel);stroke:var(--primary);stroke-width:2.5}
+.gnode.dim{opacity:.25}
+.gedge{stroke:hsl(var(--neutral-700));stroke-width:2.4;fill:none}
+.gedge.branchline{stroke:var(--teal)}
+.glabel{fill:var(--ink-strong);font-family:var(--font-sans);font-weight:700;font-size:30px;text-anchor:middle;dominant-baseline:central}
+.gsha{fill:var(--muted);font-family:var(--font-mono);font-size:14px;text-anchor:middle;dominant-baseline:central}
+.gbranch{fill:var(--teal);font-family:var(--font-sans);font-weight:700;font-size:22px;text-anchor:middle}
+.gtype{fill:var(--muted);font-family:var(--font-sans);font-weight:600;font-size:22px;text-anchor:middle}
+.gfolder{fill:var(--amber);font-family:var(--font-sans);font-weight:700;font-size:21px}
+.gfile{fill:var(--ink);font-family:var(--font-sans);font-weight:500;font-size:20px}
+.gptr rect{fill:hsl(var(--chart-4-light) / .1);stroke:var(--teal);stroke-width:2}
+.gptr text{fill:var(--teal);font-family:var(--font-sans);font-weight:700;font-size:22px;text-anchor:middle;dominant-baseline:central}
+.gptr line{stroke:var(--teal);stroke-width:2.4}
+.gptr.head rect{fill:hsl(var(--chart-3-light) / .12);stroke:var(--amber)}
+.gptr.head text{fill:var(--amber);font-weight:800}
+.gptr.head line{stroke:var(--amber)}
+.f-mono{font-family:var(--font-mono)}
+.f-sans{font-family:var(--font-sans)}
 
-/* ---- normal-workflow map (dark interactive) ---- */
-.wmap{flex:1;display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr auto 1fr;gap:12px;align-items:stretch;align-content:center;min-height:0}
-.wnode{border:1px solid rgba(255,255,255,.22);border-radius:14px;background:rgba(255,255,255,.04);padding:18px 14px;text-align:center;display:flex;flex-direction:column;gap:6px}
-.wnode .ic{font-size:26px;line-height:1}
-.wnode h4{font-size:14.5px;font-weight:800;color:#fff;letter-spacing:-.2px}
-.wnode p{font-size:11.5px;color:#9fb6cf;line-height:1.5}
-.wnode p b{color:#fff}
-.wnode code{font-family:'IBM Plex Mono';font-size:10.5px;color:var(--teal-l)}
-.wnode.store{border-color:var(--teal);background:rgba(59,189,180,.08)}
-.wnode.plant{border-color:var(--warn)}
-.warr{align-self:center;text-align:center;font-family:'IBM Plex Mono'}
-.warr .a{font-size:22px;color:var(--peri2)}
-.warr .t{font-size:10px;letter-spacing:.5px;text-transform:uppercase;font-weight:600;color:#9fb6cf;margin-top:3px;max-width:11ch}
+/* Controls for an interactive slide (design system StepControls). */
+.controls{display:flex;align-items:center;gap:.6rem;flex:none;margin-top:1.25rem;padding-top:.85rem;border-top:1px solid var(--line)}
+.step-note{margin-right:auto;font-size:var(--text-lg);line-height:1.4;color:var(--muted);max-width:62rem;min-height:1.4em}
+.step-note>[data-at]{display:none}
+.step-note>[data-at].cur{display:inline}
+.btn{font-family:var(--font-sans);font-size:var(--text-sm);font-weight:600;border:1px solid var(--line-2);background:var(--panel);color:var(--ink);padding:.5rem 1rem;border-radius:var(--radius-md);cursor:pointer;transition:background var(--duration-fast),border-color var(--duration-fast)}
+.btn:hover:not(:disabled){border-color:var(--faint)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.primary:hover:not(:disabled){background:var(--primary-deep)}
+.btn:disabled{opacity:.35;cursor:default}
+.step-count{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--faint);min-width:2.5rem;text-align:right}
+.dark .controls{border-top-color:hsl(var(--neutral-0) / .12)}
+.dark .step-note{color:hsl(var(--neutral-300))}
+.dark .btn{background:hsl(var(--neutral-0) / .05);border-color:hsl(var(--neutral-0) / .2);color:hsl(var(--neutral-100))}
+.dark .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
 
-/* ---- five-step pipeline ---- */
-.pipe5{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr auto 1fr;gap:8px;align-items:stretch;margin-top:18px}
-.pipe5 .pbox{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--blue);border-radius:14px;padding:16px 14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px}
-.pipe5 .pbox .pn{font-family:'IBM Plex Mono';font-size:11px;font-weight:600;color:var(--txt-faint);letter-spacing:1px}
-.pipe5 .pbox h4{font-size:16px;font-weight:800;letter-spacing:-.3px}
-.pipe5 .pbox p{font-size:12px;color:var(--txt-dim);line-height:1.45}
-.pipe5 .pbox code{font-family:'IBM Plex Mono';font-size:11px;color:var(--blue-d)}
-.pipe5 .pbox.hosted{border-top-color:var(--teal)}
-.pipe5 .pbox.selfhosted{border-top-color:var(--warn)}
-.pipe5 .parr{display:grid;place-items:center;font-size:22px;color:var(--txt-faint);font-family:'IBM Plex Mono'}
+/* ---- HUD: progress, pager, hint, motion toggle -------------------------- */
+.hud{position:fixed;left:0;right:0;bottom:0;height:4px;background:hsl(var(--neutral-0) / .1);z-index:50}
+.hud>.bar{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--soft));transition:width var(--duration-slow) var(--ease-out)}
+.pager{position:fixed;right:1.25rem;bottom:.9rem;z-index:50;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--faint)}
+.hint{position:fixed;left:9rem;bottom:.95rem;z-index:50;font-size:var(--text-xs);color:var(--faint);transition:opacity var(--duration-slower)}
+.motion-toggle{position:fixed;left:1.25rem;bottom:.7rem;z-index:51;font-family:var(--font-sans);font-size:var(--text-xs);font-weight:600;color:var(--muted);background:hsl(var(--neutral-0) / .6);border:1px solid var(--line-2);border-radius:var(--radius-sm);padding:.2rem .55rem;cursor:pointer}
+.on-dark .pager,.pager.on-dark,.hint.on-dark{color:hsl(var(--neutral-0) / .55)}
+.motion-toggle.on-dark{color:hsl(var(--neutral-200));background:hsl(var(--neutral-950) / .35);border-color:hsl(var(--neutral-0) / .22)}
+.motion-toggle:disabled{opacity:.6;cursor:default}
 
-/* ---- comparison table ---- */
-.tbl{width:100%;border-collapse:separate;border-spacing:0;margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
-.tbl th,.tbl td{padding:10px 16px;text-align:left;font-size:13px;line-height:1.4;border-bottom:1px solid var(--line)}
-.tbl tr:last-child td{border-bottom:none}
-.tbl th{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--txt-faint);background:var(--panel2);font-weight:700}
-.tbl td:first-child{font-weight:700;color:var(--txt);white-space:nowrap}
-.tbl td{color:var(--txt-dim)}
-.tbl td b{color:var(--txt)}
-.tbl code{font-family:'IBM Plex Mono';font-size:12px;color:var(--blue-d)}
-
-.refs{margin-top:auto;display:flex;gap:10px;flex-wrap:wrap;padding-top:18px}
-.refs .ref{font-family:'IBM Plex Mono';font-size:11.5px;color:var(--txt-dim);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 11px}
-.refs .ref b{color:var(--blue);font-weight:600}
-
-.foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--txt-faint);padding-top:24px}
-.dark .foot{color:rgba(255,255,255,.45)}
-
+/* ---- cover dot field: verbatim from mustry-cockpit src/server/quotations/original-cover-motion.ts
+   (ORIGINAL_COVER_MOTION_CSS); the artwork is public/quotations/background-cut.svg,
+   shipped as deck-assets/background-cut.svg. */
+/* Website references: HeroMain.vue, DecorativeBackgrounds.vue, CallToAction.vue.
+   Retain the source's point geometry; animate its position and a masked duplicate. */
+.cover-page{isolation:isolate}
+.cover-dotfield{position:absolute;inset:0;z-index:-1;overflow:hidden;contain:paint;pointer-events:none;mix-blend-mode:screen;mask-image:linear-gradient(100deg,transparent 8%,#0007 43%,#000 77%);-webkit-mask-image:linear-gradient(100deg,transparent 8%,#0007 43%,#000 77%)}
+.dot-plane{position:absolute;width:112%;height:100%;right:-15%;bottom:-5%;animation-play-state:paused!important;will-change:transform}
+.cover-dotfield[data-animation=magnetic] .dot-plane{animation:quotation-magnet-drift 20s ease-in-out infinite alternate}
+.motion:not(.motion-paused) .cover-dotfield[data-animation=magnetic][data-visible=true] .dot-plane{animation-play-state:running!important}
+@keyframes quotation-magnet-drift{from{transform:translate3d(0,2px,0)}to{transform:translate3d(-4px,-2px,0)}}
+.dot-art{position:absolute;inset:0;display:block;background-image:var(--quotation-dot-art);background-repeat:no-repeat;background-size:contain;background-position:right bottom}
+.dot-base{opacity:.58}
+.dot-light-pass{display:none;opacity:.5;mask-image:linear-gradient(112deg,transparent 34%,#0009 45%,#000 50%,#0009 55%,transparent 66%);-webkit-mask-image:linear-gradient(112deg,transparent 34%,#0009 45%,#000 50%,#0009 55%,transparent 66%);mask-size:250% 180%;-webkit-mask-size:250% 180%;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;animation:quotation-dot-light 22s linear infinite;animation-delay:-3s;animation-play-state:paused!important}
+.cover-dotfield[data-animation=light-sweep] .dot-light-pass,.cover-dotfield[data-animation=dot-streams] .dot-light-pass,.cover-dotfield[data-animation=travelling-focus] .dot-light-pass{display:block}
+.motion:not(.motion-paused) .cover-dotfield[data-visible=true] .dot-light-pass{animation-play-state:running!important}
+@keyframes quotation-dot-light{0%{mask-position:170% 0%;-webkit-mask-position:170% 0%;opacity:0}12%{opacity:.82}85%{opacity:.82}100%{mask-position:-70% 100%;-webkit-mask-position:-70% 100%;opacity:0}}
+@media screen and (max-width:600px){.dot-plane{width:170%;height:100%;right:-60%;bottom:-3%}.cover-dotfield{mask-image:linear-gradient(100deg,transparent 12%,#0008 60%,#000);-webkit-mask-image:linear-gradient(100deg,transparent 12%,#0008 60%,#000)}.dot-base{opacity:.5}}
+@media(prefers-reduced-motion:reduce){.dot-plane,.dot-light-pass{animation:none!important;will-change:auto}.dot-light-pass{display:none}}
+.dot-wave-canvas{position:absolute;inset:0;width:100%;height:100%;display:none;pointer-events:none}
+.dot-wave-ready .dot-wave-canvas{display:block}
+.dot-wave-ready .dot-plane{visibility:hidden;animation:none!important}
+.dot-wave-ready .dot-light-pass{animation:none!important}
 @media print{
-  body{overflow:visible}
-  .deck{height:auto;overflow:visible}
-  .slide{height:100vh;page-break-after:always;break-after:page}
-  .hud,.pager,.hint,.controls{display:none}
-  .reveal{opacity:1;transform:none}
+  .cover-page{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cover-dotfield{display:block!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cover-dotfield .dot-plane{display:block!important;visibility:visible!important;transform:none!important;animation:none!important;will-change:auto}
+  .cover-dotfield .dot-base{display:block!important;opacity:.58}
+  .cover-dotfield .dot-light-pass,.cover-dotfield .dot-wave-canvas{display:none!important}
+}
+
+/* ---- cover dot field on a landscape slide --------------------------------
+   The block above is the Cockpit quotation-cover CSS, verbatim. On a slide
+   the layer is narrowed to the right side so the dense dots stay in view
+   next to the title. */
+.slide .cover-dotfield{left:auto;right:0;width:72%}
+@media screen and (max-aspect-ratio:1/1){.slide .cover-dotfield{width:100%}}
+
+/* ---- reduced motion (design system index.css policy) --------------------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .deck{scroll-behavior:auto}
+}
+
+/* ---- small screens: a readable scrolling layout (screen only) ------------ */
+@media screen and (max-width:820px),screen and (max-height:520px){
+  html{font-size:15px}
+  .deck{scroll-snap-type:none}
+  .slide{height:auto;min-height:100vh;min-height:100dvh;overflow:visible;padding:1.5rem 1.25rem 3rem}
+  .topbar{margin-bottom:1.25rem}
+  .cols2,.cols3,.cols4,.split,.split-r,.cmds,.compare{grid-template-columns:1fr;grid-auto-flow:row}
+  .flow,.track{grid-auto-flow:row;gap:1rem}
+  .flow>li{padding:0 0 0 3rem;min-height:2.25rem}
+  .flow>li::after{display:none}
+  .track::before{display:none}
+  .track>li::before{position:static;margin-bottom:.25rem}
+  .layers>.layer{grid-template-columns:1fr}
+  .viz,.viz-row{flex:none;min-height:60vh}
+  .viz-row{flex-direction:column}
+  .code>pre,.filecard>pre{white-space:pre-wrap;word-break:break-word}
+  .title{font-size:var(--text-3xl)}
+  .cover-title{font-size:var(--text-5xl)}
+  .divider-title{font-size:var(--text-4xl)}
+  .hint{display:none}
+  .controls{flex-wrap:wrap}
+  .step-note{flex-basis:100%}
+  .cmds>div{grid-template-columns:1fr;gap:.2rem}
+  :not(pre)>code,.cmds code{white-space:normal;overflow-wrap:anywhere}
+  .viz{min-height:45vh}
+}
+
+/* ---- print: one 16:9 page per slide, every step shown -------------------- */
+@page{size:1600px 900px;margin:0}
+@media print{
+  html{font-size:16px;height:auto}
+  body{height:auto;overflow:visible;background:none}
+  .deck{height:auto;overflow:visible;scroll-snap-type:none}
+  .slide{width:1600px;height:900px;break-after:page;page-break-after:always;break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .slide:last-child{break-after:auto;page-break-after:auto}
+  .hud,.pager,.hint,.controls,.motion-toggle{display:none!important}
+  .reveal,.vshow,.vpop,.vdraw{opacity:1!important}
+  .reveal,.vpop{transform:none!important}
+  .glow{display:none}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+/* deck-kit:css:end */
+
+/* ---- this deck ---------------------------------------------------------- */
+/* code on the left, its annotations on the right */
+.codenotes{display:grid;grid-template-columns:1.25fr 1fr;gap:2.5rem;align-items:center}
+.codenotes .code>pre{font-size:var(--text-sm)}
+.codenotes.narrow-code{grid-template-columns:1fr 1.35fr}
+.dots.sm{gap:.75rem}
+.dots.sm>li{font-size:var(--text-base);line-height:1.42;color:var(--muted)}
+
+/* recap: what Lab 04 left us, what this lab adds */
+.recap{display:flex;flex-direction:column;gap:2.75rem}
+.recap .col-head{margin-bottom:1rem}
+
+/* image, Dockerfile, container */
+.tri{display:grid;grid-template-columns:1fr auto 1fr auto 1.05fr;gap:1.75rem;align-items:center}
+.tri .col{display:flex;flex-direction:column;gap:1rem;min-width:0}
+.tri .cap{font-size:var(--text-lg);line-height:1.4;color:var(--muted)}
+.tri .filecard>pre{font-size:var(--text-lg)}
+.arr{display:flex;flex-direction:column;align-items:center;gap:.55rem}
+.arr code{font-size:var(--text-sm);font-weight:600}
+.arr i{display:block;width:4.5rem;height:2px;background:var(--primary);position:relative}
+.arr i::after{content:"";position:absolute;right:-2px;top:-6px;border:7px solid transparent;border-left:11px solid var(--primary);border-right:0}
+.lyrs{display:flex;flex-direction:column-reverse;gap:.4rem}
+.lyr{font-family:var(--font-mono);font-size:var(--text-base);line-height:1.3;padding:.6rem .9rem;border-radius:var(--radius-md);border:2px solid var(--teal);background:hsl(var(--chart-4-light) / .07);color:var(--ink)}
+.lyr.base{border-color:var(--line-2);background:var(--panel)}
+.lyr.rw{border-color:var(--amber);border-style:dashed;background:hsl(var(--chart-3-light) / .09);color:var(--amber);font-weight:600}
+.ctr{border:1px solid var(--line-2);border-radius:var(--radius-2xl);padding:.8rem;background:var(--panel);box-shadow:var(--shadow-sm)}
+.ctr+.ctr{margin-top:.8rem}
+.ctr .ch{display:flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;color:var(--muted);margin-bottom:.6rem}
+.ctr .ch::before{content:"";width:.5rem;height:.5rem;border-radius:50%;background:var(--good)}
+.ctr.second{border-style:dashed;box-shadow:none;background:transparent}
+
+/* layer cache stack */
+.cache{display:grid;grid-template-columns:minmax(0,1.3fr) 1fr;gap:3rem;align-items:center}
+.lstack{display:flex;flex-direction:column-reverse;gap:.45rem}
+.ly{display:grid;grid-template-columns:minmax(0,1fr) auto 6rem;gap:1rem;align-items:center;padding:.55rem .9rem;border-radius:var(--radius-lg);border:2px solid var(--teal);background:hsl(var(--chart-4-light) / .06);transition:border-color var(--duration-slow),background var(--duration-slow)}
+.ly .n{font-family:var(--font-mono);font-size:var(--text-base);font-weight:600;color:var(--ink-strong);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ly .d{font-size:var(--text-sm);color:var(--muted);text-align:right}
+.ly .bd{font-family:var(--font-mono);font-size:var(--text-xs);font-weight:700;text-align:center;padding:.15rem .4rem;border-radius:var(--radius-sm);opacity:0;transition:opacity var(--duration-slow)}
+.ly.base{border-color:var(--line-2);background:var(--panel);padding:.85rem .9rem}
+.ly.cached{border-color:var(--line-2);background:var(--panel)}
+.ly.cached .bd{opacity:1;color:var(--good);background:hsl(var(--status-good-light) / .12)}
+.ly.busted{border-color:var(--amber);background:hsl(var(--chart-3-light) / .1)}
+.ly.busted .bd{opacity:1;color:var(--amber);background:hsl(var(--chart-3-light) / .16)}
+
+/* trade-offs: plus and minus */
+.compare h3 small{display:block;margin-top:.15rem;font-family:var(--font-mono);font-size:var(--text-sm);font-weight:500;color:var(--faint);letter-spacing:0}
+.pm{list-style:none;display:flex;flex-direction:column;gap:.75rem}
+.pm>li{position:relative;padding-left:2.1rem;font-size:var(--text-base);line-height:1.42;color:var(--muted)}
+.pm>li::before{content:"+";position:absolute;left:0;top:.05rem;width:1.35rem;height:1.35rem;border-radius:.4rem;display:grid;place-items:center;font-family:var(--font-mono);font-size:var(--text-sm);font-weight:700;color:var(--good);background:hsl(var(--status-good-light) / .12)}
+.pm>li.minus::before{content:"\2212";color:var(--warn);background:hsl(var(--status-warning-light) / .12)}
+
+/* five steps: the registry legs dim once the "in this lab" note shows */
+.flow.big>li>span{font-size:var(--text-lg)}
+.slide:has(.local-note.show) .flow>li.remote.show{opacity:.35}
+
+/* what dies, what lives outside */
+.state{display:grid;grid-template-columns:1.25fr 1fr;gap:2.75rem;align-items:center}
+.state .table{font-size:var(--text-lg)}
+.state .table td:first-child{font-weight:500;color:var(--ink)}
+/* a label on the connector between two flow stops */
+.flow>li>.edge{position:absolute;top:-1.6rem;left:calc(2.25rem + (100% - 2.25rem) / 2);transform:translateX(-50%);font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;font-style:normal;color:var(--primary-deep);white-space:nowrap}
+
+/* small screens: this deck's grids collapse to one column */
+@media screen and (max-width:820px),screen and (max-height:520px){
+  .codenotes,.codenotes.narrow-code,.cache,.state{grid-template-columns:1fr}
+  .flow>li>.edge{display:none}
+  .tri{grid-template-columns:1fr}
+  .arr{flex-direction:row}
+  .arr i{transform:rotate(90deg);width:2.5rem;margin:1rem 0}
+  .ly{grid-template-columns:minmax(0,1fr) 5.5rem}
+  .ly .d{display:none}
+  .ly .n{white-space:normal;overflow-wrap:anywhere}
+  .ly .bd{font-size:var(--text-sm)}
 }
 </style>
 </head>
 <body>
+<main class="deck" id="deck">
 
-<div class="deck" id="deck">
-
-<!-- 1 · COVER -->
-<section class="slide dark">
-  <div class="topbar">
-    <div class="on-dark brandrow">
-      <img class="logo-img logo-lg" src="logos/OriginalLight.png" alt="Mustry Solutions">
-    </div>
-    <div class="stage on-dark">Lab 05 · Day 3</div>
+<!-- COVER -->
+<section class="slide dark cover-page">
+  <div class="ambient ambient-cover cover-dotfield" aria-hidden="true" data-visible="true" data-animation="dot-streams" style="--quotation-dot-art:url('deck-assets/background-cut.svg')"><div class="dot-plane"><span class="dot-art dot-base"></span><span class="dot-art dot-light-pass"></span></div></div>
+  <header class="topbar"><img class="logo" src="logos/OriginalLight.png" alt="Mustry Solutions"></header>
+  <div class="cover-body">
+    <h1 class="cover-title">Deploying Ignition as a custom Docker <em>image</em></h1>
   </div>
-
-  <div class="cover">
-    <div class="eyebrow">Teaching · ±60 min</div>
-    <div class="big">Deploying Ignition as a custom Docker <em>image</em></div>
-    <div class="sub">Yesterday, in Lab 04, you shipped files into a running gateway. This lab is a deliberate sidestep: there is a second way to deploy the exact same files, by baking them into a custom Docker image and replacing the container. To understand it you first need three words defined properly: <em style="color:#fff;font-style:normal">image</em>, <em style="color:#fff;font-style:normal">Dockerfile</em> and <em style="color:#fff;font-style:normal">container</em>.</div>
-  </div>
-
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Lab 05: Image-based deploy</span></div>
 </section>
 
-<!-- 2 · WHERE LAB 04 ENDS AND THIS LAB GOES -->
+<!-- WHERE LAB 04 ENDS -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Teaching</div>
-  </div>
-
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">01</span><h2 class="title">Where Lab 04 ends, and what this lab adds</h2></div>
   <div class="body">
-    <div class="sechead">
-      <span class="num">01</span>
+    <div class="recap">
       <div>
-        <div class="title">Where Lab 04 ends, and what this lab adds</div>
-        <div class="lead">Your file-based pipeline works: checkout, prune, wipe + copy, scan, verify. Nothing is wrong with it. This lab shows the <b>other</b> way teams deploy the same files.</div>
+        <div class="col-head">After Lab 04: a working file-based pipeline, everything as files in Git</div>
+        <ol class="flow nonum">
+          <li><b>Checkout</b><span>merge to <code>main</code> ships test, a tag ships production</span></li>
+          <li><b>Prune</b><span>drop what <code>.deployignore</code> lists</span></li>
+          <li><b>Ship</b><span>wipe and copy files into the <b>running</b> gateway</span></li>
+          <li><b>Scan</b><span>the gateway picks them up</span></li>
+          <li><b>Verify</b><span>poll the gateway: a broken deploy fails the run</span></li>
+        </ol>
       </div>
-    </div>
-
-    <div class="cols2">
-      <div class="does">
-        <div class="hd">What you have after Lab 04</div>
-        <ul>
-          <li><span class="d"></span><span><b>A working deploy pipeline:</b> a merge to <code>main</code> ships files into the <b>running</b> test gateway; a tag ships production. Rollback: re-run the pipeline on an older tag.</span></li>
-          <li><span class="d"></span><span><b>A verified deploy:</b> the pipeline polls the gateway after the scan, so a broken deploy fails the run, loudly.</span></li>
-          <li><span class="d"></span><span><b>Everything is files in Git:</b> projects, gateway config, and the deploy scripts themselves.</span></li>
-        </ul>
+      <div>
+        <div class="col-head">This lab adds a second way to deploy the same files</div>
+        <ol class="track">
+          <li><small>Part 1</small><b>The vocabulary</b><span>what an image, a Dockerfile and a container are</span></li>
+          <li><small>Shown on screen</small><b>A production repo</b><span>its Dockerfile, pipeline and rollback, deploying a gateway image every day</span></li>
+          <li class="now"><small>You-do</small><b>Your own gateway image</b><span>build it locally, bake a change in, deploy by <b>replacing the test container</b>; rollback = the previous build's tag</span></li>
+          <li><small>Part 2</small><b>The honest trade-off</b><span>what image-based buys, what it costs, when to pick which</span></li>
+        </ol>
       </div>
-      <div class="does">
-        <div class="hd">What this lab adds</div>
-        <ul>
-          <li><span class="d"></span><span><b>The vocabulary:</b> what an image, a Dockerfile and a container actually are, so "deploy an image" stops being magic.</span></li>
-          <li><span class="d"></span><span><b>How it's really done:</b> we walk a real production Ignition repo (on screen) that deploys the gateway as a custom image every day: its Dockerfile, its pipeline, its rollback.</span></li>
-          <li><span class="d"></span><span><b>Your own gateway image:</b> you build it locally, bake a change into it, and deploy it by <b>replacing the test container</b>. Rollback = run the previous build's tag.</span></li>
-          <li><span class="d"></span><span><b>The honest trade-off:</b> what image-based buys you, what it costs you, and when you'd pick which. Both approaches stay in your toolbox.</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="callout">
-      <div class="lab" style="color:var(--blue)">This is a sidestep, not a replacement</div>
-      <p>Both approaches deploy the same files to the same paths and <b>achieve the same result</b>. File-based mutates a long-lived gateway; image-based replaces a disposable one. Once a pipeline is up and running, you barely notice which one you are on. Today is about understanding the second approach well enough to <b>choose deliberately</b>.</p>
+      <div class="aside"><span class="label">A sidestep, not a replacement</span>Both deploy the same files to the same paths and <b>achieve the same result</b>. File-based mutates a long-lived gateway; image-based replaces a disposable one. Today is about knowing the second well enough to <b>choose deliberately</b>.</div>
     </div>
   </div>
-
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Same files, second delivery mechanism</span></div>
 </section>
 
-<!-- 3 · DIVIDER · PART 1 -->
+<!-- DIVIDER PART 1 -->
 <section class="slide dark">
-  <div class="topbar">
-    <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
-    <div class="stage on-dark">Part 1 · Docker fundamentals</div>
-  </div>
-  <div class="divider">
-    <div class="eyebrow">Part 1 · Images, Dockerfiles and containers</div>
-    <div class="q">What is an image, a Dockerfile, a <em>container</em>?</div>
-    <div class="sub2">You have been running containers since Lab 02. Now we define the three words precisely, because image-based deployment only makes sense once you know what an image actually is.</div>
-  </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>image → Dockerfile → container → layers</span></div>
+  <div class="glow ambient" aria-hidden="true"></div>
+  <header class="topbar"><img class="logo" src="logos/OriginalLight.png" alt="Mustry Solutions"></header>
+  <div class="divider-body"><h2 class="divider-title">Part 1: what an image, a Dockerfile and a <em>container</em> are</h2></div>
 </section>
 
-<!-- 4 · THE THREE WORDS, DEFINED (interactive flow) -->
-<section class="slide dark">
-  <div class="topbar">
-    <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
-    <div class="stage on-dark">Part 1 · definitions</div>
-  </div>
-
-  <div style="text-align:center">
-    <div style="font-weight:800;font-size:34px;letter-spacing:-.5px;color:#fff">Image, Dockerfile, container: the three words defined</div>
-    <p class="lead" style="text-align:center;margin:6px auto 0;color:#c4cfde;max-width:72ch">Step through how the three pieces relate: <b style="color:#fff">recipe → frozen artifact → running copy</b>.</p>
-  </div>
-
-  <div class="triflow">
-    <div class="tf-col reveal" data-step="1">
-      <div class="tf-file">
-        <div class="fh">Dockerfile · committed to Git</div>
-        <pre>FROM ignition:8.3.8
+<!-- THE THREE WORDS (reveal) -->
+<section class="slide" data-ctrl="reveal">
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">02</span><h2 class="title">Image, Dockerfile, container: the three words defined</h2></div>
+  <div class="body">
+    <div class="tri">
+      <div class="col reveal" data-step="1">
+        <div class="filecard">
+          <div class="fh">Dockerfile, committed to Git</div>
+          <pre>FROM ignition:8.3.8
 COPY services/config/ <span class="cm">…</span>
 COPY projects/        <span class="cm">…</span></pre>
-      </div>
-      <div class="tf-cap"><b>The Dockerfile</b>: a text file, the recipe. It describes the image; it doesn't run.</div>
-    </div>
-    <div class="tf-arr reveal" data-step="2"><div class="a">→</div><div class="t">docker build</div></div>
-    <div class="tf-col reveal" data-step="2">
-      <div class="tf-stack">
-        <div class="tf-layer base">ignition:8.3.8 base</div>
-        <div class="tf-layer">layer: services/config/</div>
-        <div class="tf-layer">layer: projects/</div>
-      </div>
-      <div class="tf-cap"><b>The image</b>: read-only layers + metadata, one layer per instruction. Frozen; it does not run.</div>
-    </div>
-    <div class="tf-arr reveal" data-step="3"><div class="a">→</div><div class="t">docker run</div></div>
-    <div class="tf-col">
-      <div class="tf-box reveal" data-step="3">
-        <div class="bh"><span class="run"></span>container · lab05-ignition-test</div>
-        <div class="tf-stack">
-          <div class="tf-layer base">ignition:8.3.8 base</div>
-          <div class="tf-layer">layer: services/config/</div>
-          <div class="tf-layer">layer: projects/</div>
-          <div class="tf-layer rw">writable layer · runtime state</div>
         </div>
+        <p class="cap"><b>The Dockerfile:</b> a text file, the recipe. It describes the image; it never runs.</p>
       </div>
-      <div class="tf-box tf-ghost reveal" data-step="4">
-        <div class="bh"><span class="run"></span>container · demo</div>
-        <div class="tf-stack">
-          <div class="tf-layer rw">writable layer · its own</div>
+      <div class="arr reveal" data-step="2"><code>docker build</code><i></i></div>
+      <div class="col reveal" data-step="2">
+        <div class="lyrs">
+          <div class="lyr base">ignition:8.3.8 base</div>
+          <div class="lyr">layer: services/config/</div>
+          <div class="lyr">layer: projects/</div>
         </div>
+        <p class="cap"><b>The image:</b> read-only layers plus metadata, one layer per instruction. Frozen: it does not run.</p>
       </div>
-      <div class="tf-cap reveal" data-step="3"><b>A container</b>: the image's layers, read-only, plus one thin writable layer on top.</div>
+      <div class="arr reveal" data-step="3"><code>docker run</code><i></i></div>
+      <div class="col">
+        <div>
+          <div class="ctr reveal" data-step="3">
+            <div class="ch">container · lab05-ignition-test</div>
+            <div class="lyrs">
+              <div class="lyr base">ignition:8.3.8 base</div>
+              <div class="lyr">layer: services/config/</div>
+              <div class="lyr">layer: projects/</div>
+              <div class="lyr rw">writable layer: runtime state</div>
+            </div>
+          </div>
+          <div class="ctr second reveal" data-step="4">
+            <div class="ch">container · demo</div>
+            <div class="lyrs"><div class="lyr rw">writable layer: its own</div></div>
+          </div>
+        </div>
+        <p class="cap reveal" data-step="3"><b>A container:</b> the image's layers, read-only, plus one thin writable layer on top.</p>
+      </div>
     </div>
   </div>
-
-  <div class="controls">
-    <span class="lead-step" id="tri-step">Three words, one flow. Step through how they relate.</span>
-    <button class="btn" data-act="back">◀ Back</button>
-    <button class="btn primary" data-act="next">Next ▶</button>
-  </div>
+  <div class="controls"><p class="step-note">
+    <span data-at="0">Three words, one flow: the recipe, the frozen artifact, the running copy.</span>
+    <span data-at="1"><b>The Dockerfile</b> is a committed text file: start FROM a base image, COPY our files in. It never runs.</span>
+    <span data-at="2"><b>docker build</b> turns every instruction into a read-only <b>layer</b>. <code>inductiveautomation/ignition:8.3.8</code> is an image too: the whole gateway install, frozen.</span>
+    <span data-at="3"><b>docker run</b> starts a <b>container</b>: the image's layers plus a thin <b>writable layer</b>. Every compose since Lab 02 did this.</span>
+    <span data-at="4">One image runs <b>many containers</b>; delete one and <b>the image is untouched</b>. That is why replacing the container can be a deploy.</span>
+  </p></div>
 </section>
 
-<!-- 5 · THE LAB'S DOCKERFILE -->
+<!-- THE LAB'S DOCKERFILE -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 1 · the Dockerfile</div>
-  </div>
-
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">03</span><h2 class="title">Read the lab's Dockerfile: a pinned base, four <code>COPY</code> lines, two <code>RUN</code> steps</h2></div>
   <div class="body">
-    <div class="sechead">
-      <span class="num">02</span>
-      <div>
-        <div class="title">Read the lab's Dockerfile: a base image, four <span class="mono" style="font-size:34px">COPY</span> lines and two small <span class="mono" style="font-size:34px">RUN</span> steps</div>
-        <div class="lead">This is the actual <span class="mono">Dockerfile</span> in this repo, with the comments trimmed and <span class="mono">…</span> for <span class="mono">/usr/local/bin/ignition</span>. Minimal on purpose: it bakes exactly what Lab 04's pipeline copied at deploy time.</div>
-      </div>
-    </div>
-
-    <div class="split">
-      <div class="code"><pre style="font-size:12.5px;line-height:1.6"><span class="cm"># pin the base: bump deliberately, never float :latest</span>
+    <div class="codenotes">
+      <div class="code"><div class="code-title">Dockerfile (comments trimmed, … = /usr/local/bin/ignition)</div><pre><span class="cm"># pin the base: bump deliberately, never float :latest</span>
 ARG IGNITION_VERSION=<span class="hl">8.3.8</span>
 FROM inductiveautomation/ignition:${IGNITION_VERSION}
 
@@ -419,93 +682,56 @@ RUN sha256sum /third-party-modules/*.modl &amp;&amp; sleep 5
 COPY <span class="hl">--chown=2003:0</span> services/modules.json <span class="cmd2">…/data/modules.json</span>
 COPY <span class="hl">--chown=2003:0</span> services/config/      <span class="cmd2">…/data/config/</span>
 RUN sed -i 's/"defaultAuthProfileCreated": true/…false/' \
-      <span class="cmd2">…/data/config/…/com.inductiveautomation.opcua/one-time/config.json</span>
+  <span class="cmd2">…/data/config/…/com.inductiveautomation.opcua/one-time/config.json</span>
 COPY <span class="hl">--chown=2003:0</span> projects/             <span class="cmd2">…/data/projects/</span>
 
 <span class="cm"># provenance: trace any container back to a commit</span>
 ARG GIT_SHA=unknown
 LABEL org.opencontainers.image.revision=<span class="hl">"${GIT_SHA}"</span></pre></div>
-      <div class="does">
-        <div class="hd">What to notice</div>
-        <ul>
-          <li><span class="d"></span><span><b>Same paths as Lab 04's <span class="mono">docker cp</span>.</b> <span class="mono">data/projects</span> and <span class="mono">data/config</span>: Ignition scans them at startup. Only <i>when</i> they arrive changed: build time instead of deploy time. <span class="mono">modules.json</span> is the file local reads through its bind mount: one module list for all three gateways.</span></li>
-          <li><span class="d"></span><span><b>FROM = start from the stock gateway, pinned.</b> We inherit the whole Ignition install, its entrypoint and healthcheck, and only add our files on top. A floating <span class="mono">:latest</span> means two builds a week apart could silently differ.</span></li>
-          <li><span class="d"></span><span><b><span class="mono">--chown=2003:0</span> = the gateway's own user.</b> The gateway does not run as root; root-owned baked files make it FAULT at boot.</span></li>
-          <li><span class="d"></span><span><b>Two RUN steps.</b> A 5-second stand-in for a module signature scan, and a <span class="mono">sed</span> that re-arms the OPC UA module's one-time flag, so every gateway creates its own <span class="mono">opcua-module</span> login at first boot (that login holds a password hash, so it is never baked). Without it, every OPC tag reads bad.</span></li>
-          <li><span class="d"></span><span><b>Per-environment values stay out.</b> Admin password, EULA acceptance, config mode: those are <b>env vars in compose</b>. Config that varies per environment does not belong in a shared artifact.</span></li>
-        </ul>
-      </div>
+      <ul class="dots sm">
+        <li><b>Same paths as Lab 04's <code>docker cp</code>.</b> Ignition scans <code>data/projects</code> and <code>data/config</code> at startup; they now arrive at build time instead of deploy time. <code>modules.json</code> is the file local reads through its bind mount: one module list for all three gateways.</li>
+        <li><b>FROM: the stock gateway, pinned.</b> We inherit the install, its entrypoint and healthcheck. A floating <code>:latest</code> lets two builds a week apart silently differ.</li>
+        <li><b><code>--chown=2003:0</code>: the gateway's own user.</b> It does not run as root; root-owned baked files make it FAULT at boot.</li>
+        <li><b>Two RUN steps.</b> A 5-second stand-in for a module signature scan, and a <code>sed</code> that re-arms the OPC UA one-time flag: every gateway creates its own <code>opcua-module</code> login at first boot (it holds a password hash, so it is never baked). Without it, every OPC tag reads bad.</li>
+        <li><b>Per-environment values stay out.</b> Admin password, EULA acceptance, config mode: <b>env vars in compose</b>, not the shared artifact.</li>
+      </ul>
     </div>
-    <div class="refs">
-      <span class="ref"><b>Dockerfile</b> · repo root</span>
-      <span class="ref"><b>docs/dockerfile-anatomy.md</b> · the cheat sheet</span>
-      <span class="ref"><b>docker-compose.yaml</b> · the runtime env vars</span>
-    </div>
-  </div>
-
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>The Dockerfile is the deploy spec, in Git</span></div>
-</section>
-
-<!-- 6 · LAYER ORDER = CACHE STRATEGY (interactive stack) -->
-<section class="slide dark">
-  <div class="topbar">
-    <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
-    <div class="stage on-dark">Part 1 · layers</div>
-  </div>
-
-  <div style="text-align:center">
-    <div style="font-weight:800;font-size:34px;letter-spacing:-.5px;color:#fff">How layers cache: order the Dockerfile least- to most-volatile</div>
-    <p class="lead" style="text-align:center;margin:6px auto 0;color:#c4cfde;max-width:70ch">Each <b style="color:#fff">COPY is its own layer</b>, cached on its inputs. A busted layer busts <b style="color:#fff">every layer after it</b>, so the files you touch daily go last.</p>
-  </div>
-
-  <div class="lstack-wrap">
-    <div class="lstack" id="lstack">
-      <!-- column-reverse: first child renders at the BOTTOM of the stack -->
-      <div class="layer base" data-l="base"><span class="lname">FROM inductiveautomation/ignition:8.3.8</span><span class="badge">CACHED</span><span class="ldesc">the base, biggest layer by far</span></div>
-      <div class="layer" data-l="modl"><span class="lname">COPY third-party-modules/</span><span class="badge">CACHED</span><span class="ldesc">big .modl binaries · rarely change</span></div>
-      <div class="layer" data-l="scan"><span class="lname">RUN sha256sum … &amp;&amp; sleep 5</span><span class="badge">CACHED</span><span class="ldesc">the slow module check</span></div>
-      <div class="layer" data-l="mjson"><span class="lname">COPY services/modules.json</span><span class="badge">CACHED</span><span class="ldesc">module enablement manifest</span></div>
-      <div class="layer" data-l="cfg"><span class="lname">COPY services/config/</span><span class="badge">CACHED</span><span class="ldesc">gateway config</span></div>
-      <div class="layer" data-l="opc"><span class="lname">RUN sed … one-time/config.json</span><span class="badge">CACHED</span><span class="ldesc">OPC UA login flag</span></div>
-      <div class="layer" data-l="proj"><span class="lname">COPY projects/</span><span class="badge">CACHED</span><span class="ldesc">project content · changes daily → last</span></div>
-    </div>
-    <div class="lstack-side">
-      <div class="rule">
-        <div class="rh">The rule</div>
-        <p><b>Most volatile last.</b> The thing you touch daily should have nothing expensive stacked after it.</p>
-      </div>
-      <div class="rule">
-        <div class="rh">See it yourself</div>
-        <p>Rebuild after <code>touch projects/example-project/project.json</code>: everything still prints <code>CACHED</code>: the cache checksums <b>content</b>, not timestamps. Now append a newline to that file and rebuild: only the <code>projects/</code> layer rebuilds.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="controls">
-    <span class="lead-step" id="lstack-step">Seven layers, bottom-up. Docker reuses any layer whose inputs didn't change.</span>
-    <button class="btn" data-act="back">◀ Back</button>
-    <button class="btn primary" data-act="next">Next ▶</button>
   </div>
 </section>
 
-<!-- 7 · A PRODUCTION DOCKERFILE -->
-<section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 1 · a production Dockerfile</div>
-  </div>
-
+<!-- LAYER CACHE (custom controller) -->
+<section class="slide" data-ctrl="lstack">
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">04</span><h2 class="title">How layers cache: order the Dockerfile from least to most volatile</h2></div>
   <div class="body">
-    <div class="sechead">
-      <span class="num">03</span>
-      <div>
-        <div class="title">A production Dockerfile: how a real gateway image grows</div>
-        <div class="lead">The lab's Dockerfile is the minimal version. This one comes from a production Ignition repo we maintain (condensed and anonymized): it does more, and every extra line earns its keep. We read the real thing together on screen.</div>
+    <div class="cache">
+      <div class="lstack" id="lstack">
+        <!-- column-reverse: the first child renders at the bottom -->
+        <div class="ly base" data-l="base"><span class="n">FROM inductiveautomation/ignition:8.3.8</span><span class="d">the base, by far the biggest</span><span class="bd"></span></div>
+        <div class="ly" data-l="modl"><span class="n">COPY third-party-modules/</span><span class="d">big .modl files, rarely change</span><span class="bd"></span></div>
+        <div class="ly" data-l="scan"><span class="n">RUN sha256sum … &amp;&amp; sleep 5</span><span class="d">the slow module check</span><span class="bd"></span></div>
+        <div class="ly" data-l="mjson"><span class="n">COPY services/modules.json</span><span class="d">which modules turn on</span><span class="bd"></span></div>
+        <div class="ly" data-l="cfg"><span class="n">COPY services/config/</span><span class="d">gateway config</span><span class="bd"></span></div>
+        <div class="ly" data-l="opc"><span class="n">RUN sed … one-time/config.json</span><span class="d">OPC UA login flag</span><span class="bd"></span></div>
+        <div class="ly" data-l="proj"><span class="n">COPY projects/</span><span class="d">changes daily, so last</span><span class="bd"></span></div>
+      </div>
+      <div class="stack" style="gap:1.75rem">
+        <p class="statement">Each <code>COPY</code> is a layer. A busted layer busts <em>every layer after it</em>.</p>
+        <div class="aside"><span class="label">The rule: most volatile last</span>What you touch daily should have nothing expensive stacked after it.</div>
+        <div class="aside good"><span class="label">See it yourself</span>Rebuild after <code>touch projects/example-project/project.json</code>: still all <code>CACHED</code>, because the cache checksums <b>content</b>, not timestamps. Append a newline and rebuild: only the <code>projects/</code> layer rebuilds.</div>
       </div>
     </div>
+  </div>
+  <div class="controls"><p class="step-note"></p></div>
+</section>
 
-    <div class="split">
-      <div class="code"><pre><span class="cm"># stage 1: compile a fresh gosu binary (fewer CVEs than the bundled one)</span>
+<!-- A PRODUCTION DOCKERFILE -->
+<section class="slide">
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">05</span><h2 class="title">A production Dockerfile: how a real gateway image grows</h2></div>
+  <div class="body">
+    <div class="codenotes">
+      <div class="code"><div class="code-title">A production Ignition repo we maintain, condensed and anonymized</div><pre><span class="cm"># stage 1: compile a fresh gosu binary (fewer CVEs)</span>
 FROM golang:1.25-bookworm AS gosu-builder
 <span class="cm"># … go build → /out/gosu …</span>
 
@@ -514,58 +740,39 @@ USER root
 COPY --chown=2003:2003 docker_db_migrations/   <span class="cmd2">/docker_db_migrations/</span>
 COPY --chown=2003:2003 docker_startup_scripts/ <span class="cmd2">/docker_startup_scripts/</span>
 COPY --chown=2003:2003 modules/ignition/ <span class="cmd2">…/data/var/ignition/modl/</span>
-COPY --chown=2003:2003 modules/jar/      <span class="cmd2">/usr/local/bin/ignition/lib/core/gateway/</span>
+COPY --chown=2003:2003 modules/jar/      <span class="cmd2">…/lib/core/gateway/</span>
 COPY --chown=2003:2003 pylib/plant       <span class="cmd2">…/user-lib/pylib/plant</span>
 COPY --chown=2003:2003 config/           <span class="cmd2">…/data/config</span>
-COPY --chown=2003:2003 projects/  <span class="cmd2">/usr/local/share/ignition-seed/projects/</span>
+COPY --chown=2003:2003 projects/ <span class="cmd2">/usr/local/share/ignition-seed/projects/</span>
 
 RUN <span class="cm"># import company CA certs into the OS + JRE trust stores,</span> \
     <span class="cm"># then snapshot data/ into an immutable seed tree:</span> \
     cp -a …/data/. <span class="hl">/usr/local/share/ignition-seed/data/</span>
 
 USER 2003:2003
-ENTRYPOINT ["/usr/local/bin/<span class="hl">entrypoint.sh</span>"]  <span class="cm"># then chains to the stock one</span></pre></div>
-      <div class="does">
-        <div class="hd">What grew, and why</div>
-        <ul>
-          <li><span class="d"></span><span><b>More kinds of cargo.</b> Third-party <span class="mono">.modl</span> files, plain <b>JAR libraries</b> (copied into <span class="mono">lib/core/gateway/</span>, which is on the gateway's classpath), a Jython library, and a <b>db-migrations folder</b>. All of it versioned, all of it baked. Lab 06 teaches each of these properly.</span></li>
-          <li><span class="d"></span><span><b>Multi-stage build.</b> Stage 1 exists only to compile one clean binary; the tooling never reaches the shipped image.</span></li>
-          <li><span class="d"></span><span><b>Non-root runtime.</b> Builds as root, runs as the Ignition UID (<span class="mono">2003</span>), hence every <span class="mono">COPY --chown</span>.</span></li>
-          <li><span class="d"></span><span><b>The seed trick.</b> <span class="mono">data/</span> is snapshotted to a <b>seed tree</b>; startup scripts re-seed projects and config from it on <b>every boot</b>. Gateway-UI edits on production are deliberately erased: the image stays the single source of truth.</span></li>
-        </ul>
-      </div>
+ENTRYPOINT ["/usr/local/bin/<span class="hl">entrypoint.sh</span>"]  <span class="cm"># chains to the stock one</span></pre></div>
+      <ul class="dots sm">
+        <li><b>More kinds of cargo.</b> Third-party <code>.modl</code> files, plain <b>JAR libraries</b> in <code>lib/core/gateway/</code> (on the gateway's classpath), a Jython library and a <b>db-migrations folder</b>. All versioned, all baked. Lab 06 teaches each one.</li>
+        <li><b>Multi-stage build.</b> Stage 1 only compiles one clean binary; its tooling never reaches the shipped image.</li>
+        <li><b>Non-root runtime.</b> Builds as root, runs as the Ignition UID <code>2003</code>: hence every <code>COPY --chown</code>.</li>
+        <li><b>The seed trick.</b> <code>data/</code> is snapshotted to a <b>seed tree</b>; startup scripts re-seed projects and config from it on <b>every boot</b>. Gateway-UI edits on production are erased on purpose: the image stays the single source of truth.</li>
+      </ul>
     </div>
   </div>
-
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Shown on screen: a production Dockerfile + entrypoint.sh</span></div>
 </section>
 
-<!-- 8 · DOCKERIGNORE -->
+<!-- DOCKERIGNORE -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 1 · the build context</div>
-  </div>
-
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">06</span><h2 class="title"><code>.dockerignore</code>: keep the build context small and secret-free</h2></div>
   <div class="body">
-    <div class="sechead">
-      <span class="num">04</span>
-      <div>
-        <div class="title"><span class="mono" style="font-size:34px">.dockerignore</span>: keep the build context small and secret-free</div>
-        <div class="lead">The build context is the folder tarball Docker hands the builder before running the Dockerfile. This is the image-based analogue of Lab 04's <span class="mono">.deployignore</span>.</div>
-      </div>
-    </div>
-
-    <div class="split">
-      <ul class="checks" style="max-width:900px">
-        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Speed.</b> <span class="mono">.git/</span>, <span class="mono">docs/</span>, <span class="mono">exercises/</span> are megabytes Docker would otherwise upload and checksum on <i>every</i> build. <span class="mono">.git</span> is usually the biggest single chunk.</span></li>
-        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Cleanliness.</b> Our Dockerfile only COPYs four paths, but a careless future <span class="mono">COPY . .</span> would drag in everything not ignored. Defence in depth.</span></li>
-        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Secrets: the line that matters most.</b> <span class="mono">.env</span> is excluded so credentials can <b>never</b> be baked into a shareable artifact. An image gets handed around; a leaked file inside it travels with every copy.</span></li>
-        <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>Operational state stays out too.</b> <span class="mono">.resources/</span> blob stores and <span class="mono">*.idb</span> databases are gateway-owned runtime state (Lab 04's "never commit" list): baking them in would ship one gateway's private state to every other.</span></li>
-      </ul>
-      <div>
-        <div class="code"><pre><span class="cm"># .dockerignore (excerpt)</span>
-.git/
+    <ol class="flow nonum">
+      <li><b>Your lab folder</b><span>everything on disk</span></li>
+      <li class="on"><b>The build context</b><span>the tarball Docker hands the builder; <code>.dockerignore</code> shrinks it, like Lab 04's <code>.deployignore</code></span></li>
+      <li><b>The image</b><span>only what the Dockerfile's <code>COPY</code> lines select from the context</span></li>
+    </ol>
+    <div class="codenotes narrow-code">
+      <div class="code"><div class="code-title">.dockerignore (excerpt)</div><pre>.git/
 <span class="hl">.env</span>
 .env.example
 docs/
@@ -578,35 +785,23 @@ scripts/
 **/.resources/
 **/data/db/
 **/*.idb</pre></div>
-        <div class="callout" style="margin-top:16px">
-          <div class="lab" style="color:var(--blue)">Context ≠ image</div>
-          <p>The <b>context</b> is what's <i>sent</i> to the builder; the <b>image</b> is what the COPYs <i>select</i> from it. <span class="mono">.dockerignore</span> shrinks the former; the Dockerfile selects the latter.</p>
-        </div>
-      </div>
+      <ul class="checks">
+        <li><b>Speed.</b> <code>.git/</code>, <code>docs/</code>, <code>exercises/</code>: megabytes Docker would upload and checksum on <b>every</b> build.</li>
+        <li><b>Cleanliness.</b> We COPY four paths, but a careless future <code>COPY . .</code> would drag in everything not ignored. Defence in depth.</li>
+        <li><b>Secrets: the line that matters most.</b> <code>.env</code> stays out, so credentials can <b>never</b> be baked into an artifact that gets handed around.</li>
+        <li><b>Operational state stays out.</b> <code>.resources/</code> blob stores and <code>*.idb</code> databases belong to one gateway (Lab 04's "never commit" list).</li>
+      </ul>
     </div>
   </div>
-
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>.dockerignore: speed · cleanliness · secrets</span></div>
 </section>
 
-<!-- 9 · INSPECT A BUILT IMAGE -->
+<!-- INSPECT A BUILT IMAGE -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 1 · inspecting an image</div>
-  </div>
-
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">07</span><h2 class="title">Inspect a built image: its layers, its files and the commit it came from</h2></div>
   <div class="body">
-    <div class="sechead">
-      <span class="num">05</span>
-      <div>
-        <div class="title">Inspect a built image: its layers, its files and the commit it came from</div>
-        <div class="lead">Three commands you use all through the assignment, and the one tag suffix that warns you. None of them needs a running gateway.</div>
-      </div>
-    </div>
-
-    <div class="split">
-      <div class="code"><pre style="font-size:12.5px;line-height:1.6"><span class="cm"># the layers, newest on top, with their sizes</span>
+    <div class="codenotes">
+      <div class="code"><pre><span class="cm"># the layers, newest on top, with their sizes</span>
 docker history cicd-lab-05-ignition:local
 
 <span class="cm"># which commit was this image built from?</span>
@@ -620,189 +815,120 @@ docker run --rm <span class="hl">--entrypoint find</span> cicd-lab-05-ignition:l
 
 <span class="cm"># build-image.sh with uncommitted changes in the lab:</span>
 <span class="cm">#   tags  cicd-lab-05-ignition:sha-1a2b3c4</span><span class="hl">-dirty</span></pre></div>
-      <div class="does">
-        <div class="hd">What each one tells you</div>
-        <ul>
-          <li><span class="d"></span><span><b><span class="mono">docker history</span>:</b> one line per Dockerfile instruction, the base at the bottom. A <span class="mono">COPY</span> line shows the size of what you baked, a <span class="mono">RUN</span> line what the command changed.</span></li>
-          <li><span class="d"></span><span><b>The revision label:</b> <span class="mono">build-image.sh</span> and CI pass the commit as <span class="mono">GIT_SHA</span>. Ask an image or a running container, and you know which commit it holds.</span></li>
-          <li><span class="d"></span><span><b><span class="mono">--entrypoint</span>:</b> the Ignition image's entrypoint treats every trailing argument as a gateway argument. Replace it with <span class="mono">find</span>, <span class="mono">cat</span> or <span class="mono">ls</span> for one throwaway container to read the image itself.</span></li>
-          <li><span class="d"></span><span><b><span class="mono">-dirty</span>:</b> the image holds bytes no commit has, so the tag and the label say so. Commit (or undo) and rebuild before you deploy it anywhere.</span></li>
-        </ul>
-      </div>
+      <ul class="dots sm">
+        <li><b><code>docker history</code>:</b> one line per Dockerfile instruction, the base at the bottom. A <code>COPY</code> line shows the size of what you baked, a <code>RUN</code> line what the command changed.</li>
+        <li><b>The revision label:</b> <code>build-image.sh</code> and CI pass the commit as <code>GIT_SHA</code>. Ask an image or a running container, and you know which commit it holds.</li>
+        <li><b><code>--entrypoint</code>:</b> the Ignition entrypoint treats every trailing argument as a gateway argument. Swap in <code>find</code>, <code>cat</code> or <code>ls</code> for one throwaway container that reads the image itself.</li>
+        <li><b><code>-dirty</code>:</b> the image holds bytes no commit has, and the tag and label say so. Commit (or undo) and rebuild before you deploy it anywhere.</li>
+      </ul>
     </div>
   </div>
-
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Read the image, not the repo</span></div>
 </section>
 
-<!-- 10 · DIVIDER · PART 2 -->
+<!-- DIVIDER PART 2 -->
 <section class="slide dark">
-  <div class="topbar">
-    <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
-    <div class="stage on-dark">Part 2 · deploying the image</div>
+  <div class="glow ambient" aria-hidden="true"></div>
+  <header class="topbar"><img class="logo" src="logos/OriginalLight.png" alt="Mustry Solutions"></header>
+  <div class="divider-body">
+    <h2 class="divider-title">Part 2: deploy the image by <em>replacing</em> the container</h2>
+    <ol class="flow nonum" style="max-width:66rem">
+      <li><b>Trade-offs</b><span>what it buys, what it costs</span></li>
+      <li><b>The five steps</b><span>build, tag, push, pull, run</span></li>
+      <li><b>A real pipeline</b><span>build once, roll back by tag</span></li>
+      <li><b>State</b><span>what dies, what lives outside</span></li>
+    </ol>
   </div>
-  <div class="divider">
-    <div class="eyebrow">Part 2 · How an image-based deployment works</div>
-    <div class="q">Deploy by <em>replacing</em> the container</div>
-    <div class="sub2">The image contains the state, so a deploy is: stop the old container, start a new one from the new image. No copy scripts, no scan call. Now: what does that trade away, and what does it buy?</div>
-  </div>
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>trade-offs → the five steps → a real pipeline → rollback</span></div>
 </section>
 
-<!-- 11 · ADVANTAGES AND DISADVANTAGES (reveal) -->
-<section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 2 · trade-offs</div>
-  </div>
-
+<!-- TRADE-OFFS (reveal) -->
+<section class="slide" data-ctrl="reveal">
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">08</span><h2 class="title">File-based vs image-based: advantages and disadvantages</h2></div>
   <div class="body">
-    <div class="sechead">
-      <span class="num">06</span>
-      <div>
-        <div class="title">File-based vs image-based: advantages and disadvantages</div>
-        <div class="lead">Same files, same target paths, same end result. Each side pays a different price. Know both lists before you pick one for a customer.</div>
-      </div>
-    </div>
-
-    <div class="mvr">
-      <div class="panelbox reveal" data-step="1">
-        <div class="ph"><span class="dot" style="background:var(--warn)"></span><h4>File-based (Lab 04)</h4><span class="sub">long-lived gateway</span></div>
-        <ul>
-          <li><span class="pm plus">+</span><span><b>No gateway restart.</b> The container lives on; a hot scan picks up changes in seconds. Runtime state, trial clock and memory tag values stay in place.</span></li>
-          <li><span class="pm plus">+</span><span><b>Fast inner loop.</b> Copy + scan is a deploy measured in seconds, ideal while actively developing.</span></li>
-          <li><span class="pm minus">−</span><span><b>Harder to get the file handling right.</b> You must copy the right files to the right places <b>and delete the right ones first</b>. Miss the delete and stale files linger on the gateway forever. Real pipelines get this wrong: we'll look at one that does.</span></li>
-          <li><span class="pm minus">−</span><span><b>The deploy logic lives in your scripts.</b> Wipe lists, spare lists, <code>.deployignore</code>: all yours to maintain per customer.</span></li>
+    <div class="compare">
+      <div class="reveal" data-step="1">
+        <h3>File-based (Lab 04)<small>long-lived gateway</small></h3>
+        <ul class="pm">
+          <li><b>No gateway restart.</b> The container lives on; a hot scan picks up changes in seconds. Runtime state, trial clock and memory tag values stay in place.</li>
+          <li><b>Fast inner loop.</b> Copy + scan deploys in seconds, ideal while developing.</li>
+          <li class="minus"><b>Harder to get the file handling right.</b> Copy the right files <b>and delete the right ones first</b>; miss the delete and stale files linger forever. Real pipelines get this wrong.</li>
+          <li class="minus"><b>The deploy logic lives in your scripts.</b> Wipe lists, spare lists, <code>.deployignore</code>: yours to maintain per customer.</li>
         </ul>
       </div>
-      <div class="panelbox reveal" data-step="2">
-        <div class="ph"><span class="dot" style="background:var(--good)"></span><h4>Image-based (Lab 05)</h4><span class="sub">disposable gateway</span></div>
-        <ul>
-          <li><span class="pm plus">+</span><span><b>A frozen, versioned artifact.</b> The image you tested is byte-for-byte the image that runs. Rollback and promotion are just <b>running a different tag</b>.</span></li>
-          <li><span class="pm plus">+</span><span><b>No scan API, no copy scripts.</b> Deploy = replace the container. Feels cleaner: there is nothing to copy and nothing to forget to delete.</span></li>
-          <li><span class="pm minus">−</span><span><b>Every deploy is a fresh gateway.</b> Internal state is recreated from scratch; anything that must survive (historian data, memory <b>tag values</b>) has to live outside the container, and retaining tag values takes real design work.</span></li>
-          <li><span class="pm minus">−</span><span><b>Startup downtime.</b> A gateway boot is minutes, not seconds. Either you accept the window or you invest in a solid blue-green setup, and that is real work too.</span></li>
+      <div class="blue reveal" data-step="2">
+        <h3>Image-based (Lab 05)<small>disposable gateway</small></h3>
+        <ul class="pm">
+          <li><b>A frozen, versioned artifact.</b> The image you tested is byte-for-byte the image that runs. Rollback and promotion: <b>run a different tag</b>.</li>
+          <li><b>No scan API, no copy scripts.</b> Deploy = replace the container: nothing to copy, nothing to forget to delete.</li>
+          <li class="minus"><b>Every deploy is a fresh gateway.</b> What must survive (historian data, memory <b>tag values</b>) lives outside the container, and keeping tag values takes real design work.</li>
+          <li class="minus"><b>Startup downtime.</b> A gateway boot takes minutes, not seconds: accept the window, or invest in a solid blue-green setup.</li>
         </ul>
       </div>
     </div>
-
-    <div class="callout reveal" data-step="3" style="border-left:5px solid var(--blue)">
-      <div class="lab" style="color:var(--blue)">The honest conclusion</div>
-      <p>Neither side is free. In the end <b>both achieve the same result</b>, and once the pipeline is up and running you don't really notice which one you are on. What you notice is the failure modes: stale files on one side, lost runtime state and boot windows on the other.</p>
-    </div>
+    <div class="aside reveal" data-step="3"><span class="label">The honest conclusion</span>Neither side is free. <b>Both achieve the same result</b>, and once the pipeline runs you barely notice which one you are on. You notice the failure modes: stale files on one side, lost runtime state and boot windows on the other.</div>
   </div>
-
-  <div class="controls" style="border-top-color:var(--line)">
-    <span class="lead-step" id="mvr-step" style="color:var(--txt-dim)">Two ways to deliver the same files. Step through each side's trade-offs.</span>
-    <button class="btn" data-act="back">◀ Back</button>
-    <button class="btn primary" data-act="next">Next ▶</button>
-  </div>
+  <div class="controls"><p class="step-note">
+    <span data-at="0">Two ways to deliver the same files. Step through each side's trade-offs.</span>
+    <span data-at="1">File-based: <b>no restarts and a fast inner loop</b>, but you own the copy-and-delete logic.</span>
+    <span data-at="2">Image-based: <b>a frozen artifact and no copy scripts</b>, but every deploy is a fresh gateway.</span>
+    <span data-at="3"><b>Same result either way.</b> Once the pipeline runs, you notice the failure modes, not the mechanism.</span>
+  </p></div>
 </section>
 
-<!-- 12 · THE FIVE STEPS (reveal) -->
+<!-- THE FIVE STEPS (reveal) -->
+<section class="slide" data-ctrl="reveal">
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">09</span><h2 class="title">The five steps of an image-based deploy</h2></div>
+  <div class="body" style="gap:3rem">
+    <ol class="flow big">
+      <li class="reveal" data-step="1"><b>Build</b><span>bake projects, config and modules into layers from the <code>Dockerfile</code></span></li>
+      <li class="reveal" data-step="2"><b>Tag</b><span>an immutable name for this exact build: <code>:sha-&lt;short&gt;</code> or <code>:v0.9.1</code></span></li>
+      <li class="remote reveal" data-step="3"><b>Push</b><span>upload to a registry the target machine can reach</span></li>
+      <li class="remote reveal" data-step="4"><b>Pull</b><span>the machine that runs the gateway downloads that tag</span></li>
+      <li class="on reveal" data-step="5"><b>Run</b><span>recreate the container from the new image: that <b>is</b> the deploy</span></li>
+    </ol>
+    <div class="aside warn local-note reveal" data-step="6"><span class="label">In this lab: steps 1, 2 and 5, all local</span>A gateway image is <b>around 2 GB</b>: pushing that through a home connection for every exercise is no fun. In the assignment you <b>build and tag locally</b> and deploy by recreating the local test container. The registry legs (3 and 4) are on the next slide. Same mechanics; only the transport is missing.</div>
+  </div>
+  <div class="controls"><p class="step-note">
+    <span data-at="0">Step through the five moves of an image-based deploy.</span>
+    <span data-at="1"><b>Build.</b> The Dockerfile bakes projects, config and modules into layers.</span>
+    <span data-at="2"><b>Tag.</b> An immutable name for this exact build: a SHA or a version number.</span>
+    <span data-at="3"><b>Push.</b> Upload the image to a registry the target machine can reach.</span>
+    <span data-at="4"><b>Pull.</b> The machine that owns the gateway downloads that exact tag.</span>
+    <span data-at="5"><b>Run.</b> Recreate the container from the new image. That <b>is</b> the deploy.</span>
+    <span data-at="6">In this lab: steps 1, 2 and 5, all local. A 2 GB image is nothing you upload from a course laptop.</span>
+  </p></div>
+</section>
+
+<!-- THE NORMAL WORKFLOW (reveal) -->
+<section class="slide" data-ctrl="reveal">
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">10</span><h2 class="title">Where the image is built, stored and deployed when Actions runs it</h2></div>
+  <div class="body" style="gap:3rem">
+    <ol class="flow big">
+      <li class="reveal" data-step="1"><i class="edge">merge triggers</i><b>Your laptop</b><span>Edit a view, commit on a branch, open a PR, <b>merge to main</b>. A few KB of JSON is all that leaves your machine.</span></li>
+      <li class="reveal" data-step="2"><i class="edge">docker push</i><b>GitHub Actions</b><span>The merge fires <code>lab05-deploy.yml</code>, the same trigger as Lab 04. A hosted runner checks out the commit and runs <b>docker build</b>.</span></li>
+      <li class="on reveal" data-step="3"><i class="edge">docker pull</i><b>The registry</b><span><b>docker push</b> lands it where images live: ghcr.io or a company registry. The ~2 GB upload runs datacenter to datacenter, in seconds. Every tag stays.</span></li>
+      <li class="reveal" data-step="4"><b>Runner at the plant</b><span>On the machine that owns the gateway: <b>docker pull</b> the new tag, then <code>docker compose up -d</code> recreates the container. That's the deploy.</span></li>
+    </ol>
+    <p class="statement reveal" data-step="4" style="max-width:none">Your laptop ships <em>code</em>; the heavy image traffic never crosses your connection.</p>
+  </div>
+  <div class="controls"><p class="step-note">
+    <span data-at="0">Follow one change from your keyboard to a running gateway.</span>
+    <span data-at="1"><b>Your laptop.</b> Edit, commit, PR, merge: the GitHub flow from every lab.</span>
+    <span data-at="2"><b>GitHub.</b> The merge triggers the deploy workflow; a hosted runner builds the image from the Dockerfile.</span>
+    <span data-at="3"><b>The registry</b> stores the image under an immutable tag: the shelf every deploy and rollback picks from.</span>
+    <span data-at="4"><b>The plant</b> pulls the tag and recreates the container. In the assignment you type these last commands yourself.</span>
+  </p></div>
+</section>
+
+<!-- THE DEPLOY COMMAND -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 2 · the pattern</div>
-  </div>
-
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">11</span><h2 class="title">Deploy with one command, then prove which build and which bytes run</h2></div>
   <div class="body">
-    <div class="sechead">
-      <span class="num">07</span>
-      <div>
-        <div class="title">The five steps of an image-based deploy</div>
-        <div class="lead">Build, tag, push, pull, run. The image already contains the state, so the deploy itself is just "recreate the container from the new image".</div>
-      </div>
-    </div>
-
-    <div class="pipe5">
-      <div class="pbox hosted reveal" data-step="1"><span class="pn">STEP 1</span><h4>Build</h4><p>Bake projects / config / modules into layers from the <code>Dockerfile</code>.</p></div>
-      <div class="parr reveal" data-step="1">→</div>
-      <div class="pbox hosted reveal" data-step="2"><span class="pn">STEP 2</span><h4>Tag</h4><p>An immutable name for this exact build: <code>:sha-&lt;short&gt;</code> or a version like <code>:v0.9.1</code>.</p></div>
-      <div class="parr reveal" data-step="2">→</div>
-      <div class="pbox hosted reveal" data-step="3"><span class="pn">STEP 3</span><h4>Push</h4><p>Upload to a registry the target machine can reach.</p></div>
-      <div class="parr reveal" data-step="3">→</div>
-      <div class="pbox selfhosted reveal" data-step="4"><span class="pn">STEP 4</span><h4>Pull</h4><p>The machine that runs the gateway downloads that tag.</p></div>
-      <div class="parr reveal" data-step="4">→</div>
-      <div class="pbox selfhosted reveal" data-step="5"><span class="pn">STEP 5</span><h4>Run</h4><p>Recreate the container from the new image. That <b>is</b> the deploy.</p></div>
-    </div>
-
-    <div class="callout reveal" data-step="6">
-      <div class="lab">In this lab: steps 1, 2 and 5, all local</div>
-      <p>A gateway image is <b>around 2 GB</b>. Pushing that through a home connection for every exercise is no fun, so in the assignment you <b>build and tag locally</b> and deploy by recreating the local test container: same steps 1, 2 and 5, with the registry legs (3 and 4) shown on the next slide instead of exercised. The mechanics are identical; only the transport is missing.</p>
-    </div>
-  </div>
-
-  <div class="controls" style="border-top-color:var(--line)">
-    <span class="lead-step" id="pipe5-step" style="color:var(--txt-dim)">Step through the five moves of an image-based deploy.</span>
-    <button class="btn" data-act="back">◀ Back</button>
-    <button class="btn primary" data-act="next">Next ▶</button>
-  </div>
-</section>
-
-<!-- 13 · THE NORMAL WORKFLOW, END TO END (interactive map) -->
-<section class="slide dark">
-  <div class="topbar">
-    <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
-    <div class="stage on-dark">Part 2 · the normal workflow</div>
-  </div>
-
-  <div style="text-align:center">
-    <div style="font-weight:800;font-size:34px;letter-spacing:-.5px;color:#fff">Where the image is built, stored and deployed when Actions runs it</div>
-    <p class="lead" style="text-align:center;margin:6px auto 0;color:#c4cfde;max-width:74ch">The same five steps, drawn end to end. Your laptop only ships <b style="color:#fff">code</b>; the heavy image traffic happens between GitHub and the registry, never through your connection.</p>
-  </div>
-
-  <div class="wmap">
-    <div class="wnode reveal" data-step="1">
-      <div class="ic">💻</div>
-      <h4>Your laptop</h4>
-      <p>Edit a view, commit on a branch, open a PR, <b>merge to main</b>. A few KB of JSON: that's all that leaves your machine.</p>
-    </div>
-    <div class="warr reveal" data-step="2"><div class="a">→</div><div class="t">merge triggers</div></div>
-    <div class="wnode reveal" data-step="2">
-      <div class="ic">⚙️</div>
-      <h4>GitHub · Actions</h4>
-      <p>The merge fires <code>lab05-deploy.yml</code>, the same trigger as Lab 04. A hosted runner checks out the commit and runs <b>docker build</b>: the Dockerfile bakes the image.</p>
-    </div>
-    <div class="warr reveal" data-step="3"><div class="a">→</div><div class="t">docker push</div></div>
-    <div class="wnode store reveal" data-step="3">
-      <div class="ic">📦</div>
-      <h4>The registry</h4>
-      <p><b>This is where images live</b>: ghcr.io or a company registry. The ~2 GB upload happens here, datacenter to datacenter, in seconds. Every tag ever pushed stays available.</p>
-    </div>
-    <div class="warr reveal" data-step="4"><div class="a">→</div><div class="t">docker pull</div></div>
-    <div class="wnode plant reveal" data-step="4">
-      <div class="ic">🏭</div>
-      <h4>Runner at the plant</h4>
-      <p>The deploy job runs on the machine that owns the gateway: <b>docker pull</b> the new tag, then <code>docker compose up -d</code> recreates the gateway container. That's the deploy.</p>
-    </div>
-  </div>
-
-  <div class="controls">
-    <span class="lead-step" id="wmap-step">Follow one change from your keyboard to a running gateway.</span>
-    <button class="btn" data-act="back">◀ Back</button>
-    <button class="btn primary" data-act="next">Next ▶</button>
-  </div>
-</section>
-
-<!-- 14 · RUN STEP 5 YOURSELF -->
-<section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 2 · the deploy command</div>
-  </div>
-
-  <div class="body">
-    <div class="sechead">
-      <span class="num">08</span>
-      <div>
-        <div class="title">Deploy with one command, then prove which build and which bytes run</div>
-        <div class="lead">Step 5 is a compose variable and <span class="mono">docker compose up</span>. Two <span class="mono">docker inspect</span> lines tell you what you actually deployed.</div>
-      </div>
-    </div>
-
-    <div class="split">
-      <div class="code"><pre style="font-size:12.5px;line-height:1.6"><span class="cm"># docker-compose.yaml, the test service</span>
+    <div class="codenotes">
+      <div class="code"><pre><span class="cm"># docker-compose.yaml, the test service</span>
 image: <span class="hl">"${IGNITION_TEST_IMAGE:-inductiveautomation/ignition:8.3.8}"</span>
 
 <span class="cm"># the deploy: set the variable, compose recreates the container</span>
@@ -815,281 +941,451 @@ docker inspect -f <span class="cmd2">'{{ index .Config.Labels
 
 <span class="cm"># which bytes run? the sha256 of the image</span>
 docker inspect -f <span class="cmd2">'{{.Image}}'</span> lab05-ignition-test</pre></div>
-      <div class="does">
-        <div class="hd">What to notice</div>
-        <ul>
-          <li><span class="d"></span><span><b><span class="mono">${VAR:-default}</span>:</b> compose fills in the variable, or the default when it is unset. A new value means a new image, so compose recreates the container. That is the whole deploy.</span></li>
-          <li><span class="d"></span><span><b>The trap:</b> a later bare <span class="mono">docker compose up -d</span> without the variable recreates test on the <b>base image</b>: an empty gateway. Put the image in <span class="mono">.env</span> to make a deploy stick.</span></li>
-          <li><span class="d"></span><span><b>Label vs digest:</b> the label names the commit; <span class="mono">{{.Image}}</span> names the exact bytes. Same digest on test and production means production runs what test ran.</span></li>
-          <li><span class="d"></span><span><b>Pulling from GHCR yourself</b> (the stretch): if the package is private, Docker logs in with a token that has <span class="mono">read:packages</span>: <span class="mono">gh auth refresh -h github.com -s read:packages</span>, then <span class="mono">gh auth token | docker login ghcr.io -u &lt;you&gt; --password-stdin</span>.</span></li>
-        </ul>
-      </div>
+      <ul class="dots sm">
+        <li><b><code>${VAR:-default}</code>:</b> compose fills in the variable, or the default when it is unset. A new value means a new image, so compose recreates the container. That is the whole deploy.</li>
+        <li><b>The trap:</b> a later bare <code>docker compose up -d</code> without the variable recreates test on the <b>base image</b>: an empty gateway. Put the image in <code>.env</code> to make a deploy stick.</li>
+        <li><b>Label vs digest:</b> the label names the commit; <code>{{.Image}}</code> names the exact bytes. Same digest on test and production: production runs what test ran.</li>
+        <li><b>Pulling from GHCR yourself</b> (the stretch): for a private package, log Docker in with a <code>read:packages</code> token: <code>gh auth refresh -h github.com -s read:packages</code>, then <code>gh auth token | docker login ghcr.io -u &lt;you&gt; --password-stdin</code>.</li>
+      </ul>
     </div>
   </div>
-
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Deploy = a variable + compose up</span></div>
 </section>
 
-<!-- 15 · A PRODUCTION PIPELINE -->
+<!-- A PRODUCTION PIPELINE -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 2 · a real pipeline</div>
-  </div>
-
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">12</span><h2 class="title">How a production pipeline builds and deploys the image</h2></div>
   <div class="body">
-    <div class="sechead">
-      <span class="num">09</span>
-      <div>
-        <div class="title">How a production pipeline builds and deploys the image</div>
-        <div class="lead">The same five steps, as they run in production today in the repo whose Dockerfile you just saw. We walk the real pipeline file on screen; here is the shape to hold on to.</div>
-      </div>
-    </div>
-
-    <table class="tbl">
-      <tr><th>Stage</th><th>What happens</th><th>Worth stealing</th></tr>
+    <table class="table t-md">
+      <tr><th>Stage</th><th>What happens (shown on screen)</th><th>Worth stealing</th></tr>
       <tr><td>Version</td><td>A merge to <code>main</code> computes the next version from git history (GitVersion) and pushes a <code>v0.9.1</code>-style tag. The run <b>fails if the tag already exists</b>.</td><td>Humans never invent version numbers; the pipeline does.</td></tr>
       <tr><td>Build + push</td><td>The image is built once and pushed to the company registry, tagged with that version.</td><td><b>Build once.</b> Every environment runs a tag of this one build, never a rebuild.</td></tr>
-      <tr><td>Deploy</td><td>The "deploy" is <code>docker compose down</code> + <code>up</code> with the new tag: the old container is destroyed, a fresh one boots from the new image. Startup scripts re-seed projects and config from the image on every boot.</td><td>Deploy and restart are the <b>same operation</b>. There is no drift to manage: the image is the truth.</td></tr>
-      <tr><td>Rollback</td><td>Point the deployed tag back to the previous version and run the same deploy. The old image still exists in the registry, untouched.</td><td>Rollback is <b>not a special procedure</b>, just yesterday's tag.</td></tr>
+      <tr><td>Deploy</td><td><code>docker compose down</code> + <code>up</code> with the new tag: the old container is destroyed, a fresh one boots from the new image and its startup scripts re-seed projects and config.</td><td>Deploy and restart are the <b>same operation</b>. No drift to manage: the image is the truth.</td></tr>
+      <tr><td>Rollback</td><td>Point the deployed tag back to the previous version and run the same deploy. The old image is still in the registry, untouched.</td><td>Rollback is <b>not a special procedure</b>, just yesterday's tag.</td></tr>
     </table>
-
-    <div class="callout">
-      <div class="lab" style="color:var(--blue)">Division of labour</div>
-      <p>The app repo owns the <b>Dockerfile and what goes in the image</b>. The infra side owns <b>where it runs and which env vars it gets</b> (including secrets: that story is Lab 06). Clean seam: the artifact travels, the environment stays put.</p>
-    </div>
+    <div class="aside"><span class="label">Division of labour</span>The app repo owns the <b>Dockerfile and what goes in the image</b>. The infra side owns <b>where it runs and which env vars it gets</b>, secrets included (Lab 06). The artifact travels; the environment stays put.</div>
   </div>
-
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Shown on screen: a production pipeline + GitVersion</span></div>
 </section>
 
-<!-- 16 · WHAT DIES, WHAT SURVIVES -->
+<!-- WHAT DIES, WHAT SURVIVES -->
 <section class="slide">
-  <div class="topbar">
-    <div class="brandrow"><img class="logo-img" src="logos/OriginalDark.png" alt="Mustry Solutions"></div>
-    <div class="stage">Part 2 · state</div>
-  </div>
-
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">13</span><h2 class="title">What dies with the container, and what must live outside it</h2></div>
   <div class="body">
-    <div class="sechead">
-      <span class="num">10</span>
-      <div>
-        <div class="title">What dies with the container, and what must live outside it</div>
-        <div class="lead">Replacing the container on every deploy is only safe when the data that matters <b>is not in the container</b>. This is the design work the "fresh gateway" disadvantage demands.</div>
-      </div>
-    </div>
-
-    <div class="split">
-      <div>
-        <table class="tbl">
-          <tr><th>Dies with the container</th><th>Must live outside</th></tr>
-          <tr><td style="white-space:normal">Project content, config, modules (they come back from the image: that's the point)</td><td>Historian data → <b>TimescaleDB</b>, its own container + volume</td></tr>
-          <tr><td style="white-space:normal">The gateway's internal DB, re-commissioned each boot</td><td>Memory <b>tag values</b> you can't afford to lose → external DB, or don't go image-based for that gateway</td></tr>
-          <tr><td style="white-space:normal">Logs, trial clock, anything hand-edited in the gateway UI</td><td>Audit logs, alarm journal, user uploads → volume or database, chosen deliberately</td></tr>
-        </table>
-      </div>
-      <div>
-        <div class="code"><pre><span class="cm"># db-init/01-create-env-databases.sql
-# runs ONCE when the timescaledb volume first initializes</span>
+    <div class="state">
+      <table class="table">
+        <tr><th>Dies with the container</th><th>Must live outside</th></tr>
+        <tr><td>Project content, config, modules: they come back from the image, that's the point</td><td>Historian data: <b>TimescaleDB</b>, its own container and volume</td></tr>
+        <tr><td>The gateway's internal DB, re-commissioned on each boot</td><td>Memory <b>tag values</b> you can't afford to lose: an external DB, or don't go image-based for that gateway</td></tr>
+        <tr><td>Logs, trial clock, anything hand-edited in the gateway UI</td><td>Audit logs, alarm journal, user uploads: a volume or a database, chosen deliberately</td></tr>
+      </table>
+      <div class="stack" style="gap:1.5rem">
+        <div class="code"><div class="code-title">db-init/01-create-env-databases.sql</div><pre><span class="cm">-- runs ONCE, when the timescaledb volume first initializes</span>
 CREATE DATABASE <span class="hl">ignition_test</span>;
 CREATE DATABASE <span class="hl">ignition_production</span>;
-<span class="cm"># (ignition_local_development comes from POSTGRES_DB in compose)</span></pre></div>
-        <div class="callout" style="margin-top:16px">
-          <div class="lab">Ask this question per data kind</div>
-          <p>For every piece of state on a gateway: does it belong in the <b>image</b> (comes back on deploy), a <b>volume</b> (survives the container) or a <b>database</b> (survives the machine)? The production repo answers it per folder: user uploads get stashed and restored across the re-seed; everything else is image-owned.</p>
-        </div>
+<span class="cm">-- ignition_local_development: POSTGRES_DB in compose</span></pre></div>
+        <div class="aside warn"><span class="label">Ask this per kind of data</span>Does it belong in the <b>image</b> (comes back on deploy), a <b>volume</b> (survives the container) or a <b>database</b> (survives the machine)? The production repo answers it per folder: user uploads are stashed and restored across the re-seed; everything else is image-owned.</div>
       </div>
     </div>
   </div>
-
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Externalize state first, then containers become disposable</span></div>
 </section>
 
-<!-- 17 · CLOSING / HANDOFF -->
+<!-- CLOSING -->
 <section class="slide dark">
-  <div class="topbar">
-    <div class="on-dark brandrow"><img class="logo-img" src="logos/OriginalLight.png" alt="Mustry Solutions"></div>
-    <div class="stage on-dark">Teaching → We-do → You-do</div>
+  <div class="glow ambient" aria-hidden="true"></div>
+  <header class="topbar"><img class="logo" src="logos/OriginalLight.png" alt="Mustry Solutions"></header>
+  <div class="divider-body">
+    <h2 class="divider-title">Next: build the gateway image locally and deploy it by <em>replacing a container</em></h2>
+    <ol class="flow" style="max-width:76rem">
+      <li><b>We-do</b><span>Walk the <code>Dockerfile</code> and <code>.dockerignore</code>, build with <code>scripts/build-image.sh</code>, read the layers, prove the cache, run the image <b>with no bind mounts</b></span></li>
+      <li><b>You-do, Part 1</b><span>Bake a home page note into the image, keep a stray gateway backup out with <code>.dockerignore</code>, prove both from the image</span></li>
+      <li class="on"><b>You-do, Part 2</b><span><b>Type the deploy yourself</b> to the test gateway, ship a second change, roll back to the previous tag. All local; changes reach <code>main</code> through PRs</span></li>
+    </ol>
+    <p class="muted t-md"><code>exercises/lab.md</code> is the source of truth · <code>docs/</code> has the cheat sheets · <code>docs/TROUBLESHOOTING.md</code> before you sit stuck</p>
   </div>
-
-  <div class="body">
-    <div class="eyebrow">Now we make it real</div>
-    <div class="title" style="max-width:26ch;color:#fff">Next: build the gateway image locally and deploy it by replacing a container</div>
-    <ul class="checks" style="max-width:960px;margin-top:22px">
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>We-do.</b> We walk the real <span class="mono">Dockerfile</span> and <span class="mono">.dockerignore</span>, build with <span class="mono">scripts/build-image.sh</span>, read the layers with <span class="mono">docker history</span>, prove the cache, and run the image <b>with no bind mounts</b>: the proof it's self-contained.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You-do, Part 1.</b> Bake a config change (a gateway home page note) into the image, keep a stray gateway backup out of it with <span class="mono">.dockerignore</span>, rebuild, and prove both from the image itself.</span></li>
-      <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span><span><b>You-do, Part 2.</b> Deploy your clean <span class="mono">:sha</span> image to the test gateway by <b>typing the deploy command yourself</b> (no script: the one-liner IS the lesson), ship a second change end-to-end, then roll back by running the previous tag. Builds and deploys stay local: no registry, no image uploads. Your changes still reach <span class="mono">main</span> through PRs, as in every lab.</span></li>
-    </ul>
-    <div class="callout" style="background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.14)">
-      <div class="lab" style="color:var(--peri2)">Everything is in the repo</div>
-      <p style="color:#c4cfde"><span class="mono" style="color:#dbe4f0">exercises/lab.md</span> is the source of truth · <span class="mono" style="color:#dbe4f0">docs/</span> has the cheat sheets · <span class="mono" style="color:#dbe4f0">docs/TROUBLESHOOTING.md</span> before you sit stuck.</p>
-    </div>
-  </div>
-
-  <div class="foot"><span>Mustry Academy · CI/CD for Ignition</span><span>Next → We-do, then Parts 1 &amp; 2</span></div>
 </section>
 
-</div>
-
-<div class="hud"><div class="bar" id="bar"></div></div>
-<div class="pager" id="pager">01 / 17</div>
-<div class="hint" id="hint">↑ ↓ slides · ← → step the animation</div>
-
+</main>
 <script>
-/* ============ deck navigation ============ */
-const deck=document.getElementById('deck');
-const slides=[...document.querySelectorAll('.slide')];
-const bar=document.getElementById('bar');
-const pager=document.getElementById('pager');
-const hint=document.getElementById('hint');
-function pad(n){return String(n).padStart(2,'0')}
-const POS_KEY='deckpos:'+location.pathname;
-function curIndex(){return Math.round(deck.scrollTop/window.innerHeight)}
-function update(){
-  const i=curIndex();
-  bar.style.width=((i)/(slides.length-1)*100)+'%';
-  pager.textContent=pad(i+1)+' / '+pad(slides.length);
-  const dark=slides[i]&&slides[i].classList.contains('dark');
-  pager.classList.toggle('on-dark',dark);
-  hint.classList.toggle('on-dark',dark);
-  try{localStorage.setItem(POS_KEY,String(i))}catch(e){}
-}
-// On a reload (Live Server save, or manual F5), jump back to the slide you were
-// on. A fresh open (new tab / typed URL) is nav type 'navigate' → starts at 1.
-(function restorePos(){
-  try{
-    const nav=performance.getEntriesByType('navigation')[0];
-    if(!nav||nav.type!=='reload')return;
-    const saved=parseInt(localStorage.getItem(POS_KEY)||'0',10);
-    if(saved>0)deck.scrollTop=saved*window.innerHeight;
-  }catch(e){}
+/* deck-kit:js:begin v1 */
+/* Mustry deck runtime for the CI/CD for Ignition decks. Do not edit inside the
+   deck-kit markers. Sources: mustry-design-system 6cffb20 (tokens.css, components/deck), mustry-cockpit e45c5c7 (quotation cover motion, files last changed in cf79d93). */
+/* Deck runtime: navigation, pager, progress, position restore, step
+   controllers, motion toggle and print readiness. Exposes window.deckKit.
+
+   Interactive slides: give the slide data-ctrl="<name>" and a .controls bar.
+   - data-ctrl="reveal" needs no code: elements with class "reveal" and
+     data-step="N" appear from step N on; the number of steps is the highest N.
+   - any other name: register it from the deck's own script with
+       deckKit.controller('<name>', {max: 4, render(step, api){ ... }});
+     The controller is bound to the slide whose data-ctrl matches, so slides
+     can be added, removed or reordered without re-indexing anything.
+   Step notes: inside .controls put <p class="step-note"> with one
+   <span data-at="N"> per step; the span with the highest N <= step shows.
+   Keys: up/down/PageUp/PageDown/space/Home/End change slides, left/right step
+   the current slide. Entering a slide resets its build to step 0. Print and
+   deckKit.showAll() put every controller on its last step. */
+(() => {
+  const deck = document.getElementById('deck');
+  const slides = [...deck.querySelectorAll(':scope > .slide')];
+  const root = document.documentElement;
+  const pad = n => String(n).padStart(2, '0');
+
+  /* ---- HUD, built here so decks only carry their slides ---------------- */
+  function make(tag, cls, html) { const n = document.createElement(tag); n.className = cls; if (html != null) n.innerHTML = html; document.body.appendChild(n); return n; }
+  const hud = make('div', 'hud', '<div class="bar"></div>');
+  const bar = hud.firstChild;
+  const pager = make('div', 'pager');
+  const hint = make('div', 'hint', slides.some(s => s.dataset.ctrl) ? 'Up and down: slides. Left and right: steps.' : 'Up and down: slides.');
+  const motionBtn = make('button', 'motion-toggle');
+  motionBtn.type = 'button';
+  motionBtn.setAttribute('data-motion', '');
+
+  /* ---- position ------------------------------------------------------- */
+  function curIndex() {
+    const y = deck.scrollTop + deck.clientHeight * 0.35;
+    let i = 0;
+    for (let k = 0; k < slides.length; k++) if (slides[k].offsetTop <= y) i = k;
+    return i;
+  }
+  function goTo(i) {
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    deck.scrollTo({ top: slides[i].offsetTop });
+  }
+  const POS_KEY = 'deckpos:' + location.pathname;
+  let lastIdx = -1;
+  function update() {
+    const i = curIndex();
+    bar.style.width = (slides.length > 1 ? i / (slides.length - 1) * 100 : 0) + '%';
+    pager.textContent = pad(i + 1) + ' / ' + pad(slides.length);
+    const dark = slides[i].classList.contains('dark');
+    [pager, hint, motionBtn].forEach(n => n.classList.toggle('on-dark', dark));
+    try { localStorage.setItem(POS_KEY, String(i)); } catch (e) {}
+    if (i !== lastIdx) {
+      if (slides[lastIdx]) slides[lastIdx].classList.remove('is-active');
+      slides[i].classList.add('is-active');
+      lastIdx = i;
+      const b = bound.get(slides[i]);
+      if (b && !printing) b.reset();
+    }
+  }
+  // On a reload (Live Server save, or F5) jump back to the slide you were on.
+  // A fresh open (new tab, typed URL) is navigation type 'navigate': slide 1.
+  (function restorePos() {
+    try {
+      const nav = performance.getEntriesByType('navigation')[0];
+      if (!nav || nav.type !== 'reload') return;
+      const saved = parseInt(localStorage.getItem(POS_KEY) || '0', 10);
+      if (saved > 0 && slides[saved]) deck.scrollTop = slides[saved].offsetTop;
+    } catch (e) {}
+  })();
+
+  /* ---- step controllers ------------------------------------------------ */
+  const bound = new Map();
+  let printing = false;
+  function bind(slide, ctrl) {
+    let step = 0;
+    let controls = slide.querySelector('.controls');
+    if (!controls) { controls = document.createElement('div'); controls.className = 'controls'; slide.appendChild(controls); }
+    let back = controls.querySelector('[data-act="back"]');
+    let next = controls.querySelector('[data-act="next"]');
+    let count = controls.querySelector('.step-count');
+    if (!back) { back = document.createElement('button'); back.className = 'btn'; back.type = 'button'; back.dataset.act = 'back'; back.textContent = 'Back'; controls.appendChild(back); }
+    if (!next) { next = document.createElement('button'); next.className = 'btn primary'; next.type = 'button'; next.dataset.act = 'next'; next.textContent = 'Next'; controls.appendChild(next); }
+    if (!count) { count = document.createElement('span'); count.className = 'step-count'; controls.appendChild(count); }
+    const notes = [...controls.querySelectorAll('.step-note [data-at]')];
+    const noteEl = controls.querySelector('.step-note');
+    const api = {
+      slide,
+      note(html) { if (noteEl) noteEl.innerHTML = html; },
+      get step() { return step; },
+    };
+    function sync(prev) {
+      back.disabled = step <= 0;
+      next.disabled = step >= ctrl.max;
+      count.textContent = step + ' / ' + ctrl.max;
+      slide.dataset.at = String(step);
+      let cur = null;
+      notes.forEach(n => { if (+n.dataset.at <= step && (!cur || +n.dataset.at >= +cur.dataset.at)) cur = n; });
+      notes.forEach(n => n.classList.toggle('cur', n === cur));
+      ctrl.render(step, api, prev);
+    }
+    function go(d) { const prev = step; step = Math.max(0, Math.min(ctrl.max, step + d)); if (step !== prev) { sync(prev); return true; } return false; }
+    function set(s) { const prev = step; step = Math.max(0, Math.min(ctrl.max, s)); sync(prev); }
+    back.addEventListener('click', () => go(-1));
+    next.addEventListener('click', () => go(1));
+    const b = { go, set, reset: () => set(0), last: () => set(ctrl.max), ctrl };
+    bound.set(slide, b);
+    printing ? b.last() : b.reset();
+    return b;
+  }
+  function revealCtrl(slide) {
+    const items = [...slide.querySelectorAll('.reveal[data-step]')];
+    const max = items.reduce((m, n) => Math.max(m, +n.dataset.step || 0), 0);
+    return { max, render(s) { items.forEach(n => n.classList.toggle('show', +n.dataset.step <= s)); } };
+  }
+  slides.filter(s => s.dataset.ctrl === 'reveal').forEach(s => bind(s, revealCtrl(s)));
+
+  /* ---- keyboard -------------------------------------------------------- */
+  window.addEventListener('keydown', e => {
+    const t = e.target;
+    if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+    if (t && t.tagName === 'BUTTON' && (e.key === ' ' || e.key === 'Enter')) return;
+    const i = curIndex();
+    const b = bound.get(slides[i]);
+    switch (e.key) {
+      case 'ArrowDown': case 'PageDown': case ' ': e.preventDefault(); goTo(i + 1); break;
+      case 'ArrowUp': case 'PageUp': e.preventDefault(); goTo(i - 1); break;
+      case 'Home': e.preventDefault(); goTo(0); break;
+      case 'End': e.preventDefault(); goTo(slides.length - 1); break;
+      // Left/right only step the current slide's build; they never change slides.
+      case 'ArrowRight': e.preventDefault(); if (b) b.go(1); break;
+      case 'ArrowLeft': e.preventDefault(); if (b) b.go(-1); break;
+    }
+  });
+  let frame = 0;
+  deck.addEventListener('scroll', () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); }, { passive: true });
+  window.addEventListener('resize', () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); });
+  setTimeout(() => { hint.style.opacity = '0'; }, 5000);
+
+  /* ---- motion: pause control, hidden tab, visibility (Cockpit presentation.ts) */
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  function setMotion(enabled) {
+    const active = enabled && !reduced.matches;
+    root.classList.toggle('motion', active);
+    motionBtn.textContent = reduced.matches ? 'Reduced motion' : active ? 'Pause motion' : 'Play motion';
+    motionBtn.disabled = reduced.matches;
+    motionBtn.setAttribute('aria-pressed', String(active));
+  }
+  setMotion(!reduced.matches);
+  motionBtn.addEventListener('click', () => setMotion(!root.classList.contains('motion')));
+  reduced.addEventListener('change', () => setMotion(!reduced.matches));
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => entries.forEach(en => { en.target.dataset.visible = String(en.isIntersecting); }));
+    document.querySelectorAll('.ambient').forEach(n => io.observe(n));
+  }
+  function visibility() { root.classList.toggle('motion-paused', document.hidden); }
+  document.addEventListener('visibilitychange', visibility);
+  visibility();
+
+  /* ---- print: every build on its last step ----------------------------- */
+  function showAll() { bound.forEach(b => b.last()); slides.forEach(s => s.querySelectorAll('.reveal').forEach(n => n.classList.add('show'))); }
+  function enterPrint() { printing = true; showAll(); }
+  function leavePrint() { printing = false; bound.forEach((b, s) => { if (s !== slides[curIndex()]) b.reset(); }); }
+  const printMq = matchMedia('print');
+  if (printMq.matches) printing = true;
+  printMq.addEventListener('change', e => (e.matches ? enterPrint() : leavePrint()));
+  window.addEventListener('beforeprint', enterPrint);
+  window.addEventListener('afterprint', leavePrint);
+
+  /* ---- small SVG helpers for diagram builders -------------------------- */
+  const NS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs, parent) { const n = document.createElementNS(NS, tag); for (const k in attrs || {}) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; }
+  function arrowMarker(svg, id, color) {
+    let defs = svg.querySelector('defs') || svgEl('defs', {}, svg);
+    const m = svgEl('marker', { id, viewBox: '0 0 10 10', refX: '8', refY: '5', markerWidth: '7', markerHeight: '7', orient: 'auto-start-reverse' }, defs);
+    svgEl('path', { d: 'M0,0 L10,5 L0,10 z', fill: color }, m);
+    return 'url(#' + id + ')';
+  }
+
+  window.deckKit = {
+    slides, goTo, current: curIndex, showAll, svgEl, arrowMarker,
+    // For tools: number of steps of slide i (0 when it has no build), and set its step.
+    steps(i) { const b = bound.get(slides[i]); return b ? b.ctrl.max : 0; },
+    setStep(i, s) { const b = bound.get(slides[i]); if (b) b.set(s); },
+    controller(name, ctrl) {
+      const slide = slides.find(s => s.dataset.ctrl === name);
+      if (!slide) { console.warn('deckKit: no slide with data-ctrl="' + name + '"'); return null; }
+      return bind(slide, ctrl);
+    },
+  };
+
+  /* ---- start ------------------------------------------------------------ */
+  update();
+  if (printing) showAll();
+  const fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  window.addEventListener('load', () => {
+    slides.forEach(s => { if (s.dataset.ctrl && !bound.has(s)) console.warn('deckKit: slide ' + (slides.indexOf(s) + 1) + ' has data-ctrl="' + s.dataset.ctrl + '" but no controller'); });
+    if (printing) showAll();
+    fontsReady.then(() => { root.dataset.printReady = 'true'; });
+  });
 })();
-deck.addEventListener('scroll',()=>{requestAnimationFrame(update)});
-window.addEventListener('keydown',e=>{
-  if(e.target.tagName==='BUTTON')return;
-  const i=curIndex();
-  // Up/Down (and PageUp/Down) always move between slides
-  if(e.key==='ArrowDown'||e.key==='PageDown'){e.preventDefault();deck.scrollTo({top:(i+1)*window.innerHeight})}
-  if(e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();deck.scrollTo({top:(i-1)*window.innerHeight})}
-  if(e.key==='Home'){deck.scrollTo({top:0})}
-  if(e.key==='End'){deck.scrollTo({top:slides.length*window.innerHeight})}
-  // Left/Right ONLY step the current slide's animation; they never change slides.
-  if(e.key==='ArrowRight'){e.preventDefault(); if(bound[i])bound[i].go(1);}
-  if(e.key==='ArrowLeft'){e.preventDefault(); if(bound[i])bound[i].go(-1);}
-});
-update();
-setTimeout(()=>{hint.style.transition='opacity .6s';hint.style.opacity='0'},5000);
 
-/* ============ per-slide step controllers ============ */
-/* Each controller: {max, render(step)}. Buttons call go(±1). */
-const controllers={};
-function bindControls(slideEl,ctrl){
-  let step=0;
-  const next=slideEl.querySelector('[data-act="next"]');
-  const back=slideEl.querySelector('[data-act="back"]');
-  function sync(){ if(back)back.disabled=step<=0; if(next)next.disabled=step>=ctrl.max; ctrl.render(step,{next,back}); }
-  function go(d){ const prev=step; step=Math.max(0,Math.min(ctrl.max,step+d)); if(step!==prev){sync();return true;} return false; }
-  if(next)next.addEventListener('click',()=>go(1));
-  if(back)back.addEventListener('click',()=>go(-1));
-  ctrl.reset=()=>{step=0;sync();};
-  sync();
-  return {go,reset:ctrl.reset};
-}
-
-/* ---------- slide 4 (index 3): image / dockerfile / container flow ---------- */
-(function(){
-  const slide=slides[3];
-  const items=[...slide.querySelectorAll('.reveal')];
-  const lead=slide.querySelector('#tri-step');
-  const texts=['Three words, one flow. Step through how they relate.',
-    '<b>The Dockerfile</b> is a committed text file: start FROM a base image, COPY our files in. It describes the image; it never runs.',
-    '<b>docker build</b> executes the recipe: every instruction becomes a read-only <b>layer</b>. The result is the image: a frozen filesystem snapshot plus metadata. <b>inductiveautomation/ignition:8.3.8</b> is one: the whole gateway install, frozen.',
-    '<b>docker run</b> starts a <b>container</b>: the image\'s layers, read-only, plus one thin <b>writable layer</b> for everything the process writes at runtime. This is what every compose since Lab 02 has done.',
-    'One image can run <b>many containers</b>, each with its own writable layer. Delete a container and only that layer dies: <b>the image is untouched</b>, ready to start a fresh copy. That is why replacing the container can be a deploy.'];
-  controllers.tri={max:4,render(s){ items.forEach(it=>it.classList.toggle('show',+it.dataset.step<=s)); lead.innerHTML=texts[s]; }};
+/* Cover dot field: verbatim from mustry-cockpit src/server/quotations/svg-wave-script.ts
+   (SVG_WAVE_SCRIPT, with its DOT_STREAM_PATHS and QUOTATION_ANIMATIONS values
+   inlined). WebGL deformation of the artwork; when the page is opened from
+   file:// the browser refuses the texture and the CSS light pass runs instead. */
+(() => {
+  const layer = document.querySelector('.cover-dotfield');
+  if (!layer || matchMedia('print').matches) return;
+  const cover = layer.closest('.cover-page');
+  const variants = {"cursor-light":0,"magnetic":1,"soft-tide":2,"light-sweep":3,"single-ripple":4,"dot-streams":5,"travelling-focus":6};
+  const defaultVariant = "dot-streams";
+  const canvas = document.createElement('canvas');
+  canvas.className = 'dot-wave-canvas';
+  canvas.setAttribute('aria-hidden', 'true');
+  const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: false, powerPreference: 'low-power' });
+  if (!gl) return;
+  const vertexSource = 'attribute vec2 position; varying vec2 uv; void main(){ uv=vec2(position.x*.5+.5,.5-position.y*.5); gl_Position=vec4(position,0.,1.); }';
+  const fragmentSource = "\n    precision highp float;\n    varying vec2 uv;\n    uniform sampler2D artwork;\n    uniform vec4 artRect;\n    uniform vec2 pointer;\n    uniform vec2 clickPoint;\n    uniform float aspect;\n    uniform float time;\n    uniform float presence;\n    uniform float variant;\n    uniform float clickAge;\n    uniform vec3 signals[12];\n    vec2 rotateDelta(vec2 d,float angle){\n      float c=cos(angle),s=sin(angle);\n      return vec2(c*d.x-s*d.y,s*d.x+c*d.y)-d;\n    }\n    void main(){\n      vec2 p=(uv-artRect.xy)/artRect.zw;\n      vec2 delta=(uv-pointer)*vec2(aspect,1.);\n      float reach=exp(-dot(delta,delta)*30.);\n      vec2 offset=vec2(0.);\n      float light=.74+.20*reach*presence;\n      if(variant>.5 && variant<1.5){\n        float magnetReach=exp(-dot(delta,delta)*24.);\n        offset=vec2(.004*sin(time*.32),.0025*cos(time*.26));\n        offset+=delta/vec2(aspect,1.)*magnetReach*.095*presence/artRect.zw;\n      } else if(variant>1.5 && variant<2.5){\n        offset=vec2(.003*sin(p.y*7.+time*.22),.002*sin(p.x*6.-time*.17));\n        offset+=delta/vec2(aspect,1.)*reach*.035*presence/artRect.zw;\n      } else if(variant>2.5 && variant<3.5){\n        float centre=fract(time/22.)*1.8-.4;\n        float band=(p.x*.35+p.y*.65-centre)/.14;\n        light+=.17*exp(-band*band);\n      } else if(variant>3.5 && variant<4.5){\n        vec2 fromClick=(uv-clickPoint)*vec2(aspect,1.);\n        float distance=length(fromClick);\n        float radius=clickAge*.20;\n        float band=(distance-radius)/.065;\n        float envelope=clamp(1.-clickAge/2.6,0.,1.);\n        float ring=exp(-band*band)*envelope;\n        offset=normalize(fromClick+vec2(.0001))/vec2(aspect,1.)*.003*sin((distance-radius)*36.)*ring/artRect.zw;\n        light+=.10*ring;\n      }\n      if(variant>4.5){\n        float local=1.-smoothstep(0.,.24,length(delta));\n        offset=rotateDelta(delta,1.9*local*local*presence)/vec2(aspect,1.)/artRect.zw;\n        if(variant>5.5){\n          vec2 current=(p-signals[0].xy)*vec2(1.12025,1.);\n          float field=1.-smoothstep(0.,.23,length(current));\n          offset+=rotateDelta(current,(.85+.25*sin(time*.8))*field*field)/vec2(1.12025,1.);\n        }\n      }\n      vec2 at=p+offset;\n      float inside=step(0.,at.x)*step(at.x,1.)*step(0.,at.y)*step(at.y,1.);\n      vec4 colour=texture2D(artwork,clamp(at,0.,1.));\n      if(variant>4.5){\n        if(variant<5.5){\n          float core=0.,halo=0.;\n          for(int i=0;i<12;i++){\n            vec2 d=(at-signals[i].xy)*vec2(1.12025,1.);\n            float distanceSquared=dot(d,d);\n            core+=exp(-distanceSquared/.000014)*signals[i].z;\n            halo+=exp(-distanceSquared/.000095)*signals[i].z*.16;\n          }\n          vec3 particles=vec3(.72,.91,1.)*core+vec3(.10,.48,.78)*halo;\n          gl_FragColor=vec4(colour.rgb*(.54+.16*reach*presence)+particles,\n            max(colour.a,clamp(core+halo,0.,1.))*inside);\n          return;\n        } else {\n          vec2 d=(at-signals[0].xy)*vec2(1.12025,1.);\n          float glow=exp(-dot(d,d)/.018);\n          light=.64+.50*glow+.18*reach*presence;\n        }\n      }\n      gl_FragColor=vec4(colour.rgb*light,colour.a*inside);\n    }\n";
+  function shader(kind, source){
+    const s=gl.createShader(kind); gl.shaderSource(s,source); gl.compileShader(s);
+    if (!gl.getShaderParameter(s,gl.COMPILE_STATUS)) { gl.deleteShader(s); return null; }
+    return s;
+  }
+  const vertex=shader(gl.VERTEX_SHADER,vertexSource), fragment=shader(gl.FRAGMENT_SHADER,fragmentSource);
+  if (!vertex || !fragment) return;
+  const program=gl.createProgram(); gl.attachShader(program,vertex); gl.attachShader(program,fragment); gl.linkProgram(program);
+  if (!gl.getProgramParameter(program,gl.LINK_STATUS)) return;
+  gl.useProgram(program); gl.deleteShader(vertex); gl.deleteShader(fragment);
+  const buffer=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const position=gl.getAttribLocation(program,'position'); gl.enableVertexAttribArray(position); gl.vertexAttribPointer(position,2,gl.FLOAT,false,0,0);
+  const uniforms={}; ['artwork','artRect','pointer','clickPoint','aspect','time','presence','variant','clickAge','signals[0]'].forEach(name=>uniforms[name]=gl.getUniformLocation(program,name));
+  const texture=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,texture);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.uniform1i(uniforms.artwork,0);
+  const routes=[[[0.979338,0.114358],[0.952518,0.11193],[0.925562,0.109874],[0.900762,0.111419],[0.873868,0.11253],[0.847423,0.118077],[0.822623,0.129688],[0.799935,0.14579],[0.782174,0.168281],[0.769382,0.194801],[0.76081,0.223301],[0.755827,0.25298],[0.754146,0.283039],[0.756961,0.315527],[0.759529,0.345476],[0.762115,0.375479],[0.760711,0.403386],[0.758322,0.43339],[0.752656,0.462821],[0.737272,0.487023],[0.709848,0.490286],[0.684303,0.482],[0.658283,0.473032],[0.633298,0.474791],[0.607943,0.484843],[0.584695,0.499966],[0.565296,0.52069],[0.552547,0.547072],[0.546167,0.576365],[0.544104,0.606424],[0.544991,0.636608],[0.550761,0.668509],[0.555879,0.697933],[0.562481,0.727144],[0.569416,0.756264],[0.575562,0.785744],[0.581031,0.815361],[0.586062,0.844944],[0.590755,0.8747],[0.595337,0.90449],[0.600159,0.934052],[0.605043,0.963822],[0.608935,0.993694]],[[0.97839,0.205343],[0.956693,0.20942],[0.93161,0.214035],[0.909581,0.228165],[0.889812,0.246157],[0.875364,0.26951],[0.866089,0.296106],[0.860461,0.323861],[0.857215,0.352237],[0.855349,0.38073],[0.857874,0.413921],[0.849117,0.437046],[0.84616,0.465401],[0.844048,0.493812],[0.841751,0.522332],[0.838518,0.550563],[0.836781,0.578946],[0.829662,0.606142],[0.809647,0.622734],[0.784329,0.626059],[0.759301,0.630799],[0.737832,0.646018],[0.717029,0.662451],[0.698215,0.681713],[0.682627,0.704253],[0.671265,0.72971],[0.663068,0.75674],[0.657581,0.784633],[0.654409,0.812892],[0.657396,0.845841],[0.658757,0.873907],[0.662175,0.901875],[0.666874,0.929982],[0.670243,0.958558],[0.668093,0.983063]],[[0.985983,0.33532],[0.971351,0.356562],[0.962636,0.381668],[0.958332,0.408181],[0.956638,0.435004],[0.956219,0.461862],[0.956028,0.48883],[0.955185,0.515819],[0.949143,0.540546],[0.938415,0.564492],[0.931665,0.590343],[0.926498,0.61669],[0.922187,0.643189],[0.918394,0.669813],[0.926036,0.701734],[0.920451,0.722977],[0.911693,0.748241],[0.894018,0.766233],[0.876854,0.785088],[0.862801,0.806972],[0.845686,0.825931],[0.828874,0.845179],[0.813496,0.865773],[0.800267,0.888394],[0.789151,0.912244],[0.779605,0.93697],[0.771593,0.962345],[0.765115,0.988306]]].map(points=>{
+    const distances=[0];
+    for(let i=1;i<points.length;i++) distances.push(distances[i-1]+Math.hypot((points[i][0]-points[i-1][0])*1.12025,points[i][1]-points[i-1][1]));
+    return {points,distances,total:distances[distances.length-1]};
+  });
+  const signalData=new Float32Array(36);
+  function pointOn(route,distance){
+    distance=Math.max(0,Math.min(route.total,distance));
+    let i=1;while(i<route.distances.length-1&&route.distances[i]<distance)i++;
+    const t=(distance-route.distances[i-1])/(route.distances[i]-route.distances[i-1]);
+    return [route.points[i-1][0]+(route.points[i][0]-route.points[i-1][0])*t,route.points[i-1][1]+(route.points[i][1]-route.points[i-1][1])*t];
+  }
+  function signalPositions(){
+    signalData.fill(0);
+    if(variant===5){
+      for(let r=0;r<3;r++){
+        const route=routes[r];
+        for(let packet=0;packet<2;packet++){
+          const phase=(time*(.078+r*.007)/route.total+[.32,.61,.82][r]+packet*.5)%1;
+          const fade=Math.min(1,phase/.055,(1-phase)/.055);
+          for(let tail=0;tail<2;tail++){
+            const distance=phase*route.total-tail*.022;
+            const point=pointOn(route,distance),index=(r*4+packet*2+tail)*3;
+            signalData[index]=point[0];signalData[index+1]=point[1];signalData[index+2]=distance<0?0:[1,.36][tail]*fade;
+          }
+        }
+      }
+    } else if(variant===6){
+      const route=routes[0],fraction=.28+.55*(.5-.5*Math.cos(time*.21));
+      const point=pointOn(route,fraction*route.total);signalData[0]=point[0];signalData[1]=point[1];signalData[2]=1;
+    }
+    gl.uniform3fv(uniforms['signals[0]'],signalData);
+  }
+  let ready=false, frame=0, last=0, time=4, width=1, height=1, printing=false;
+  let x=.75,y=.55,targetX=x,targetY=y,presence=0,targetPresence=0;
+  let variant=variants[layer.dataset.animation]??variants[defaultVariant], activeVariant=layer.dataset.animation;
+  time=variant===3?12:variant===6?8:0;
+  let clickTime=-99,clickX=.75,clickY=.55;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  function enabled(){return ready&&!printing&&!reduced.matches&&!document.hidden&&document.documentElement.classList.contains('motion')&&layer.dataset.visible!=='false';}
+  function draw(){
+    gl.uniform2f(uniforms.pointer,x,y); gl.uniform1f(uniforms.time,time); gl.uniform1f(uniforms.presence,presence);
+    gl.uniform1f(uniforms.variant,variant);gl.uniform2f(uniforms.clickPoint,clickX,clickY);gl.uniform1f(uniforms.clickAge,time-clickTime);
+    if(variant>=5)signalPositions();
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  }
+  function tick(now){
+    frame=0; if(!enabled()){last=0;return;}
+    const dt=last?Math.min((now-last)/1000,.05):0;last=now;time+=dt;
+    const ease=1-Math.exp(-dt*7);
+    x+=(targetX-x)*ease;y+=(targetY-y)*ease;presence+=(targetPresence-presence)*ease;
+    draw();
+    const settling=Math.abs(x-targetX)+Math.abs(y-targetY)+Math.abs(presence-targetPresence)>.0005;
+    const ripple=variant===4&&time-clickTime<2.6;
+    if(variant===1||variant===2||variant===3||variant>=5||settling||ripple) frame=requestAnimationFrame(tick);
+    else last=0;
+  }
+  function update(){
+    if(activeVariant!==layer.dataset.animation){
+      activeVariant=layer.dataset.animation;variant=variants[activeVariant]??variants[defaultVariant];
+      time=variant===3?12:variant===6?8:0;clickTime=-99;presence=0;targetPresence=0;
+      if(ready)draw();
+    }
+    if(layer.dataset.pointerMode==='off')targetPresence=0;
+    layer.classList.toggle('dot-wave-ready',ready&&!reduced.matches);
+    if(enabled()){if(!frame){last=0;frame=requestAnimationFrame(tick);}}
+    else {cancelAnimationFrame(frame);frame=0;last=0;}
+  }
+  function resize(){
+    const rect=layer.getBoundingClientRect();width=Math.max(1,rect.width);height=Math.max(1,rect.height);
+    const ratio=Math.min(devicePixelRatio||1,1.5);canvas.width=Math.round(width*ratio);canvas.height=Math.round(height*ratio);gl.viewport(0,0,canvas.width,canvas.height);
+    const mobile=width<=600, sourceRatio=162.377/144.948;
+    const artWidth=Math.min(width*(mobile?1.7:1.12),height*sourceRatio),artHeight=artWidth/sourceRatio;
+    const left=width*(mobile?1.6:1.15)-artWidth,top=height*(mobile?1.03:1.05)-artHeight;
+    gl.uniform4f(uniforms.artRect,left/width,top/height,artWidth/width,artHeight/height);gl.uniform1f(uniforms.aspect,width/height);
+    if(ready)draw();
+  }
+  cover.addEventListener('pointermove',event=>{
+    if(event.pointerType==='touch'||layer.dataset.pointerMode==='off'||!enabled())return;
+    const rect=layer.getBoundingClientRect();targetX=(event.clientX-rect.left)/width;targetY=(event.clientY-rect.top)/height;targetPresence=1;update();
+  },{passive:true});
+  cover.addEventListener('pointerleave',()=>{targetPresence=0;update();});
+  cover.addEventListener('click',event=>{
+    if(variant!==4||layer.dataset.pointerMode==='off'||!enabled()||event.target.closest('button,a,input,textarea,select,label'))return;
+    const rect=layer.getBoundingClientRect();clickX=(event.clientX-rect.left)/width;clickY=(event.clientY-rect.top)/height;clickTime=time;update();
+  });
+  document.addEventListener('visibilitychange',update);reduced.addEventListener('change',update);
+  new MutationObserver(update).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+  new MutationObserver(update).observe(layer,{attributes:true,attributeFilter:['data-visible','data-animation','data-pointer-mode']});
+  new ResizeObserver(resize).observe(layer);
+  addEventListener('beforeprint',()=>{printing=true;update();});addEventListener('afterprint',()=>{printing=false;update();});
+  canvas.addEventListener('webglcontextlost',()=>{ready=false;update();});
+  addEventListener('pagehide',()=>{cancelAnimationFrame(frame);frame=0;last=0;});
+  addEventListener('pageshow',update);
+  const image=new Image();
+  image.onload=()=>{
+    if(gl.isContextLost())return;
+    try {
+      const source=document.createElement('canvas');const textureWidth=Math.min(gl.getParameter(gl.MAX_TEXTURE_SIZE),innerWidth<=600?1024:2048);
+      source.width=textureWidth;source.height=Math.round(textureWidth*144.948/162.377);
+      source.getContext('2d').drawImage(image,0,0,source.width,source.height);
+      gl.bindTexture(gl.TEXTURE_2D,texture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);
+      layer.appendChild(canvas);ready=true;resize();update();
+    } catch {ready=false;update();}
+  };
+  const background=getComputedStyle(layer).getPropertyValue('--quotation-dot-art').trim();
+  image.src=background.slice(4,-1).replace(/^["']|["']$/g,'');
 })();
-
-/* ---------- slide 6 (index 5): layer cache stack ---------- */
-(function(){
-  const slide=slides[5];
-  const layers={};
-  slide.querySelectorAll('#lstack .layer').forEach(l=>layers[l.dataset.l]=l);
-  const order=['base','modl','scan','mjson','cfg','opc','proj']; // bottom → top
-  const lead=slide.querySelector('#lstack-step');
-  // steps: 0 = plain stack · 1 = all cached (rebuild, nothing changed)
-  // 2 = edit a project file → only proj busts · 3 = change a .modl → modl + everything after busts
-  const steps=[
-    {bustFrom:null, cached:false, t:'Seven layers, bottom-up. Docker reuses any layer whose inputs didn\'t change.'},
-    {bustFrom:null, cached:true,  t:'Rebuild with <b>nothing changed</b> → every layer is <b>CACHED</b>. The rebuild is near-instant.'},
-    {bustFrom:'proj', cached:true, t:'Edit a Perspective view → only the <b>projects/ layer rebuilds</b>. The modules layer and the slow check stay cached. Cheap.'},
-    {bustFrom:'modl', cached:true, t:'Change a <b>.modl</b> file → that layer <b>and everything after it</b> rebuilds, the 5-second check included. That\'s why the volatile stuff goes last.'}
+/* deck-kit:js:end */
+</script>
+<script>
+/* ---------- layer cache: which layers stay cached, which rebuild ---------- */
+(function () {
+  const slide = document.querySelector('[data-ctrl="lstack"]');
+  const layers = {};
+  slide.querySelectorAll('#lstack .ly').forEach(l => { layers[l.dataset.l] = l; });
+  const order = ['base', 'modl', 'scan', 'mjson', 'cfg', 'opc', 'proj']; // bottom to top
+  const steps = [
+    { bustFrom: null, cached: false, t: 'Seven layers, bottom-up. Docker reuses any layer whose inputs did not change.' },
+    { bustFrom: null, cached: true, t: 'Rebuild with <b>nothing changed</b>: every layer is <b>CACHED</b> and the rebuild is near-instant.' },
+    { bustFrom: 'proj', cached: true, t: 'Edit a Perspective view: only the <b>projects/ layer rebuilds</b>. The modules and the slow check stay cached.' },
+    { bustFrom: 'modl', cached: true, t: 'Change a <b>.modl</b> file: that layer <b>and everything after it</b> rebuilds, the 5-second check included.' }
   ];
-  controllers.lstack={max:steps.length-1,render(s){
-    const st=steps[s];
-    let busting=false;
-    order.forEach(k=>{
-      const el=layers[k];
-      el.classList.remove('cached','busted');
-      if(st.bustFrom){
-        if(k===st.bustFrom)busting=true;
-        el.classList.add(busting?'busted':'cached');
-      }else if(st.cached){
+  deckKit.controller('lstack', { max: steps.length - 1, render(s, api) {
+    const st = steps[s];
+    let busting = false;
+    order.forEach(k => {
+      const el = layers[k], bd = el.querySelector('.bd');
+      el.classList.remove('cached', 'busted');
+      if (st.bustFrom) {
+        if (k === st.bustFrom) busting = true;
+        el.classList.add(busting ? 'busted' : 'cached');
+      } else if (st.cached) {
         el.classList.add('cached');
       }
+      bd.textContent = el.classList.contains('busted') ? 'REBUILT' : el.classList.contains('cached') ? 'CACHED' : '';
     });
-    lead.innerHTML=st.t;
-  }};
+    api.note(st.t);
+  } });
 })();
-
-/* ---------- slide 11 (index 10): advantages/disadvantages (HTML reveal) ---------- */
-(function(){
-  const slide=slides[10];
-  const items=[...slide.querySelectorAll('.reveal')];
-  const lead=slide.querySelector('#mvr-step');
-  const texts=['Two ways to deliver the same files. Step through each side\'s trade-offs.',
-    'File-based: <b>no restarts and a fast inner loop</b>, but you own the copy-and-delete logic, and getting the deletes wrong means stale files.',
-    'Image-based: <b>a frozen artifact and no copy scripts</b>, but every deploy is a fresh gateway: externalize the state, and mind the boot window.',
-    'The conclusion: <b>same result either way</b>. Once the pipeline runs, you notice the failure modes, not the mechanism.'];
-  controllers.mvr={max:3,render(s){ items.forEach(it=>it.classList.toggle('show',+it.dataset.step<=s)); lead.innerHTML=texts[s]; }};
-})();
-
-/* ---------- slide 13 (index 12): the normal workflow map (HTML reveal) ---------- */
-(function(){
-  const slide=slides[12];
-  const items=[...slide.querySelectorAll('.reveal')];
-  const lead=slide.querySelector('#wmap-step');
-  const texts=['Follow one change from your keyboard to a running gateway.',
-    '<b>Your laptop.</b> You edit, commit, PR, merge: exactly the GitHub flow from every lab. Only kilobytes of code ever leave your machine.',
-    '<b>GitHub.</b> The merge to main triggers the deploy workflow, and a hosted runner builds the image from the Dockerfile: same trigger as Lab 04, different job contents.',
-    '<b>The registry.</b> The built image is pushed and <b>stored</b> here, under an immutable tag. This is the artifact shelf: every version stays, ready to deploy or roll back to.',
-    '<b>The plant.</b> The deploy job on the gateway\'s own machine pulls the tag and recreates the container. In the assignment you type exactly these last commands yourself: next slide.'];
-  controllers.wmap={max:4,render(s){ items.forEach(it=>it.classList.toggle('show',+it.dataset.step<=s)); lead.innerHTML=texts[s]; }};
-})();
-
-/* ---------- slide 12 (index 11): five-step pipeline (HTML reveal) ---------- */
-(function(){
-  const slide=slides[11];
-  const items=[...slide.querySelectorAll('.reveal')];
-  const lead=slide.querySelector('#pipe5-step');
-  const texts=['Step through the five moves of an image-based deploy.',
-    '<b>1 · Build.</b> The Dockerfile bakes projects, config and modules into layers.',
-    '<b>2 · Tag.</b> An immutable name for this exact build: a SHA or a version number.',
-    '<b>3 · Push.</b> Upload the image to a registry the target machine can reach.',
-    '<b>4 · Pull.</b> The machine that owns the gateway downloads that exact tag.',
-    '<b>5 · Run.</b> Recreate the container from the new image. That <b>is</b> the deploy.',
-    'In this lab: steps 1, 2 and 5, all local. A 2 GB image is nothing you want to upload from a course laptop.'];
-  controllers.pipe5={max:6,render(s){ items.forEach(it=>it.classList.toggle('show',+it.dataset.step<=s)); lead.innerHTML=texts[s]; }};
-})();
-
-/* ============ wire controllers to their slides + reset on entry ============ */
-const ctrlBySlide={3:'tri',5:'lstack',10:'mvr',11:'pipe5',12:'wmap'};
-const bound={};
-for(const idx in ctrlBySlide){const name=ctrlBySlide[idx];bound[idx]=bindControls(slides[idx],controllers[name]);}
-// reset a slide's animation when you scroll onto it
-let lastIdx=-1;
-function onView(){const i=curIndex();if(i!==lastIdx){lastIdx=i;if(bound[i])bound[i].reset();}}
-deck.addEventListener('scroll',()=>requestAnimationFrame(onView));
-onView();
 </script>
 </body>
 </html>
