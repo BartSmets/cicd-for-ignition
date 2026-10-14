@@ -442,7 +442,7 @@ docker run --rm --entrypoint grep \
         <div class="step"><div class="ix">1</div><div class="tx">Simulate the stray file, rebuild, and <span class="inlinecode">find</span> it in the image. It's there.</div></div>
         <div class="step"><div class="ix">2</div><div class="tx">Add <span class="inlinecode">**/*.gwbk</span> to <span class="inlinecode">.dockerignore</span>, with a one-line comment that says why. Rebuild and run the same <span class="inlinecode">find</span>: gone from the image, still on your disk.</div></div>
         <div class="step"><div class="ix">3</div><div class="tx">Delete the stray file. <span class="inlinecode">git status</span> must show only your two edits. Ship them the <b>GitHub flow</b> way: commit, push, open a PR into your fork, merge it on GitHub once <span class="inlinecode">lab05-ci.yml</span> is green, then pull <span class="inlinecode">main</span>.</div></div>
-        <div class="step"><div class="ix">4</div><div class="tx">Rebuild. The tag reads <span class="inlinecode">sha-&lt;short&gt;</span> without <span class="inlinecode">-dirty</span>, and <span class="inlinecode">&lt;short&gt;</span> is GitHub's merge commit: that clean image is what you deploy in Part 2. (The merge also fired <span class="inlinecode">lab05-deploy.yml</span>; only the stretch uses its image.)</div></div>
+        <div class="step"><div class="ix">4</div><div class="tx">Rebuild. The tag reads <span class="inlinecode">sha-&lt;short&gt;</span> without <span class="inlinecode">-dirty</span>, and <span class="inlinecode">&lt;short&gt;</span> is GitHub's merge commit: that clean image is what you deploy in Part 2. The merge also ran <span class="inlinecode">lab05-deploy.yml</span> on GitHub; only the stretch uses that image.</div></div>
       </div>
       <div>
         <div class="code"><pre><span class="cm"># 1: a stray backup in projects/</span>
@@ -463,9 +463,7 @@ git push -u origin feature/bake-a-change
 gh pr create --fill
 sleep 15 &amp;&amp; gh pr checks --watch &amp;&amp; gh pr merge --merge
 git switch main &amp;&amp; git pull
-
-<span class="cm"># 4: the clean build Part 2 deploys</span>
-scripts/build-image.sh</pre></div>
+scripts/build-image.sh    <span class="cm"># 4: the clean build Part 2 deploys</span></pre></div>
         <div class="goal good-g" style="margin-top:18px">
           <span class="badge">Done when</span>
           <p>Your note is in the image (proven with <span class="inlinecode">--entrypoint</span>), <span class="inlinecode">*.gwbk</span> is not (proven with <span class="inlinecode">find</span> before and after), and your latest tag has <b>no <span class="inlinecode">-dirty</span></b>.</p>

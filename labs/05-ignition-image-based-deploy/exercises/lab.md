@@ -469,7 +469,9 @@ Three directions, pick by appetite:
      test runs whatever modules the baked `modules.json` enables; a scan in Lab 04 could
      never do this. The local gateway reads the same file through its bind mount: restart
      it (`docker compose restart ignition-local`, modules only load at boot) and SFC runs
-     there too.
+     there too. It also writes SFC's default settings under
+     `services/config/resources/core/com.inductiveautomation.sfc/`: commit them together
+     with `modules.json`, so the image carries the same settings local runs with.
    - **A migrations folder:** create
      `db-migrations/0001_create_downtime_log.up.sql` with a simple
      `CREATE TABLE`, add a `COPY db-migrations/ /db-migrations/` layer, rebuild,
