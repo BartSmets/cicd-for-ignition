@@ -98,7 +98,9 @@ x-ignition-resources: &ignition-resources
   deploy:
     resources:
       limits:
-        memory: 1G
+        # Heap (-m 1024) plus the JVM's own memory: a 1G cap left the
+        # gateway no room above its heap.
+        memory: 1536M
       reservations:
         memory: 512M
   logging:

@@ -35,7 +35,7 @@ The offline copy is the same deck: open it from your clone if the link doesn't l
 
 ## Prerequisites
 
-- **≥ 8 GB free RAM for Docker** — three Ignition gateways at 1 GB each, plus TimescaleDB and Docker overhead.
+- **≥ 8 GB free RAM for Docker** — three Ignition gateways (1 GB heap each, capped at 1.5 GB), plus TimescaleDB and Docker overhead.
 - **Your fork of the course repo** (`<your-username>/cicd-for-ignition`, the same fork every lab uses), with `gh` pointed at it (`gh repo set-default <you>/cicd-for-ignition`). You build and deploy on your machine, but your changes reach `main` the GitHub flow way: a PR into your fork, merged on GitHub, then `git pull`. Each merge also fires `lab05-deploy.yml`, which publishes the image to **your own** GHCR namespace (`ghcr.io/<your-fork-owner>/cicd-lab-05-ignition`), never to Mustry's; only the stretch challenge pulls it. **Enable Actions in your fork** if you haven't yet (once per fork): forks ship with workflows disabled: open the *Actions* tab and click the green "I understand my workflows, go ahead and enable them" button. No PAT needed.
 - _Background:_ [Lab 04](../04-ignition-file-based-deploy/) sets up the Ignition stack and the file-based pattern this lab contrasts with. It helps but isn't required — this lab stands alone.
 - _No extra registry account:_ the CI publishes to **GitHub Container Registry (GHCR)** under your fork, authenticated with the workflow's built-in `GITHUB_TOKEN`. The **local** scripts (`build-image.sh`/`deploy-image.sh`) need no registry at all — they build and run images on your machine.
