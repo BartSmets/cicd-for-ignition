@@ -157,7 +157,7 @@ footer{border-top:1px solid var(--line2);padding-top:18px;color:var(--txt-faint)
 
     <div class="callout">
       <div class="lbl">Scale</div>
-      <p>This repo tracks <b>495</b> resource.json files. <b>414</b> of them carry those junk fields. Open the Designer,
+      <p>This lab tracks <b>472</b> resource.json files. <b>409</b> of them carry those junk fields. Open the Designer,
       save a few views, and you get a pile of modified files where nothing real changed.</p>
     </div>
   </section>
@@ -284,14 +284,6 @@ scripts/clean-ignition-resource-churn.sh <span class="hl">--apply</span>      <s
         win.</div></div>
     </div>
 
-    <div class="callout warn">
-      <div class="lbl">Why the script uses --no-textconv internally</div>
-      <p>The script has to ask git whether a file is staged. That check must pass
-      <code class="i">--no-textconv</code>, otherwise git runs Tool 1 first, the junk fields are stripped, both sides
-      compare equal, and git reports the file as <b>not staged at all</b>.</p>
-      <p>Tool 1 will happily hide the junk from the code written to catch it. Same rule as before, one level deeper: an
-      empty diff never means an unchanged file.</p>
-    </div>
   </section>
 
   <!-- 6 -->

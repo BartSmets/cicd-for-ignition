@@ -27,7 +27,7 @@ You should leave this lab able to:
 scripts/setup.sh    # safe to re-run: it keeps test/production on the image they run
 ```
 
-You'll need Docker with Compose v2 and ~8 GB free RAM. You build and deploy entirely on your machine, but your changes reach `main` the GitHub flow way, like in every lab: a feature branch, a PR into your fork, merged on GitHub, then `git pull`. So `gh` must point at your fork: `gh repo set-default <you>/cicd-for-ignition`, the one-time course setup step (check with `gh repo set-default --view`). No PAT is needed. If you'd like to read ahead: [`docs/dockerfile-anatomy.md`](../docs/dockerfile-anatomy.md).
+You'll need Docker with Compose v2 and ~8 GB free RAM. You build and deploy on your machine; your changes reach `main` the GitHub flow way: a feature branch, a PR into your fork, merged on GitHub, then `git pull`. If you'd like to read ahead: [`docs/dockerfile-anatomy.md`](../docs/dockerfile-anatomy.md).
 
 > **A bare `docker compose up -d` resets test and production.** The compose file runs the
 > base image (an empty gateway) on test/production unless `IGNITION_TEST_IMAGE` /
@@ -50,7 +50,7 @@ The instructor walks the two files that define the image; build and run along on
 
 In Lab 04 the gateway was a long-lived, *mutable* thing: you copied files into its `data/` directory and asked it to scan. In image-based deploy the gateway is *immutable*: the deployable state is frozen into an image, and you deploy by replacing the whole container.
 
-Both approaches deliver the same files to the same paths and achieve the same result. What changes is the trade-offs: file-based keeps the gateway alive (no restarts, fast inner loop) but you own the copy-and-delete logic; image-based gives you a frozen, versioned artifact with no copy scripts, but every deploy is a fresh gateway boot. This part is about experiencing the image side of that trade.
+Both approaches deliver the same files to the same paths and achieve the same result. File-based keeps the gateway alive (no restarts, fast inner loop) but you own the copy-and-delete logic; image-based gives you a frozen, versioned artifact with no copy scripts, but every deploy is a fresh gateway boot.
 
 ### Walk the Dockerfile
 
@@ -108,8 +108,6 @@ docker logs -f demo
 
 No `./projects` mount, no scan call: the project showed up because it's *inside the image*. The `-d` runs it detached, so Ctrl-C only leaves the logs; stop the gateway with `docker stop demo` (the `--rm` cleans it up). The last argument tells the gateway where the baked third-party modules live; leave it out and those modules never load (the log says `Error adding historian`, because the TimescaleDB historian is one of them).
 
-> **Why no `--user` flag?** The Dockerfile copies everything with `--chown=2003:0`, which is the image's own `ignition` user. A plain `COPY` would make the baked files root-owned, and the gateway (which does not run as root) would FAULT on boot with `unable to create resource dir … /.resources` because it cannot create its runtime dirs under `config/`. Getting the ownership right at build time is why the container needs no special privileges at run time. The `IGNITION_EDITION` + `GATEWAY_ADMIN_USERNAME` vars let it auto-commission instead of waiting on the setup wizard.
-
 ## We-do (20 min)
 
 Together, build and dissect the image.
@@ -149,34 +147,7 @@ Together, build and dissect the image.
    The tag must read `sha-<short>` without `-dirty`. Otherwise the dummy file and the stray
    newline ship in every later build, and Part 2 deploys an image no commit describes.
 
-3. **See what `.dockerignore` kept out.** Your *first* build measured it: near the top of its
-   output, the `transferring context` line said about 5 MB. Compare with the folder on disk:
-   ```bash
-   du -sh .     # about 11 MB once the local gateway has run
-   du -sh . projects/.resources services/config/resources/.resources slides docs scripts
-   ```
-   The gateway's own `.resources/` blob stores (about 2.3 MB together) and the lab material
-   (`slides/`, `docs/`, `scripts/`) are excluded. The rest of the gap is `du` counting whole
-   disk blocks for each of the ~1,400 small files, which a tarball doesn't.
-   `.git` isn't in this folder at all: in the course monorepo it sits at the repo root
-   (`../../.git`), outside the build context, so it never reaches Docker.
-   (Later builds print a much smaller `transferring context`: BuildKit only sends what changed
-   since the previous build, so that line is no gauge for the context size.)
-   Want the definitive list of what Docker *can* see? Dump the context with a throwaway probe
-   build and list it:
-   ```bash
-   docker build -q -t ctx-probe -f- . <<'EOF'
-   FROM busybox
-   COPY . /ctx
-   EOF
-   docker run --rm ctx-probe find /ctx -maxdepth 1
-   docker run --rm ctx-probe du -sh /ctx    # the whole context, about 8 MB
-   ```
-   Only `projects/`, `services/`, and `third-party-modules/`: exactly what the Dockerfile COPYs.
-   (Lint and editor config such as `.yamllint.yml` and `rule_config.json` is in `.dockerignore`
-   too: CI and your editor use it, the gateway never does.)
-
-4. **Explore the image, not the repo.** Open the image in Docker Desktop (*Images →
+3. **Explore the image, not the repo.** Open the image in Docker Desktop (*Images →
    `cicd-lab-05-ignition` → Files*), or whatever image browser you prefer, and find all four
    things the Dockerfile COPYed. Three live under `/usr/local/bin/ignition/data/`: `projects/`,
    `config/` and `modules.json`; the fourth is `/third-party-modules` at the root. Note what's
@@ -266,12 +237,7 @@ You're finished with part 1 when:
 
 ## Stretch challenge `[OPTIONAL]`
 
-- **Shrink the context.** Measure it with the probe image from the we-do
-  (`docker run --rm ctx-probe du -sh /ctx`), add more to `.dockerignore`, rebuild the probe and
-  measure again. (The `transferring context` line of a normal build won't show the drop:
-  BuildKit only sends changes after the first build.)
 - **`docker history --no-trunc`.** Find which layer is largest. Is it the base image, the modules, or your project? What would you do differently if the project were 500 MB of assets?
-- **Multi-stage thinking.** Our Dockerfile is single-stage because the IA base image is already the runtime. When *would* you want a builder stage? (Hint: compiling a custom module from source, or running a project linter that needs tools you don't want in the final image.)
 
 ## Debrief (10 min)
 
@@ -287,16 +253,10 @@ You're finished with part 1 when:
 **Timing:** 15 min instructor demo · 40 min you-do · 10 min debrief
 
 Every deploy in this part runs on your own machine, **and you type the deploy
-commands yourself, no script**. In a real setup this part is automated by the
-same GitHub Actions you built in Lab 04: a merge to `main` fires `lab05-deploy.yml`,
-a tag fires `lab05-release.yml`; only the steps inside the jobs change (build + push +
-pull + recreate instead of copy + scan). Your merges do reach GitHub (GitHub flow,
-as in Part 1), so `lab05-deploy.yml` builds each of them on your fork too, but
-you deploy your own local build of the same commit. We don't push images from your
-laptop: a gateway image is ~2 GB, and uploading that from a course laptop is not a
-good use of your hour, the transport isn't the lesson. Every command below is a line
-the workflow would run; your local Docker image store plays the role of the
-registry.
+commands yourself, no script**. Your merges still reach GitHub (GitHub flow, as in
+Part 1), so `lab05-deploy.yml` builds each of them on your fork too, but you deploy
+your own local build of the same commit. Your local Docker image store plays the
+role of the registry.
 
 ## Pre-flight
 
@@ -390,12 +350,7 @@ rollback point in Part 2.3.
 - [ ] Your image store holds **two immutable `:sha` tags** without `-dirty`, one per build, each traceable to its commit via the revision label.
 - [ ] You rolled test back to the older tag and verified the old view is live again.
 - [ ] You checked that the historian's tables appeared with the first deploy and survived the later ones (`psql … -c '\dt'`), and can say why.
-- [ ] You can name the two steps a production pipeline adds between your build and your run (push + pull), and why we skipped them today.
-
-> **Fresh gateway alert.** Each deploy gave test a brand-new gateway: new internal
-> DB, new trial clock, gone are any UI-made edits. If that surprised you, good:
-> that's the "fresh gateway" disadvantage from the teaching, experienced
-> first-hand.
+- [ ] You can name the two steps a production pipeline adds between your build and your run (push + pull).
 
 ## Stretch challenge `[OPTIONAL]`
 
@@ -404,15 +359,11 @@ Three directions, pick by appetite:
 1. **Let GitHub build the image for you.** In part 2 you built locally and deployed
    by hand. The workflows in this repo move the **build** half to CI, GitHub flow:
    merge to `main` → an image is built and pushed, tag → that image is promoted.
-   The deploy half stays manual, exactly like you did it. Needs your fork
-   with Actions enabled (its *Actions* tab lists the workflows). Also a great
-   take-home.
-   0. **Can Docker pull from your GHCR?** The first push creates the package
-      `cicd-lab-05-ignition` under your account, linked to your fork. From a public fork it is
-      normally public, and the pull in step 2 needs no login. If that pull says `denied` (a
-      private fork, or an older private package with the same name), log Docker in with a token
-      that may read packages. Your `gh` token can't by default; add the scope once (it opens
-      your browser), then log in with it:
+   The deploy half stays manual, exactly like you did it.
+   0. **Only if the pull in step 2 says `denied`:** the first push created the package
+      `cicd-lab-05-ignition` under your account. From a public fork it is normally public and
+      needs no login. If it is private, log Docker in with a token that may read packages
+      (add the scope once, it opens your browser):
       ```bash
       gh auth refresh -h github.com -s read:packages
       gh auth token | docker login ghcr.io -u <your-user> --password-stdin
@@ -443,10 +394,9 @@ Three directions, pick by appetite:
       git tag lab05-v0.1.0 && git push origin lab05-v0.1.0
       ```
       `lab05-release.yml` checks that `:test` was built from that commit, then re-tags it to
-      `:v0.1.0` + `:production`: **no rebuild**. (The `lab05-` prefix keeps the tag from firing
-      other labs' release workflows in the shared course repo; the image gets the bare
-      `:v0.1.0`.) Deploy it to production (:8090) the same way, with `IGNITION_PRODUCTION_IMAGE`.
-   4. The payoff: prove test and production run the **same image bytes**
+      `:v0.1.0` + `:production`: **no rebuild**. Deploy it to production (:8090) the same way,
+      with `IGNITION_PRODUCTION_IMAGE`.
+   4. Prove test and production run the **same image bytes**
       (`{{.Image}}` is the sha256 of the image a container runs):
       ```bash
       docker inspect -f '{{.Image}}' lab05-ignition-test
@@ -457,18 +407,15 @@ Three directions, pick by appetite:
       mile (a machine that owns the gateway, picking up the tag on its own) is
       what Lab 06 and Lab 07 automate.
 
-2. **Go deeper on the image:** shrink the build context with the probe image,
-   do layer forensics with `docker history --no-trunc`, or
-   read the no-push `docker build` smoke-test job that `lab05-ci.yml` already
-   runs on every PR: why does it build without pushing, and what would a
-   broken Dockerfile look like in the PR's checks?
+2. **Go deeper on the image:** do layer forensics with `docker history --no-trunc`,
+   or read the no-push `docker build` job that `lab05-ci.yml` runs on every PR:
+   what would a broken Dockerfile look like in the PR's checks?
 3. **A first taste of Lab 06:** bake more kinds of cargo, the way the
    production image from the teaching does:
    - **A module:** the SFC module ships with the base image but `services/modules.json`
      keeps it off. Set `com.inductiveautomation.sfc` to `"onStartup": "enabled"`, rebuild,
-     deploy to test, and find it running under *Platform → Modules*. That works because
-     test runs whatever modules the baked `modules.json` enables; a scan in Lab 04 could
-     never do this. The local gateway reads the same file through its bind mount: restart
+     deploy to test, and find it running under *Platform → Modules*: test runs whatever
+     modules the baked `modules.json` enables. The local gateway reads the same file through its bind mount: restart
      it (`docker compose restart ignition-local`, modules only load at boot) and SFC runs
      there too. It also writes SFC's default settings under
      `services/config/resources/core/com.inductiveautomation.sfc/`: commit them together

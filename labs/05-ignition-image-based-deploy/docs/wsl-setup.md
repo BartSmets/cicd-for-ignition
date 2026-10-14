@@ -12,13 +12,13 @@ If you are on macOS or Linux, you can skip this page.
 ```bash
 # Good — the Linux side, fast and permission-clean
 mkdir -p ~/mustry-academy && cd ~/mustry-academy
-gh repo fork Mustry-Academy/cicd-for-ignition --clone
+git clone git@github.com:<you>/cicd-for-ignition.git   # your fork
 cd cicd-for-ignition
 code .            # opens VS Code connected to WSL
 
 # Bad — the Windows side, causes permission errors
 cd /mnt/c/Users/<you>/Documents
-gh repo fork Mustry-Academy/cicd-for-ignition --clone
+git clone git@github.com:<you>/cicd-for-ignition.git
 ```
 
 Anything under `/mnt/c`, `/mnt/d` and friends is your Windows disk seen through
