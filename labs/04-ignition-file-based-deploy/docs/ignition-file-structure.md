@@ -237,9 +237,8 @@ tied to *this specific gateway instance* and must **not** be copied across gatew
 would clone one gateway's identity onto another. Treat the `local` scope as belonging to the box,
 like operational state, even though it lives under `config/`.
 
-> **This lab deliberately tracks a throwaway seed identity** under `config/local` and
-> `resources/local` so fresh clones boot; `.gitignore` stops new churn. In a real repo, never
-> commit them.
+> This repo tracks a seed copy of `config/local` and `config/resources/local` so a fresh clone
+> boots; `.gitignore` stops new churn. Never do that in a real repo.
 
 ## The two questions to ask
 
@@ -252,27 +251,53 @@ These two questions correctly classify ~99% of `data/` contents.
 
 ## Minimal example for the lab
 
-The lab's solo work suggests creating a project on disk manually if you don't have the Designer installed. In 8.3 a view must live under its owning module's namespace **and** carry a sibling `resource.json` manifest, or the gateway won't register it. Minimal viable structure:
+No Designer? Write the view on disk instead (Part 1 solo, Part 2.3). In 8.3 a view must live under its owning module's namespace **and** carry a sibling `resource.json` manifest, or the gateway won't register it. This creates `sample-project` with one view, `pages/Hello`, as its start page (`/`). Run it from the lab folder:
 
 ```bash
-mkdir -p "projects/sample/com.inductiveautomation.perspective/views/Hello"
-cat > projects/sample/project.json <<'EOF'
-{"title":"Sample","description":"Demo project","enabled":true,"inheritable":false,"parent":""}
-EOF
-cat > "projects/sample/com.inductiveautomation.perspective/views/Hello/view.json" <<'EOF'
+P=projects/sample-project
+V=$P/com.inductiveautomation.perspective
+mkdir -p "$V/views/pages/Hello" "$V/page-config"
+# the project itself (skip if you created it in the gateway UI)
+[ -f "$P/project.json" ] || cat > "$P/project.json" <<'JSON'
+{"title":"sample-project","description":"","enabled":true,"inheritable":false,"parent":""}
+JSON
+# the view: one label
+cat > "$V/views/pages/Hello/view.json" <<'JSON'
 {
   "custom": {},
   "params": {},
   "props": { "defaultSize": { "height": 600, "width": 800 } },
-  "root": { "type": "ia.container.coord", "version": 0 }
+  "root": {
+    "type": "ia.container.flex",
+    "version": 0,
+    "meta": { "name": "root" },
+    "props": { "direction": "column" },
+    "children": [
+      {
+        "type": "ia.display.label",
+        "version": 0,
+        "meta": { "name": "Label" },
+        "position": { "basis": "40px" },
+        "props": { "text": "Hello from sample-project" }
+      }
+    ]
+  }
 }
-EOF
-cat > "projects/sample/com.inductiveautomation.perspective/views/Hello/resource.json" <<'EOF'
+JSON
+cat > "$V/views/pages/Hello/resource.json" <<'JSON'
 {"scope":"G","version":1,"restricted":false,"overridable":true,"files":["view.json"],"attributes":{}}
-EOF
+JSON
+# the page config: open pages/Hello at /
+cat > "$V/page-config/config.json" <<'JSON'
+{"pages": {"/": {"title": "Hello", "viewPath": "pages/Hello"}}}
+JSON
+cat > "$V/page-config/resource.json" <<'JSON'
+{"scope":"G","version":1,"restricted":false,"overridable":true,"files":["config.json"],"attributes":{}}
+JSON
+scripts/scan.sh
 ```
 
-After triggering a scan against the local gateway (`scripts/scan.sh`), the `sample` project shows up in the gateway. It won't look like much — that's the point. (Note: `scope` `G` = gateway/global; the manifest is what makes the resource visible to the scan.)
+Then open <http://localhost:8088/data/perspective/client/sample-project>: the page shows *Hello from sample-project*. For a view in an existing project (the Part 1 solo), only the `view.json` and `resource.json` part applies: put them under that project's `com.inductiveautomation.perspective/views/pages/<Name>/`. (`scope` `G` = gateway/global; the manifest is what makes the resource visible to the scan.)
 
 ## What changes when
 

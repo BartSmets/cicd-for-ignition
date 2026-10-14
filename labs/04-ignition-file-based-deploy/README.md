@@ -22,10 +22,8 @@ The offline copy is the same deck: open it from your clone if the link doesn't l
 
 ## Prerequisites
 
-- Actions enabled on your fork (`<you>/cicd-for-ignition`): the self-hosted runner registers against your fork, not the course repo
-- A GitHub Personal Access Token with `repo` scope — the bundled runner uses it to auto-register against your fork. Create it at [github.com/settings/tokens](https://github.com/settings/tokens) (Generate new token → classic → tick `repo`) and put it in `.env` as `RUNNER_GITHUB_PAT` (the root `course-setup.sh` asks for it once and writes it there for you). You make it once here; **Lab 06 reuses the same token** (Lab 05 has no runner). It never leaves `.env`.
+- The course setup done (`./course-setup.sh` at the repo root, before Day 1): Actions on for your fork, `gh` pointed at it, and `RUNNER_REPO_URL` plus your `repo`-scope PAT `RUNNER_GITHUB_PAT` in this lab's `.env`. The bundled runner uses them to register against your fork; Lab 06 uses the same token. The PAT never leaves `.env`.
 - On your fork, *Settings → Actions → General → Approval for running fork pull request workflows from contributors* set to **Require approval for all external contributors**. Your fork is public and the bundled runner holds the Docker socket, so no outside PR may start a job on it without your approval (see [`exercises/lab.md`](./exercises/lab.md), Pre-flight).
-- The [GitHub CLI](https://cli.github.com/) (`gh`), authenticated (`gh auth status`) and pointed at your fork (`gh repo set-default <you>/cicd-for-ignition`): used for the PR, the environments and their secrets
 - **≥ 8 GB free RAM for Docker** — three Ignition gateways (1 GB heap each, capped at 1.5 GB), plus TimescaleDB, the runner, and the usual Docker Desktop overhead
 - _Optional but recommended:_ pass the [preflight](../../preflight/) checks so unrelated env issues don't bite you mid-lab
 - _Background reading:_ [Lab 03](../03-github-actions/) covers the GitHub Actions fundamentals this lab builds on, but this lab stands alone — the self-hosted runner ships in `docker-compose.yaml`, no manual `docker run` of `myoung34/github-runner` required
@@ -42,7 +40,6 @@ The offline copy is the same deck: open it from your clone if the link doesn't l
 
 ```bash
 cd ~/mustry-academy/cicd-for-ignition/labs/04-ignition-file-based-deploy
-[ -f .env ] || cp .env.example .env   # no-op if course-setup.sh already created it
 scripts/setup.sh    # brings up the stack, waits for all three gateways, prints credentials
 ```
 
@@ -112,7 +109,7 @@ labs/04-ignition-file-based-deploy/
 │   │   └── resources/                  ← <scope>/<module-id>/<resource-type>/<name>/{config.json,resource.json}
 │   └── modules.json                    ← module enablement (bind-mounted into `local`; test/production boot from their own copy in gateways/)
 ├── third-party-modules/                ← bundled .modl binaries the gateways install at startup
-└── tests/                              ← validation scaffold (see scripts/validate.sh)
+└── tests/                              ← validation tests (see scripts/validate.sh)
 ```
 
 The workflows live at the repo root, because GitHub only runs workflows from there:
