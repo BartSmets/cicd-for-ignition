@@ -70,7 +70,9 @@ python3.12 -m venv .venv && source .venv/bin/activate   # Linux: python3 if it i
 # (ign-lint needs Python 3.10-3.13: macOS's python3 is 3.9, so name python3.12;
 #  the venv also avoids pip's PEP 668 error on Homebrew/Ubuntu 24.04 Python)
 pip install ign-lint==0.6.1
-ign-lint --config rule_config.json --files "projects/**/view.json"   # Ignition-native linting of the Perspective views
+# Ignition-native linting of the Perspective views. It runs from the repo root, like CI:
+# rule_config.json names the pylint config (.config/.ignition-pylintrc) repo-root-relative.
+(cd ../.. && ign-lint --config labs/03-github-actions/rule_config.json --files "labs/03-github-actions/projects/**/view.json")
 ```
 
 The other linters Part 1 introduces (install separately — see [`exercises/lab.md`](./exercises/lab.md)):
@@ -113,6 +115,8 @@ labs/03-github-actions/
 ├── .yamllint.yml                      ← yamllint config (its documented mute is read in Part 1)
 ├── .pre-commit-config.yaml            ← Part 1 stretch target
 ├── rule_config.json                   ← ign-lint rule configuration
+├── .config/
+│   └── .ignition-pylintrc             ← pylint config ign-lint uses for scripts inside views
 ├── .github/
 │   └── actionlint.yaml                ← declares the self-hosted runner label
 ├── scripts/

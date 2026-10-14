@@ -86,6 +86,8 @@ labs/04-ignition-file-based-deploy/
 ├── .yamllint.yml                       ← yamllint config
 ├── .shellcheckrc                       ← lets shellcheck resolve the sourced scripts/lib.sh
 ├── rule_config.json                    ← ign-lint (Perspective view) rules
+├── .config/
+│   └── .ignition-pylintrc              ← pylint config ign-lint uses for scripts inside views
 ├── .github/
 │   └── actionlint.yaml                 ← declares the self-hosted `lab04` runner label
 ├── exercises/

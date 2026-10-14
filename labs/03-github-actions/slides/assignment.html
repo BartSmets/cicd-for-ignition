@@ -372,9 +372,9 @@ shellcheck scripts/*.sh     <span class="cm"># shell-script bugs</span>
 <span class="cm"># actionlint: Actions workflows (repo root) · flags outdated actions</span>
 actionlint -config-file .github/actionlint.yaml \
   ../../.github/workflows/lab03-*.yml
-<span class="cm"># ign-lint: Perspective views, the one to linger on:</span>
-ign-lint --config rule_config.json \
-  --files <span class="cmd2">"projects/**/view.json"</span>
+<span class="cm"># ign-lint: Perspective views, the one to linger on (repo root)</span>
+(cd ../.. &amp;&amp; ign-lint --config labs/03-github-actions/rule_config.json \
+  --files <span class="cmd2">"labs/03-github-actions/projects/**/view.json"</span>)
 scripts/validate.sh         <span class="cm"># JSON + code.py parses</span></pre></div>
         <div class="goal warn-g" style="margin-top:18px">
           <span class="badge">Escape hatch</span>
@@ -499,7 +499,7 @@ jobs:
     <div class="cols2">
       <div class="steps">
         <div class="step"><div class="ix p">0</div><div class="tx"><b>validate:</b> one step, <span class="inlinecode">run: scripts/validate.sh</span>. Every <span class="inlinecode">run:</span> step starts in the lab folder, thanks to <span class="inlinecode">defaults.run.working-directory</span>.</div></div>
-        <div class="step"><div class="ix p">0</div><div class="tx"><b>lint:</b> <span class="inlinecode">setup-python</span> 3.12 (ign-lint needs 3.10+), the <b>same pip pins</b> as your venv, then one step per linter: yamllint, actionlint, shellcheck, ign-lint.</div></div>
+        <div class="step"><div class="ix p">0</div><div class="tx"><b>lint:</b> <span class="inlinecode">setup-python</span> 3.12 (ign-lint needs 3.10+), the <b>same pip pins</b> as your venv, then one step per linter: yamllint, actionlint, shellcheck, ign-lint (from the <b>repo root</b>, as in Part 1).</div></div>
         <div class="step"><div class="ix p">0</div><div class="tx"><b>actionlint is a <span class="inlinecode">uses:</span> step</b>, not <span class="inlinecode">run:</span>: it isn't installed on <span class="inlinecode">ubuntu-latest</span>, so <span class="inlinecode">run: actionlint</span> fails with <i>command not found</i>. <span class="inlinecode">uses:</span> steps ignore <span class="inlinecode">working-directory</span>, so its paths are <b>repo-root-relative</b>.</div></div>
         <div class="step"><div class="ix p">0</div><div class="tx"><b>Watch it run on a throwaway PR, then close it unmerged</b> (your local <span class="inlinecode">main</span> keeps the commit; step 2 pushes it): commit, <span class="inlinecode">git branch ci/first-run &amp;&amp; git push -u origin ci/first-run</span>, <span class="inlinecode">gh pr create --head ci/first-run --fill</span>, <span class="inlinecode">sleep 15 &amp;&amp; gh pr checks ci/first-run --watch</span>, <span class="inlinecode">gh pr close ci/first-run --delete-branch</span>. Full walk-through: <span class="inlinecode">exercises/lab.md</span> § Part 2.</div></div>
       </div>
@@ -520,7 +520,10 @@ jobs:
           flags: <span class="cmd2">"-config-file labs/03-github-actions/.github/actionlint.yaml"</span>
       - run: sudo apt-get update &amp;&amp; sudo apt-get install -y --no-install-recommends shellcheck
       - run: shellcheck scripts/*.sh
-      - run: ign-lint --config rule_config.json --files <span class="cmd2">"projects/**/view.json"</span>
+      - working-directory: .   <span class="cm"># repo root</span>
+        run: &gt;-
+          ign-lint --config labs/03-github-actions/rule_config.json
+          --files <span class="cmd2">"labs/03-github-actions/projects/**/view.json"</span>
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -563,6 +566,7 @@ on:
       - <span class="cmd2">".github/workflows/lab03-*.yml"</span>
       - <span class="cmd2">"labs/03-github-actions/.yamllint.yml"</span>
       - <span class="cmd2">"labs/03-github-actions/rule_config.json"</span>
+      - <span class="cmd2">"labs/03-github-actions/.config/**"</span>
       - <span class="cmd2">"labs/03-github-actions/.github/**"</span>
   push:
     branches: [main]
@@ -581,7 +585,7 @@ gh pr create --fill         <span class="cm"># checks panel stays empty</span>
 gh pr close docs/readme-only --delete-branch &amp;&amp; git switch main</pre></div>
         <div class="goal warn-g" style="margin-top:16px">
           <span class="badge">Filter discipline</span>
-          <p>Too narrow → changes sneak past CI. Too broad (<span class="inlinecode">"**"</span>) → pointless. Include the <b>configs</b> the checks read: <span class="inlinecode">rule_config.json</span>, the lab's <span class="inlinecode">.github/</span>.</p>
+          <p>Too narrow → changes sneak past CI. Too broad (<span class="inlinecode">"**"</span>) → pointless. Include the <b>configs</b> the checks read: <span class="inlinecode">rule_config.json</span>, <span class="inlinecode">.config/</span>, the lab's <span class="inlinecode">.github/</span>.</p>
         </div>
       </div>
     </div>

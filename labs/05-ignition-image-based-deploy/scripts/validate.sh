@@ -138,8 +138,15 @@ run_optional "yamllint" yamllint "pip install yamllint" \
   yamllint -c .yamllint.yml . "$repo_root"/.github/workflows/lab05-*.yml
 run_optional "shellcheck (scripts/*.sh)" shellcheck "install shellcheck from your package manager" \
   shellcheck -x scripts/*.sh
-run_optional "ign-lint (Perspective views)" ign-lint "pip install ign-lint" \
-  ign-lint --config rule_config.json --files "projects/**/view.json"
+# ign-lint runs from the repo root, like CI: rule_config.json names its pylint
+# config with a repo-root-relative path.
+lab_rel="${PROJECT_ROOT#"$repo_root"/}"
+# shellcheck disable=SC2329,SC2317  # invoked through run_optional
+ign_lint_views() {
+  (cd "$repo_root" && ign-lint --config "$lab_rel/rule_config.json" --files "$lab_rel/projects/**/view.json")
+}
+run_optional "ign-lint (Perspective views)" ign-lint "pip install ign-lint==0.6.1" \
+  ign_lint_views
 run_optional "docker compose config" docker "install Docker with Compose v2" \
   docker compose config -q
 

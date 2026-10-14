@@ -37,7 +37,7 @@ The other tools are generic. `ign-lint` is the one that actually understands Ign
 - **PyPI package:** `ign-lint` (v0.6.1)
 - **CLI:** `ign-lint`
 - **Install:** `pip install ign-lint==0.6.1` (needs Python 3.10+)
-- **Run:** `ign-lint --config rule_config.json --files "projects/**/view.json"`
+- **Run (from the repo root):** `ign-lint --config labs/03-github-actions/rule_config.json --files "labs/03-github-actions/projects/**/view.json"`
 - **Repo:** <https://github.com/bw-design-group/ignition-lint>
 - **Docs:** <https://bw-design-group.github.io/ignition-lint>
 - **Maintainer:** [BW Design Group](https://github.com/bw-design-group)
@@ -49,11 +49,11 @@ The other tools are generic. `ign-lint` is the one that actually understands Ign
 > of an Ignition-aware linter running as a required CI check. The specific tool may evolve or
 > be replaced; the practice won't.
 
-It's configured by the lab's `rule_config.json`, which is tuned so this lab's clean `lab-project` passes with zero findings. Built-in rules worth knowing:
+It's configured by the lab's `rule_config.json`, which is tuned so this lab's clean `lab-project` passes with zero findings. Every later lab uses the same rules and the same pylint config. Built-in rules worth knowing:
 
 - **NamePatternRule** — enforces naming conventions per node type: components → `PascalCase`, properties → `camelCase`, message handlers → `kebab-case`, custom methods → `snake_case`. Severity is set per node type (in this lab, component and custom-method violations are `error`; property and message-handler violations are `warning`).
 - **PollingIntervalRule** — flags `now()` / expression polling faster than a configured minimum. In this lab the minimum is **1000 ms**; anything faster is a finding (a 250 ms poll on a Perspective binding is a real performance footgun at scale).
-- **PylintScriptRule** — runs pylint over the Python scripts embedded in views, mapping pylint categories to error/warning severities.
+- **PylintScriptRule**: runs pylint over the Python scripts embedded in views, mapping pylint categories to error/warning severities. Its pylint config is the lab's `.config/.ignition-pylintrc`: ign-lint's bundled config with `import-outside-toplevel` switched off, because a transform or event script is a function body and an import can only go inside it. `rule_config.json` names that file repo-root-relative (`labs/03-github-actions/.config/.ignition-pylintrc`) and ign-lint resolves it against the folder it runs in, so CI, the pre-commit hook and your own runs all start ign-lint from the repo root.
 - **BadComponentReferenceRule** — flags brittle traversal like `.getSibling()`, `.getParent()`, and other relative walking that breaks when the component tree is edited.
 - **ComponentReferenceValidationRule** — verifies that relative references actually resolve to a real component (validates expressions, property bindings, and scripts).
 - **UnusedCustomPropertiesRule** — flags custom properties that nothing reads.
@@ -111,7 +111,7 @@ It needs nothing but `python3` — no gateway, no Docker — runs in about a sec
 - It's slower than the dev cycle (a 90s lint on every save is a productivity drain)
 - The config drifts from reality (new rules added upstream that no one in your team agrees with)
 
-The cure for the second category is usually local config you check in — `.yamllint.yml`, `rule_config.json` — not "disable the linter entirely."
+The cure for the second category is usually local config you check in (`.yamllint.yml`, `rule_config.json`, `.config/.ignition-pylintrc`), not "disable the linter entirely."
 
 ## Further reading
 
