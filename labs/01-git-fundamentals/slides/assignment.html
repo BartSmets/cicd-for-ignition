@@ -522,26 +522,24 @@ a{color:var(--primary-deep)}
     <ul class="checks" style="max-width:68rem">
       <li><b>Share your screen</b> in your breakout room, so we can drop in where it's useful.</li>
       <li><b>Write your answers in <code>NOTES.local.md</code>:</b> it is gitignored.</li>
-      <li><b>Try it without AI:</b> get the fundamentals in your fingers.</li>
       <li><b><code>exercises/lab.md</code> is the source of truth;</b> these slides summarise it. When they differ, follow <code>lab.md</code>.</li>
       <li><b>Pre-flight passed?</b> Your setup came from <code>./course-setup.sh</code>. Something off with git, gh or VS Code? Check <code>preflight/troubleshooting.md</code>.</li>
+      <li><b>Stuck for a few minutes?</b> Say so in the room.</li>
       <li class="warn"><b>Lab 01 stays on your machine: never push or Sync <code>main</code> in this lab.</b> Lab 02 starts by resetting <code>main</code> to your fork.</li>
     </ul>
-    <div class="aside good"><span class="label">Ask early</span>Stuck for more than a couple of minutes? <b>Say so in the room.</b> That's exactly what we're here for.</div>
   </div>
 </section>
 
 <!-- THE PLAN -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">THE PLAN</span><h2 class="title">Three stops, in order</h2></div>
+  <div class="sechead"><span class="num">THE PLAN</span><h2 class="title">Warm-up, then Phase 1, then Phase 2</h2></div>
   <div class="body">
     <ol class="track">
       <li><small>Warm-up · together</small><b>Trace and stage</b><span>Follow one commit through the object graph, then split a messy tree into clean commits with <code>add -p</code></span></li>
-      <li class="now"><small>Phase 1 · solo</small><b>Blame and a focused commit</b><span>Find who wrote a line with <code>git blame</code>, make one isolated commit, pass <code>verify-lab.sh</code></span></li>
+      <li class="now"><small>Phase 1 · solo</small><b>Blame and a focused commit</b><span>Find who wrote a line with <code>git blame</code>, make one isolated commit, pass <code>verify-lab.sh</code> before Phase 2</span></li>
       <li><small>Phase 2 · solo</small><b>Branch, merge, rebase</b><span>Three clean commits, then a real merge commit and a linear rebase: Parts A, B, C</span></li>
     </ol>
-    <div class="aside" style="margin-top:1.5rem"><span class="label">Why this order</span>Phase 1 leaves a <b>checkpoint commit</b> on <code>main</code> that <code>verify-lab.sh</code> checks. Phase 2 <b>rewrites history</b>, so the gate must pass <b>before</b> you start it.</div>
   </div>
 </section>
 
@@ -550,43 +548,27 @@ a{color:var(--primary-deep)}
   <div class="glow ambient" aria-hidden="true"></div>
   <header class="topbar"><img class="logo" src="logos/OriginalLight.png" alt="Mustry Solutions"></header>
   <div class="divider-body">
-    <h2 class="divider-title">Warm-up together: get your hands on the <em>object model</em></h2>
-    <ol class="flow" style="max-width:70rem">
-      <li><b>Setup</b><span>Your fork, cloned into <code>~/mustry-academy/</code>, open in VS Code</span></li>
-      <li><b>Trace</b><span>Follow one commit through commit, tree and blob with <code>cat-file</code> and <code>ls-tree</code></span></li>
-      <li><b>Stage</b><span>Split a messy working tree into three clean commits with <code>add -p</code></span></li>
-    </ol>
+    <h2 class="divider-title">Warm-up together: trace a commit, then <em>stage by hunk</em></h2>
   </div>
 </section>
 
 <!-- WARM-UP 0 · SETUP -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num warm">WARM-UP · 0</span><h2 class="title">Your fork, on your machine, in VS Code</h2></div>
+  <div class="sechead"><span class="num warm">WARM-UP · 0</span><h2 class="title">Open your fork's Lab 01 folder in VS Code</h2></div>
   <div class="body">
     <div class="work">
       <ol class="steps alt">
-        <li><b>One parent folder</b> for the series: <code>~/mustry-academy/</code>. One folder per lab under <code>labs/</code>.</li>
-        <li><b>Fork and clone</b> with <code>gh repo fork … --clone</code>: once, for every lab. Forked on github.com instead? Then <code>git clone</code> your fork.</li>
-        <li><b>Check the remote:</b> <code>origin</code> must show <b>your username</b>. An <code>upstream</code> at <code>Mustry-Academy</code> is fine.</li>
-        <li><b>Open VS Code</b> with <code>code .</code> and work from its terminal (<code>Ctrl+`</code>).</li>
+        <li>Go to the Lab 01 folder of your clone. No clone yet? Course README, step 1.</li>
+        <li><b>Check the remote:</b> <code>origin</code> shows <b>your username</b>. An <code>upstream</code> at <code>Mustry-Academy</code> is fine.</li>
+        <li>Make VS Code the editor Git opens.</li>
+        <li><b>Open VS Code</b> and work from its terminal (<code>Ctrl+`</code>).</li>
       </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># 1: one home for the course</span>
-mkdir -p ~/mustry-academy && cd ~/mustry-academy
-
-<span class="cm"># 2: fork to your account + clone your fork</span>
-gh repo fork Mustry-Academy/cicd-for-ignition --clone
-<span class="cm">#    …or press "Fork" on github.com, then clone YOUR fork:</span>
-git clone git@github.com:&lt;your-username&gt;/cicd-for-ignition.git
-cd cicd-for-ignition/labs/01-git-fundamentals
-
-<span class="cm"># 3: origin → YOUR username? good. (upstream → Mustry-Academy is fine)</span>
+        <div class="code"><pre>cd ~/mustry-academy/cicd-for-ignition/labs/01-git-fundamentals
 git remote -v
-
-<span class="cm"># 4: open VS Code right here</span>
+git config --global core.editor <span class="cmd2">"code --wait"</span>
 code .</pre></div>
-        <div class="aside warn"><span class="label">WSL2</span>Clone into your <b>Linux home</b> (<code>~/…</code>), never <code>/mnt/c/…</code>: Git is far slower there and line endings get messy. <code>code .</code> from WSL opens a window connected to WSL.</div>
       </div>
     </div>
   </div>
@@ -622,7 +604,6 @@ git cat-file -p &lt;blob-SHA&gt;
 
 <span class="cm"># step 7: same walk, one command, the blob SHA should match</span>
 git ls-tree HEAD sample-app/</pre></div>
-        <div class="aside"><span class="label">Key and value</span>Each SHA is a <b>key</b>; <code>cat-file -p</code> prints the <b>value</b>. You're reading Git's key-value store by hand.</div>
       </div>
     </div>
   </div>
@@ -631,22 +612,21 @@ git ls-tree HEAD sample-app/</pre></div>
 <!-- WARM-UP 2 · ADD -P -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num warm">WARM-UP · 2</span><h2 class="title">Stage by hunk with <code>add -p</code>: three small, logical commits</h2></div>
+  <div class="sechead"><span class="num warm">WARM-UP · 2</span><h2 class="title">Split a messy working tree into three commits with <code>git add -p</code></h2></div>
   <div class="body">
     <div class="work">
       <ol class="steps alt">
         <li>Reset <code>main</code> to your fork: <code>git reset --hard origin/main</code>. That drops the practice commit: fine, we redo it properly.</li>
         <li>Branch off: <code>git switch -c we-do-greeting-polish</code>.</li>
-        <li>Get a messy tree: run the seed script <b>or</b> make three unrelated edits in <code>sample-app/</code>. Check <code>git status</code>.</li>
-        <li><code>git add -p</code>: stage <b>one</b> logical change, commit it. Repeat three times.</li>
+        <li>Run the seed script: <code>git status</code> shows a known messy tree in <code>sample-app/</code>.</li>
+        <li><code>git add -p</code>: stage <b>one</b> logical change, commit it. Three commits in total.</li>
         <li>After each commit, <code>git ls-tree -r HEAD sample-app/</code>: watch <b>which blob SHA changed</b>.</li>
       </ol>
       <div class="side">
         <div class="code"><pre>git reset --hard origin/main
 git switch -c we-do-greeting-polish
 
-./scripts/seed-messy-state.sh   <span class="cm"># option A: seed a known messy tree</span>
-<span class="cm"># option B: make 3 unrelated edits in sample-app/ yourself</span>
+scripts/seed-messy-state.sh
 git status
 
 git add -p          <span class="cm"># stage one hunk</span>
@@ -654,7 +634,6 @@ git commit -m <span class="cmd2">"…"</span>      <span class="cm"># repeat ×3
 
 <span class="cm"># finally: see the 3 clean commits you just built</span>
 git log --graph --decorate --oneline -5</pre></div>
-        <div class="aside warn"><span class="label">The keys <code>add -p</code> waits for at each hunk</span><b>y</b> / <b>n</b> stage or skip, <b>s</b> split into smaller hunks, <b>e</b> hand-edit, <b>q</b> quit.</div>
       </div>
     </div>
   </div>
@@ -669,10 +648,6 @@ git log --graph --decorate --oneline -5</pre></div>
     <div class="stack" style="gap:2.25rem;max-width:70rem">
       <div class="code" style="max-width:46rem"><div class="code-title">First: back to a clean baseline</div><pre>git switch main                      <span class="cm"># clean starting point</span>
 git branch -D we-do-greeting-polish  <span class="cm"># drop the warm-up branch</span></pre></div>
-      <ol class="flow">
-        <li><b>Whodunnit</b><span>Steps 1 to 4: <code>git blame</code> the line that swears it's "safe to ship"</span></li>
-        <li class="on"><b>Commit and gate</b><span>Steps 5 to 7: one clean commit, then <code>verify-lab.sh</code></span></li>
-      </ol>
     </div>
   </div>
 </section>
@@ -687,7 +662,7 @@ git branch -D we-do-greeting-polish  <span class="cm"># drop the warm-up branch<
         <li>Open <code>sample-app/app.py</code> and find the line in <code>farewell()</code> promising it's <i>"definitely safe to ship."</i></li>
         <li><code>git blame sample-app/app.py</code>: every line shows <b>commit, author, date</b>. A <code>^</code> before the SHA: the line dates from the first commit.</li>
         <li><b>Who wrote that line?</b> Read the author off the blame output. Anyone you recognise?</li>
-        <li>Read the line's full story with <code>git log -p -L :farewell:sample-app/app.py</code>: blame and log together tell you <i>why</i> a line exists.</li>
+        <li>Read the full story of those lines with <code>git log -p -L :farewell:sample-app/app.py</code>.</li>
       </ol>
       <div class="side">
         <div class="code"><pre><span class="cm"># 2: author + commit for every line</span>
@@ -695,7 +670,6 @@ git blame sample-app/app.py
 
 <span class="cm"># 4: the whole history of that function's lines</span>
 git log -p -L :farewell:sample-app/app.py</pre></div>
-        <div class="aside good"><span class="label">Why it matters</span><b>blame isn't for pointing fingers.</b> It finds the commit, and the reasoning, behind any line, fast.</div>
       </div>
     </div>
   </div>
@@ -724,7 +698,6 @@ git ls-tree HEAD sample-app/    <span class="cm"># only README.md's SHA differs<
 
 <span class="cm"># step 7: the gate</span>
 scripts/verify-lab.sh   <span class="cm"># → green check</span></pre></div>
-        <div class="aside good"><span class="label">The gate</span><code>verify-lab.sh</code> checks: a clean tree, a "lab participant" line, and <b>HEAD touched only the README</b>. Green means you're cleared for Phase 2.</div>
       </div>
     </div>
   </div>
@@ -735,34 +708,24 @@ scripts/verify-lab.sh   <span class="cm"># → green check</span></pre></div>
   <div class="glow ambient" aria-hidden="true"></div>
   <header class="topbar"><img class="logo" src="logos/OriginalLight.png" alt="Mustry Solutions"></header>
   <div class="divider-body">
-    <h2 class="divider-title">Phase 2, solo: make the workflows from the slides <em>happen for real</em></h2>
-    <ol class="flow" style="max-width:70rem">
-      <li><b>Part A</b><span>Three clean commits with <code>add -p</code></span></li>
-      <li><b>Part B</b><span>A two-parent merge commit, when history has diverged</span></li>
-      <li><b>Part C</b><span>A linear rebase</span></li>
-    </ol>
-    <p class="t-md muted" style="max-width:62rem">Between the parts you reset the branch to the same starting commit, so every workflow starts from the same clean history. You record that starting point first, in Part A.</p>
+    <h2 class="divider-title">Phase 2, solo: branch, <em>merge</em> and <em>rebase</em></h2>
   </div>
 </section>
 
 <!-- PART A -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART A</span><h2 class="title">Three clean commits</h2></div>
+  <div class="sechead"><span class="num p2">PART A</span><h2 class="title">Tag your starting point, then make three clean commits</h2></div>
   <div class="body">
     <div class="work">
-      <div class="stack" style="gap:1.4rem">
-        <div class="aside good"><span class="label">First: tag your baseline</span>On <code>main</code>, put a <b>tag</b> named <b>BASE</b> on the current commit. A tag stays put while <code>main</code> moves, so <code>git reset --hard BASE</code> brings you back here in Parts B and C.</div>
-        <ol class="steps">
-          <li><code>git switch -c feature/greeting-tweaks</code> from <code>main</code>.</li>
-          <li>Run the seed script: <code>git status</code> shows <b>three</b> changed files.</li>
-          <li><code>git add -p</code>: <b>three separate commits</b>, each <b>one</b> change with a sensible message.</li>
-        </ol>
-      </div>
+      <ol class="steps">
+        <li>On <code>main</code>, tag the current commit <code>BASE</code>. <code>git reset --hard BASE</code> brings you back here in Parts B and C.</li>
+        <li><code>git switch -c feature/greeting-tweaks</code>, run the seed script: <code>git status</code> shows <b>three</b> changed files.</li>
+        <li><code>git add -p</code>: <b>three separate commits</b>, each <b>one</b> change with a sensible message. Lumped them together? <code>git reset HEAD~1</code> and redo.</li>
+      </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># tag your baseline first</span>
-git switch main
-git tag BASE               <span class="cm"># a name that stays put</span>
+        <div class="code"><pre>git switch main
+git tag BASE
 
 git switch -c feature/greeting-tweaks
 scripts/seed-messy-state.sh
@@ -770,7 +733,6 @@ git status                 <span class="cm"># 3 files</span>
 
 git add -p                 <span class="cm"># one change…</span>
 git commit -m <span class="cmd2">"…"</span>         <span class="cm"># …×3</span></pre></div>
-        <div class="aside"><span class="label">Staging discipline</span><b>Three focused commits, not one blob.</b> Lumped them? Redo with <code>git reset HEAD~1</code>: it undoes the commit <b>and</b> unstages, so <code>add -p</code> has hunks to offer again.</div>
       </div>
     </div>
   </div>
@@ -779,14 +741,14 @@ git commit -m <span class="cmd2">"…"</span>         <span class="cm"># …×3<
 <!-- PART B -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART B</span><h2 class="title">A real two-parent merge commit</h2></div>
+  <div class="sechead"><span class="num p2">PART B</span><h2 class="title">Merge diverged branches: a commit with two parents</h2></div>
   <div class="body">
     <div class="work">
       <ol class="steps">
-        <li data-n="4">After Part A, <code>feature/greeting-tweaks</code> is <b>three commits ahead</b>; <code>main</code> still sits at your README commit.</li>
-        <li data-n="5"><code>git switch main</code> and add one <b>unrelated</b> commit: a line in <code>docs/why-version-control.md</code>. The branches have <b>diverged</b>: no fast-forward possible.</li>
-        <li data-n="6"><code>git merge feature/greeting-tweaks -m "…"</code> records a <b>merge commit</b>; <code>-m</code> gives its message inline, so no editor opens.</li>
-        <li data-n="7"><code>git cat-file -p HEAD</code> lists <b>two parents</b>; <code>git log --graph</code> shows the diamond.</li>
+                <li data-n="4"><code>git switch main</code> and add one <b>unrelated</b> commit: a line in <code>docs/why-version-control.md</code>. The branches have <b>diverged</b>: no fast-forward possible.</li>
+        <li data-n="5"><code>git merge feature/greeting-tweaks -m "…"</code> records a <b>merge commit</b>.</li>
+        <li data-n="6"><code>git cat-file -p HEAD</code> lists <b>two parents</b>; <code>git log --graph</code> shows the diamond.</li>
+        <li data-n="7"><b>Sketch the graph</b> in <code>NOTES.local.md</code> and keep it for Part C.</li>
       </ol>
       <div class="side">
         <div class="code"><pre>git switch main
@@ -798,7 +760,6 @@ git commit -m <span class="cmd2">"chore: unrelated note on main"</span>
 git merge feature/greeting-tweaks -m <span class="cmd2">"Merge feature/greeting-tweaks"</span>
 git cat-file -p HEAD                  <span class="cm"># two parents!</span>
 git log --graph --decorate --oneline --all</pre></div>
-        <div class="aside good"><span class="label">8 · Sketch it</span>Draw the graph in <code>NOTES.local.md</code> and <b>keep it</b>: Part C folds in the same work with a <b>linear</b> history.</div>
       </div>
     </div>
   </div>
@@ -807,14 +768,14 @@ git log --graph --decorate --oneline --all</pre></div>
 <!-- PART C -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART C</span><h2 class="title">A linear rebase: the same commits, new SHAs</h2></div>
+  <div class="sechead"><span class="num p2">PART C</span><h2 class="title">Rebase instead: the same commits in a straight line</h2></div>
   <div class="body">
     <div class="work">
       <ol class="steps">
-        <li data-n="9">Still on <code>main</code>: <code>git reset --hard BASE</code> drops Part B's merge <b>and</b> its note. <b>Redo the note commit</b>, or the rebase has nothing to do.</li>
-        <li data-n="10"><code>git switch feature/greeting-tweaks &amp;&amp; git rebase main</code>: the three commits land on the new tip with <b>new SHAs</b>, no merge commit.</li>
-        <li data-n="11"><code>git switch main &amp;&amp; git merge feature/greeting-tweaks</code> <b>fast-forwards</b>.</li>
-        <li data-n="12">Compare with your Part B sketch: the same commits in a <b>straight line</b> instead of a diamond.</li>
+        <li data-n="8">Still on <code>main</code>: <code>git reset --hard BASE</code> drops Part B's merge <b>and</b> its note. <b>Redo the note commit</b>, or the rebase has nothing to do.</li>
+        <li data-n="9"><code>git switch feature/greeting-tweaks &amp;&amp; git rebase main</code>: the three commits land on the new tip with <b>new SHAs</b>, no merge commit.</li>
+        <li data-n="10"><code>git switch main &amp;&amp; git merge feature/greeting-tweaks</code> <b>fast-forwards</b>.</li>
+        <li data-n="11">Compare with your Part B sketch: the same commits in a <b>straight line</b> instead of a diamond.</li>
       </ol>
       <div class="code"><pre>git reset --hard BASE      <span class="cm"># still on main from Part B</span>
 <span class="cm"># redo the note: append to docs/why-version-control.md again, then</span>
@@ -831,6 +792,20 @@ git log --graph --decorate --oneline --all</pre></div>
   </div>
 </section>
 
+<!-- DONE CHECK -->
+<section class="slide">
+  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
+  <div class="sechead"><span class="num">DONE</span><h2 class="title">Check that you finished Lab 01</h2></div>
+  <div class="body">
+    <ul class="checks" style="max-width:68rem">
+      <li><code>scripts/verify-lab.sh</code> printed a green check <b>before</b> Phase 2</li>
+      <li>Part B: <code>git cat-file -p HEAD</code> showed <b>two parents</b>, and the sketch is in <code>NOTES.local.md</code></li>
+      <li>Part C: <code>git log --graph --decorate --oneline --all</code> shows the three feature commits in a <b>straight line</b> on <code>main</code></li>
+      <li class="warn">Nothing pushed: <code>main</code> on your fork is unchanged</li>
+    </ul>
+  </div>
+</section>
+
 <!-- STRETCH 1 -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
@@ -842,7 +817,7 @@ git log --graph --decorate --oneline --all</pre></div>
         <li>On <code>main</code>, commit an edit to the <b>same spot</b> in <code>greet()</code> the docstring commit touches, e.g. a comment above <code>message =</code>.</li>
         <li><code>git switch feature/greeting-tweaks &amp;&amp; git rebase main</code>: Git <b>halts</b> on the conflict.</li>
         <li>In <code>sample-app/app.py</code>, <b>keep both</b> changes and delete the <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> <code>=======</code> <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> markers.</li>
-        <li><code>git add sample-app/app.py</code>, then <code>git rebase --continue</code>: save and close the editor. Confirm a linear history.</li>
+        <li><code>git add sample-app/app.py</code>, then <code>git rebase --continue</code>: save and close the editor. Confirm a linear history. To bail out: <code>git rebase --abort</code>.</li>
       </ol>
       <div class="side">
         <div class="code"><pre><span class="cm"># 1: pull main back behind the feature branch</span>
@@ -861,7 +836,6 @@ git rebase main
 git add sample-app/app.py
 git rebase --continue   <span class="cm"># editor opens: save + close</span>
 git log --graph --decorate --oneline --all</pre></div>
-        <div class="aside warn"><span class="label">Escape hatch</span><code>git rebase --abort</code> puts everything back. <b>Bailing is always safe.</b></div>
       </div>
     </div>
   </div>
@@ -877,7 +851,7 @@ git log --graph --decorate --oneline --all</pre></div>
         <li>Pick two adjacent commits, e.g. <code>HEAD</code> and <code>HEAD~1</code>.</li>
         <li><code>git ls-tree -r</code> each one. <b>Which files exist in one but not the other?</b> For files in both, <b>which blob SHAs differ?</b></li>
         <li>For a changed file, <code>git cat-file -p</code> the old and new blob and spot the changed lines.</li>
-        <li>Run the real <code>git diff &lt;A&gt; &lt;B&gt;</code>: it should match. <b>You just reimplemented diff.</b></li>
+        <li>Run the real <code>git diff HEAD~1 HEAD</code>: it should match.</li>
       </ol>
       <div class="side">
         <div class="code"><pre><span class="cm"># 2: walk the two trees, compare entries</span>
@@ -892,7 +866,6 @@ git cat-file -p &lt;new-blob-SHA&gt;
 
 <span class="cm"># 4: check yourself</span>
 git diff HEAD~1 HEAD</pre></div>
-        <div class="aside"><span class="label">The point</span><code>git diff</code> is <b>not magic</b>: the key-value store plus a tree walk.</div>
       </div>
     </div>
   </div>
@@ -915,12 +888,7 @@ git diff HEAD~1 HEAD</pre></div>
 git log --oneline feature/greeting-tweaks   <span class="cm"># pick a SHA</span>
 
 git cherry-pick &lt;SHA&gt;        <span class="cm"># copy one commit onto main</span>
-git log --oneline -2         <span class="cm"># new commit: NEW sha</span>
-
-<span class="cm"># other forms, pick what you need:</span>
-git cherry-pick &lt;A&gt; &lt;B&gt;      <span class="cm"># a hand-picked few</span>
-git cherry-pick &lt;A&gt;~3..&lt;A&gt;   <span class="cm"># a contiguous range</span></pre></div>
-        <div class="aside good"><span class="label">Copy, not move</span><code>cherry-pick</code> <b>replays the change as a new commit</b>; the source branch keeps its original. One fix, without merging a whole branch.</div>
+git log --oneline -2         <span class="cm"># new commit: NEW sha</span></pre></div>
       </div>
     </div>
   </div>

@@ -1,49 +1,28 @@
-# Why version control matters
+# What version control gives you
 
-Reference reading for the lab's "Why version control matters" segment. If you missed it in class or want to re-read after the session, this is the backstop.
+Reference reading for the start of the Lab 01 teaching deck ("What Git does for you").
 
-## The pre-VC world
+## Four things Git gives you
 
-If you've worked in any engineering team long enough, you've seen at least one of these:
+**1. History.** Every change is recorded with author, timestamp and a message. You can answer "who changed this line, when, and why" in seconds.
 
-- A folder called `Backups/` with timestamped zip files. `project_2024-03-15_FINAL.zip`. `project_2024-03-15_FINAL_v2.zip`. `project_2024-03-16_actual_final.zip`.
-- A shared network drive where two people overwrite each other's work in the same afternoon.
-- A senior engineer who is the *only* person who knows which copy of a file is "the right one."
-- A rollback strategy that consists of "restore from last night's tape backup."
+**2. Blame.** `git blame` shows the commit that last touched each line. It's how you reconstruct the reasoning behind code you didn't write.
 
-These aren't hypothetical. They're how most software was written until the early 2000s, and how a lot of industrial automation work is *still* written today.
+**3. Branching.** Several people work on different things at the same time, each on a branch, without stepping on each other's files. Merging brings the work back together when it's ready.
 
-## What a Version Control System (VCS) gives you
+**4. Safe undo.** Every commit is a checkpoint, so you can always get back to a known good state.
 
-A version control system gives you four things that are hard to live without once you've used them:
+## Distributed
 
-**1. History.** Every change is recorded with author, timestamp, and a message. You can answer "who changed this line, when, and why" in seconds.
+Every clone is a full copy of the repository, including all history. You commit, branch and inspect history on your own machine, even offline. The server (GitHub, GitLab, Bitbucket) is one copy that everyone agrees to push to and pull from.
 
-**2. Blame.** Not the punitive kind — `git blame` literally shows you the commit that last touched each line. It's how you reconstruct the reasoning behind code you didn't write.
+On GitHub you fork a repo (your own copy on the server), clone your fork, make changes, and propose them back through a pull request.
 
-**3. Branching.** Multiple people can work on different things at the same time, in isolation, without stepping on each other's files. Merging brings the work back together when it's ready.
+## Ignition projects are files
 
-**4. Safe undo.** You can always get back to a known good state. Every commit is a checkpoint. Even "I just deleted everything" is recoverable as long as the commit existed.
-
-## Centralized vs distributed
-
-Older VCSes (CVS, Subversion, Perforce, TFS) are *centralized*: there's one server, every commit goes to it, and if the server is down, nobody can commit.
-
-Git is *distributed*: every clone is a full copy of the entire repository, including all history. You can commit, branch, and inspect history while completely offline. The "central" server (GitHub, GitLab, Bitbucket) is just a convention — one clone that everyone agrees to push to and pull from.
-
-The distributed model is why GitHub-style workflows exist. You fork a repo (take your own copy), make changes, and propose them back via a pull request. That whole workflow is impossible in a centralized VCS.
-
-## What about Ignition projects / configuration?
-
-Ignition projects and configuration are *just files*. Vendor docs sometimes hint that "you don't need source control because Ignition has gateway backups." That's wrong in three ways:
-
-- Gateway backups are blob snapshots — no per-change history, no per-file blame.
-- Multiple engineers can't work on the same project in parallel without overwriting each other.
-- There's no review step before a change goes live.
-
-Putting your Ignition projects and configuration in Git solves all three problems and is the *foundation* for everything in this masterclass. We'll start versioning real Ignition projects later in the series. For Day 1, we use a tiny Python app so the Git mechanics aren't tangled up with Ignition file-format quirks.
+Ignition projects and configuration are files, so they go in Git like any other code. A gateway backup is one snapshot of everything: no per-change history, no blame, no parallel work, and no review before a change goes live. Git gives you all four. From Lab 02 on we version real Ignition projects; Lab 01 uses a tiny Python app so the Git mechanics stand on their own.
 
 ## Further reading
 
-- [Pro Git book](https://git-scm.com/book/en/v2) — free, comprehensive, the canonical reference
-- *Git from the Bottom Up* by John Wiegley — the best treatment of Git's object model in long-form
+- [Pro Git book](https://git-scm.com/book/en/v2): free, comprehensive, the canonical reference
+- *Git from the Bottom Up* by John Wiegley: a long-form walk through Git's object model

@@ -1,351 +1,243 @@
-# Lab 01 — Git Fundamentals
+# Lab 01: Git Fundamentals
 
-**Duration:** ~180 minutes (09:00 – 12:00)
+**Duration:** ~180 minutes
 
-* 09:00 – 09:30 — introduction (welcome to the series + logistics)
-* 09:30 – 10:15 — Teaching: Introductions to git
-* 10:15 – 10:45 — We-do
-* 10:45 – 11:45 — You-do (breakout rooms)
-* 11:45 – 12:00 — wrap-up & questions
+* 30 min: introduction (welcome to the series, logistics, the Oatmakers story)
+* 45 min: Teaching: how Git works
+* 30 min: We-do
+* 60 min: You-do (breakout rooms)
+* 15 min: wrap-up and questions
 
 This is the **first lab in the CI/CD series**, so we open with a short introduction to the
-course as a whole before getting hands-on. After that it's one continuous lab. We deliberately blend Git's *object model* with the
-*everyday workflow* so that the two reinforce each other: you'll watch `add -p` build the
-index, watch a commit produce a fresh tree and blob, and come to see `rebase` as
-"new commit objects, not moved ones." The object model isn't an abstract first hour — it's
-the lens for every workflow move you make.
+course as a whole. After that it's one continuous lab that blends Git's *object model* with the
+*everyday workflow*: you watch `add -p` build the index, watch a commit produce a fresh tree and
+blob, and see `rebase` as "new commit objects, not moved ones."
 
 ## Goal
 
 You should leave this lab able to:
 
-- Understand the basic Git commands: `git add`, `git commit`, `git status`, `git branch`, `git switch` (and the older `git checkout`), `git merge`, `git rebase`, `git cherry-pick`, `git blame`, `git tag`. `git init`, `git push` and `git pull` are named today; you use push and pull from Lab 02 on.
-- Understand what `.gitignore` does and why Git tracks everything by default
-- Actually understand what git is doing under the hood, how are blobs linked to commits, how every commit is a snapshot
-- Choose between **merge** (fast-forward vs `--no-ff`) and **rebase** deliberately, and explain the tradeoffs
-- Know how to recover from "oh no, I committed to the wrong branch" (demonstrated in the We-do)
+- Use the basic Git commands: `git add`, `git commit`, `git status`, `git branch`, `git switch` (and the older `git checkout`), `git merge`, `git rebase`, `git cherry-pick`, `git blame`, `git reset`, `git tag`. `git init`, `git push` and `git pull` are named today; you use push and pull from Lab 02 on.
+- Explain what `.gitignore` does
+- Explain what Git does under the hood: how blobs, trees and commits link, and why every commit is a snapshot
+- Choose between **merge** (fast-forward vs `--no-ff`) and **rebase** deliberately
+- Recover from "I committed to the wrong branch"
 
-## Introduction — welcome to the series (30 min)
+## Introduction: welcome to the series (30 min)
 
-Because this is the first class, the instructor opens with the bigger picture before we touch Git.
+Because this is the first class, the instructor opens with the bigger picture from
+[`slides/introduction.html`](https://share.mustrysolutions.com/eb94880a-c904-4cca-95c0-8b8dbbae345a) ([offline copy](../slides/introduction.html)).
 
-1. **Welcome & introductions.** Quick round-the-room: name, role, and one thing you want out of this course. 
-2. **What this course is about.** This is a **CI/CD course for Ignition**. That means we're going to go deep into git, CI/CD, but it will be applied to Ignition and made very practical for that setting. This is not a pure Git course or a pure CI/CD course, it's really meant to give you practical tools in your day-to-day work. 
-3. **How the series fits together.** A rough map of where we're headed: 7 labs over four days, from Git fundamentals to multi-gateway deployments (Lab 07): 01 Git fundamentals and 02 Branching and pull requests (Day 1), 03 GitHub Actions and 04 Ignition file-based deploy (Day 2), 05 Ignition image-based deploy (Day 3), 06 Secrets, database migrations, modules & JARs and 07 Deployments in a multi-gateway architecture (Day 4).
-4. **Fork the repo.** The course repo gets forked to your own GitHub account once: Fork on GitHub → clone *your fork*. Every lab is a folder under `labs/` in it. Working in your fork means you can commit, branch and push freely without colliding with anyone else.
-5. **How the labs work.** Each lab follows the same rhythm: **Teaching**, **We-do** (instructor live-codes), **You-do** (breakout rooms), then a **debrief**. There are optional stretch challenges if you finish early. Notes you take in `NOTES.local.md` are gitignored and yours to keep. We have 7 labs in total, where the last one (Lab 07) is a bigger challenge: the whole cohort works on one shared repo and deploys to a real production gateway, with us there to guide you. Each lab has its own folder in the course repo, so you will always have a fresh start, even if you were not able to complete the previous lab.
-6. **Breakout room rules** Sam and Jasper will float around breakout rooms to see who could use some help. We ask everyone to share their screen at the same time in the breakout rooms, which gives us a 'look over your shoulder' kind of class. 
-7. **AI Agents** Of course, AI will probably be able to one-shot these labs, but we would challenge you to do this class as much as possible without it, so you actually get the fundamentals, and then you'll be able to steer AI much better when building this out for yourself.
-8. **The Oatmakers story.** After the introduction we walk through [`slides/oatmakers-story.html`](https://share.mustrysolutions.com/f50d9d30-81b9-48ae-819d-1614674534f0) ([offline copy](../slides/oatmakers-story.html)): one fictional client (Oatmakers, eight Ignition sites, zero CI/CD) whose troubles set the stage for *why* CI/CD is worth adding to an Ignition workflow. The whole series follows this story; each day the map heals a little more.
+1. **Welcome and introductions.** Quick round-the-room: name, role, and one thing you want out of this course.
+2. **What this course is about.** A **CI/CD course for Ignition**: we go deep into Git and CI/CD, always applied to Ignition and made practical. Not a pure Git course or a pure CI/CD course: practical tools for your day-to-day work.
+3. **How the series fits together.** 7 labs over four days: 01 Git fundamentals and 02 Branching and pull requests (Day 1), 03 GitHub Actions and 04 Ignition file-based deploy (Day 2), 05 Ignition image-based deploy (Day 3), 06 Secrets, database migrations, modules & JARs and 07 Deployments in a multi-gateway architecture (Day 4). Each lab has its own folder, so you always get a fresh start, even if you could not finish the previous lab. In Lab 07 the whole group works on one shared repo and deploys to a real production gateway.
+4. **Your fork.** A fork is your own copy of the course repo on GitHub (`<you>/cicd-for-ignition`); your clone of it lives in `~/mustry-academy/cicd-for-ignition`. You made both before Day 1 (step 1 of the [course README](../../../README.md)). In your fork you commit, branch and push freely.
+5. **Where you run the commands.** In the terminal on macOS or Linux, or in a WSL2 terminal on Windows, with the clone in your Linux home. Not in PowerShell or Git Bash, and never under `/mnt/c/`.
+6. **How the labs work.** Each lab follows the same rhythm: **Teaching**, **We-do** (instructor live-codes), **You-do** (breakout rooms), then a **debrief**, with optional stretch challenges if you finish early. Interrupt us anytime; company-specific questions at the end of the day. Notes you take in `NOTES.local.md` are gitignored and yours to keep.
+7. **Breakout rooms.** Everyone shares their screen at the same time; Sam and Jasper move between the rooms and look over your shoulder.
+8. **AI agents.** AI can probably one-shot these labs. Do them as much as possible without it: you get the fundamentals in your fingers, and then you steer AI much better when you build this out for yourself.
+9. **The Oatmakers story.** We walk through [`slides/oatmakers-story.html`](https://share.mustrysolutions.com/f50d9d30-81b9-48ae-819d-1614674534f0) ([offline copy](../slides/oatmakers-story.html)): one fictional client (Oatmakers, eight Ignition sites, zero CI/CD) whose troubles set the stage for the whole series. Each day the map heals a little more.
 
-
-## Teaching: Introductions to git (45 min)
+## Teaching: how Git works (45 min)
 
 The instructor teaches the foundations from [`slides/teaching.html`](https://share.mustrysolutions.com/0a731a79-f381-402b-9b77-16415e2ff052) ([offline copy](../slides/teaching.html)).
-This is the conceptual half — we *do* the moves in the We-do that follows.
+We *do* the moves in the We-do that follows. Keep [`docs/git-object-model.md`](../docs/git-object-model.md) open as a cheat sheet.
 
-### Setup (do this first)
+### What Git does for you
 
-Run every command in this lab from the lab folder, `labs/01-git-fundamentals/`.
+Git is a **version control system**: it records every change to your files. It tracks changes
+across files, compares versions, takes you back to old versions, reverts, and lets you share and
+combine changes with others. Reference reading: [`docs/why-version-control.md`](../docs/why-version-control.md).
 
-```bash
-cd ~/mustry-academy/cicd-for-ignition/labs/01-git-fundamentals
-git switch main
-git status        # should be clean
-git config --global core.editor "code --wait"   # Git opens VS Code when it needs a message
-```
+### How Git stores your project in `.git/`
 
-Some Git commands open an editor: `git rebase -i` (the todo list), a merge without `-m`, and
-`git rebase --continue` (the commit message). With the setting above that editor is a VS Code tab.
-Edit it if needed, save (Ctrl+S, or Cmd+S on macOS) and close the tab: Git carries on as soon as the
-tab is closed.
+- **Blobs.** `.git/objects` is a key-value store: the key is a hash of a file's content, the value is the content. A blob has **no filename**; identical content is stored once.
+- **Trees.** A directory listing that maps names to the hashes of blobs and sub-trees: this is where filenames live.
+- **Commits.** A commit points to a *single* tree (a **full snapshot**) and to its parent; unchanged blobs and sub-trees are reused, never re-stored.
+- **Make a commit.** `git add` copies a change from the **working tree** into the **staging area** (the index), the draft of your next commit. `git commit` turns what is staged into a commit. `git status` shows what is edited, staged and untracked; `git init` turns a folder into a repo.
+- **Branches.** Commits are immutable; a branch is a readable name that moves forward as you commit.
+- **HEAD.** The pointer to your current branch; `git switch` moves it, and the next commit attaches wherever it points.
 
-You should see a `sample-app/` directory and the seed script. Run `git log --oneline`: the repo
-holds the whole course (every lab, the preflight, the welcome package), so the history you see is
-the course's, not just this lab's. `git log --oneline -- .` narrows it to commits that touched this
-folder.
+### Bring branches together: merge, rebase, cherry-pick
 
-### What is Git, and why it matters
+- **Merge.** When `main` hasn't moved, merging is a **fast-forward**: the pointer slides up, no new commit. When history has **diverged**, Git does a **three-way merge** and records a **merge commit with two parents**.
+- **Rebase.** Re-applies your commits onto the new tip as **brand-new commits** (new SHAs). No merge commit: linear history.
+- **Cherry-pick.** Copies a *single* commit's change onto your branch as a new commit; the source branch keeps its original.
+- **Conflicts.** When a merge or rebase cannot combine two edits to the same lines, Git stops and writes both versions into the file between markers: `<<<<<<<` (the branch you are on; during a rebase, the branch you rebase onto), `=======`, then `>>>>>>>` (the incoming commit). Edit the file to the result you want, delete the three marker lines, `git add` the file and run `git rebase --continue` (or `git merge --continue`). `git rebase --abort` (or `git merge --abort`) puts everything back.
 
-Git is a **Version Control System (VCS)** — software that tracks and manages changes to files over
-time. The de-facto standard: 95%+ market share, with a huge ecosystem of GUIs, hosting services and
-tooling built on top.
+### Remotes, tags, undo and `.gitignore`
 
-- **What Git does for you:** track changes across many files, compare versions of a project,
-  time-travel back to old versions, revert, collaborate and share changes, combine changes.
+- **Remotes.** Every clone is a full copy of the history. A remote is another copy on a server: here `origin` is your fork on GitHub, and `git remote -v` lists it. `clone` copies it down, `push` sends your commits up, `pull` brings theirs down. `origin/main` is where `origin`'s `main` was when you last synced.
+- **Tags.** A name that stays on one commit. Lightweight: `git tag v1.2`. Annotated, for releases: `git tag -a v1.2 -m "Release 1.2"`. Push a tag by name: `git push origin v1.2`.
+- **Undo with `git reset`.**
 
-Reference reading: [`docs/why-version-control.md`](../docs/why-version-control.md).
+  | Command | The branch pointer | The changes you undo |
+  |---|---|---|
+  | `git reset --soft HEAD~1` | back one commit | kept, staged |
+  | `git reset HEAD~1` | back one commit | kept in your files, unstaged |
+  | `git reset --hard <commit>` | to `<commit>` | discarded, uncommitted edits too: no undo |
 
-### Under the hood — the object model (animated slides)
-
-The thread for the rest of the lab: *every workflow command is really a manipulation of commits,
-trees, and blobs.* Keep [`docs/git-object-model.md`](../docs/git-object-model.md) open as a cheat
-sheet.
-
-- **Blobs — Git is a key-value store.** `.git/objects` stores file *contents*: the key is a hash of
-  the content, and a blob has **no filename**. Identical content is stored once.
-- **Trees — where filenames live.** A directory listing that points to blobs and sub-trees by hash.
-- **Commits — snapshots, chained.** A commit points to a *single* tree (a **full snapshot**) and to
-  its parent; unchanged blobs and sub-trees are reused, never re-stored.
-- **Branches — movable pointers.** Commits are immutable; a branch is just a readable name that
-  moves forward as you commit.
-- **HEAD — where you are.** The pointer to your current branch; `git switch` moves it, and the next
-  commit attaches wherever it points.
-
-### The workflows, on the graph (animated slides)
-
-- **Merge.** When `main` hasn't moved, merging is a **fast-forward** — the pointer slides up, no new
-  commit. When history has **diverged**, Git does a **three-way merge** and records a **merge commit
-  with two parents**. Same-line edits on both sides → a conflict you resolve by hand.
-- **Rebase.** Re-applies your commits onto the new tip as **brand-new commits** (new SHAs). No merge
-  commit — linear history.
-- **Cherry-pick.** Copies a *single* commit's change onto your branch as a new commit; the source
-  branch keeps its original.
-
-### Remotes and tags
-
-- **Remotes.** Git is **distributed** — every clone is a full copy of the history. A remote (usually
-  `origin`) is just another repo you sync with: `clone` copies it down, `push` sends your commits up,
-  `pull` brings theirs down.
-- **Tags.** A ref that *doesn't* move — a permanent bookmark, which is how you mark a **release**.
-  Lightweight (`git tag v1.2`) vs annotated (`git tag -a v1.2 -m "Release 1.2"` — use this for
-  releases). Push them explicitly: `git push origin v1.2`. Tags name the exact commit you shipped;
-  they'll drive real deploys in later labs.
-
-### The basic command vocabulary
-
-A one-line tour — now that you know what's underneath, the commands are just verbs for moving these
-objects and pointers around:
-
-- `git init` — turn a plain folder into a repo (creates `.git/`).
-- `git clone` — copy a remote repo (and its full history) to your machine.
-- `git status` — what's changed, what's staged, what's untracked. Run it constantly.
-- `git add` — stage a change for the next commit (moves it into the **index**).
-- `git commit` — record the staged snapshot as a new commit.
-- `git branch` — list or create branches (cheap pointers to commits).
-- `git checkout` / `git switch` — move `HEAD` to another branch or commit. (`switch` is the modern, safer spelling for branches.)
-- `git merge` — combine another branch's work into yours.
-- `git cherry-pick` — copy a single commit onto your current branch.
-- `git tag` — pin a permanent name to a commit; how you mark a **release**.
-- `git push` / `git pull` — send / receive commits to and from a remote. We **name** these now; we use them for real in later labs.
-
-> **VS Code or the terminal?** Most of you will drive Git from VS Code's Source Control panel,
-> which wraps these commands in buttons. We use the CLI in the labs so you understand what the
-> buttons actually *do*. The panel handles the everyday flow; the terminal is for when it doesn't.
-
-### Inspecting & undoing — `git blame` and `git reset`
-
-- **`git blame`** — annotates every line of a file with the commit, author and date that last
-  touched it. Read-only and safe; answers "who do I ask about this line?". You'll use it in the
-  You-do.
-- **`git reset --hard`** — moves the current branch pointer **and** overwrites your working tree to
-  match; uncommitted changes are **gone, with no undo**. Plain `reset` (`--mixed`) and `--soft`
-  keep your edits. Unsure? `git stash` first — that's your safety net.
+  Committed to the wrong branch? `git reset --soft HEAD~1`, then `git switch -c feature/x` and `git commit`.
+- **`.gitignore`** lists the files Git leaves alone. This lab's [`.gitignore`](../.gitignore) ignores `.venv/`, the Python caches (`__pycache__/`, `.pytest_cache/`) and `NOTES.local.md`. `git status` lists **untracked** files; **ignored** files don't show up.
 
 ### The commands you use in the We-do and You-do
 
-The exercises lean on a few options and helpers on top of the vocabulary above. The teaching deck
-shows each of them on one slide, plus a slide on reading conflict markers:
-
-- **`git switch -c <name>`** creates a branch and switches to it in one go.
-  **`git branch -D <name>`** deletes a branch, even one whose commits are not merged anywhere.
-- **`git commit -am "message"`** stages every change to files Git already tracks, then commits.
-  New, untracked files are not included.
-- **`git add -p`** walks your changes hunk by hunk and asks "Stage this hunk?": `y` stages it,
-  `n` skips it, `s` splits it into smaller hunks, `e` lets you hand-edit it, `q` quits.
-- **`git ls-tree HEAD sample-app/`** prints a tree's entries (mode, type, SHA, name): the same
-  commit, tree, blob walk as `git cat-file -p`, in one command. Add `-r` to recurse into sub-trees.
-- **`git blame`** prints `^` in front of a SHA when it could not look further back: that line has
-  been there since the first commit of the history.
-- **`git log -L :farewell:sample-app/app.py`** shows every commit that changed the lines of the
-  `farewell` function, with the diff. Blame tells you *who*, this tells you *why*.
-- **`git merge --no-ff <branch>`** always records a merge commit, even when a fast-forward was
-  possible, so the history keeps the shape of the branch.
-- **Wrong branch?** `git reset --soft HEAD~1` undoes the last commit but keeps its change staged;
-  then `git switch -c <new-branch>` and `git commit` put it where it belongs.
-- **Conflicts.** When a merge or rebase cannot combine two edits to the same lines, Git stops and
-  writes both versions into the file between markers: `<<<<<<<` (the branch you are on; during a
-  rebase that is the branch you rebase onto), `=======`, then `>>>>>>>` (the incoming commit). Edit
-  the file to the result you want, delete the three marker lines, `git add` the file and run
-  `git rebase --continue` (or `git merge --continue`). `git rebase --abort` puts everything back as
-  it was before the rebase started.
-
-### `.gitignore` — telling Git what *not* to track
-
-Git tracks **everything** by default. `.gitignore` is how you tell it what to leave alone — build
-output, virtualenvs (`.venv`), `__pycache__`, `.pytest_cache/`, OS/editor junk, and local-only notes
-like `NOTES.local.md`.
-
-- Open this lab's own [`.gitignore`](../.gitignore). Notice `.pytest_cache/` is already listed —
-  that's exactly why running `pytest` during the You-do won't pollute your focused commit.
-- `git status` shows **untracked** files (Git sees them, you haven't added them) separately from
-  **ignored** files (Git pretends they aren't there). Knowing the difference saves you from the
-  classic "why did my commit include `.venv/`?" mistake.
+| Command | What it does |
+|---|---|
+| `git config --global core.editor "code --wait"` | Git opens a VS Code tab for messages (`rebase -i`, a merge without `-m`, `rebase --continue`): save, then close the tab |
+| `git switch -c <name>` | create a branch and switch to it |
+| `git branch -D <name>` | delete a branch, even one merged nowhere |
+| `git commit -am "message"` | stage the files Git already tracks, then commit (new files are not included) |
+| `git add -p` | stage hunk by hunk: `y` stage, `n` skip, `s` split, `e` edit, `q` quit |
+| `git cat-file -p HEAD` | print an object: a commit, a tree or a blob |
+| `git ls-tree HEAD sample-app/` | a tree's entries (mode, type, SHA, name); `-r` recurses |
+| `git log --graph --decorate --oneline --all` | every branch's history as a graph |
+| `git blame sample-app/app.py` | who last touched each line; `^` before a SHA: the line dates from the first commit |
+| `git log -L :farewell:sample-app/app.py` | every commit that changed the lines of the `farewell` function |
+| `git merge --no-ff <branch>` | always record a merge commit, even when a fast-forward was possible |
+| `git diff HEAD~1 HEAD` | what changed between two commits |
 
 ## We-do (30 min)
 
-The instructor live-codes, narrating the object graph at every step — now we *do* the moves the
-Teaching block described.
+The instructor live-codes, narrating the object graph at every step.
 
-**1. A commit is a tree (quick recap).** Walk the existing `sample-app/` history:
+**1. A commit is a tree.** Walk the existing `sample-app/` history:
 
-1. `git log --oneline` — note one commit's SHA, e.g. `a1b2c3d`.
-2. `git cat-file -p a1b2c3d` — read the commit object out loud. Note the `tree` line and the `parent` line. *That SHA is the **key**; `cat-file` prints the **value** — this is the key-value store from the slide.*
-3. `git cat-file -p <tree-SHA>` — read the tree object. It lists blobs and sub-trees by SHA — the **filename lives in the tree entry**, exactly like the tree slide.
-4. `git cat-file -p <blob-SHA>` — see the raw file content. (Confirm: the blob has no filename of its own.)
+1. `git log --oneline`: note one commit's SHA, e.g. `a1b2c3d`. The repo holds the whole course, so this is the course's history; `git log --oneline -- .` narrows it to this folder.
+2. `git cat-file -p a1b2c3d`: read the commit object out loud. Note the `tree` line and the `parent` line. *That SHA is the **key**; `cat-file` prints the **value**.*
+3. `git cat-file -p <tree-SHA>`: read the tree object. It lists blobs and sub-trees by SHA: the **filename lives in the tree entry**.
+4. `git cat-file -p <blob-SHA>`: see the raw file content. The blob has no filename of its own.
 
-**2. What a commit actually does.** Now make the graph move:
+**2. What a commit actually does.**
 
 1. Edit one line of `sample-app/README.md`.
-2. `git add sample-app/README.md` — the **index** now holds a new blob, staged but not committed. `git status` shows the staged change.
-3. `git commit -m "docs: tweak intro"` — a **new commit object** is born, pointing at a **new tree**, whose `README.md` entry points at a **new blob**. `HEAD` (a **ref**) advances to it.
-4. `git cat-file -p HEAD`, then its tree, then down the sub-trees `labs` → `01-git-fundamentals` → `sample-app`, then the README blob — confirm only the README blob SHA changed; `app.py`'s blob is byte-for-byte the same SHA as before. *This is the snapshot slide made real: the commit is a **full snapshot**, but the unchanged blob is **reused, not re-stored**.*
+2. `git add sample-app/README.md`: the **index** now holds a new blob, staged but not committed. `git status` shows the staged change.
+3. `git commit -m "docs: tweak intro"`: a **new commit object** points at a **new tree**, whose `README.md` entry points at a **new blob**. `HEAD`'s branch advances to it.
+4. `git cat-file -p HEAD`, then its tree, then down the sub-trees `labs` → `01-git-fundamentals` → `sample-app`, then the README blob: only the README blob SHA changed; `app.py`'s blob is the same SHA as before. *The commit is a **full snapshot**, but the unchanged blob is **reused, not re-stored**.*
 
-**3. Branching and rewriting are just pointer moves and new objects.**
+**3. Branching and rewriting are pointer moves and new objects.**
 
-1. `git switch -c demo/throwaway` — a branch is a *cheap, **movable** pointer* to a commit (the moving label from the branches slide). Nothing is copied.
-2. Make three small commits on `demo/throwaway` (three one-line edits to `sample-app/README.md`, each committed with `git commit -am "…"`), then `git rebase -i main`. The todo list in the editor holds exactly those three commits: reorder, squash or reword them, save and close. Show the commit SHAs **change**: rebase doesn't *move* commits, it **creates new commit objects** and re-points the branch. Tie it straight back to "commits are immutable; their SHA is their content."
-3. **Merge: fast-forward.** `git switch main && git merge demo/throwaway`: `main` has not moved, so this fast-forwards. The `main` pointer just slides forward. No merge commit. Linear history.
-4. **Merge: `--no-ff`.** `git switch demo/throwaway`, add one more commit, `git switch main`, then `git merge --no-ff demo/throwaway -m "Merge demo/throwaway"`: a fast-forward was possible, but `--no-ff` forces a merge commit. Prove the slide: `git cat-file -p HEAD` and **count the `parent` lines: there are two**. That two-parent commit *is* the three-way merge from the deck. Display the shape with `git log --graph --decorate --oneline --all`: the demo sits at the top; below it is the course repo's own history.
-5. **Oops-recovery.** "Oops, committed to main": on `main`, edit `sample-app/README.md` and `git commit -am "docs: meant for a branch"`. Then `git reset --soft HEAD~1`: the ref moves back one commit but the change stays in the **index** (`git status` shows it staged). Then `git switch -c feature/recovered && git commit -m "docs: meant for a branch"`. Reinforce: `reset` moves a ref; your blobs didn't go anywhere.
+1. `git switch -c demo/throwaway`: a branch is a cheap, movable pointer to a commit. Nothing is copied.
+2. Make three small commits on `demo/throwaway` (three one-line edits to `sample-app/README.md`, each committed with `git commit -am "…"`), then `git rebase -i main`. The todo list in the editor holds exactly those three commits: reorder, squash or reword them, save and close. The commit SHAs **change**: rebase **creates new commit objects** and re-points the branch.
+3. **Merge: fast-forward.** `git switch main && git merge demo/throwaway`: `main` has not moved, so the `main` pointer just slides forward. No merge commit.
+4. **Merge: `--no-ff`.** `git switch demo/throwaway`, add one more commit, `git switch main`, then `git merge --no-ff demo/throwaway -m "Merge demo/throwaway"`: `--no-ff` forces a merge commit. `git cat-file -p HEAD` shows **two `parent` lines**. `git log --graph --decorate --oneline --all` shows the shape: the demo sits at the top; below it is the course repo's own history.
+5. **Wrong-branch recovery.** On `main`, edit `sample-app/README.md` and `git commit -am "docs: meant for a branch"`. Then `git reset --soft HEAD~1`: the branch moves back one commit, the change stays **staged**. Then `git switch -c feature/recovered && git commit -m "docs: meant for a branch"`. `reset` moved a ref; your blobs didn't go anywhere.
 
 ## You-do (breakout rooms) (60 min)
 
-Break into rooms. **Share your screen** so Sam and Jasper can float and look over your shoulder.
-Open a scratch terminal and a scratch notebook (`NOTES.local.md` is gitignored).
+Break into rooms. **Share your screen** so Sam and Jasper can look over your shoulder.
+Write your answers in `NOTES.local.md` (gitignored).
 
 We start with a short **guided warm-up together**, then you go solo through two phases on the same
-clone. **Do Phase 1 first** — its gate (`scripts/verify-lab.sh`) checks that `HEAD` is your focused
-commit, and Phase 2's merges and resets break that check, so it only passes before Phase 2.
-
-### Warm-up (together) — get set up, trace a commit, then stage by hunk
-
-**Part 0 — your fork, on your machine, in VS Code (2 min).** Most of you did this before the
-session — then only steps 3–4 apply. The point: everyone in the room works from the same place.
-
-1. Make **one parent folder** for the whole series:
-   `mkdir -p ~/mustry-academy && cd ~/mustry-academy`.
-2. Fork + clone in one go: `gh repo fork Mustry-Academy/cicd-for-ignition --clone`
-   (if you already forked, it just clones your fork). Prefer the website? Press **Fork** on
-   github.com — but you still need to clone your fork afterwards:
-   `git clone git@github.com:<your-username>/cicd-for-ignition.git`.
-   You fork once: every lab is a folder in this one repo. Then `cd cicd-for-ignition/labs/01-git-fundamentals`.
-3. Check the remote: in `git remote -v`, `origin` must show **your username** — your fork
-   is where you can commit, branch and push freely. An `upstream` pointing at `Mustry-Academy` is
-   fine: `gh` adds it so you can pull course updates.
-4. From the lab folder, open VS Code with `code .` and work from its integrated terminal
-   (`` Ctrl+` ``) from here on.
-
-> **WSL2:** clone into your Linux home (`~/…`), never `/mnt/c/…` — Git is far slower across the
-> Windows boundary and line endings get messy. `code .` from WSL automatically opens a window
-> connected to WSL.
-
-**Part 1 — trace a commit through the object graph.**
-
-1. `git switch main`, then make a small change to `sample-app/README.md`: add a single sentence.
-2. `git add sample-app/README.md && git commit -m "docs: expand sample-app intro"`.
-3. `git cat-file -p HEAD` — read it out loud. Note the `tree` SHA and the `parent` SHA.
-4. `git cat-file -p <tree-SHA>` — this is the **root** tree of the course repo, so the `README.md` entry you see here is the *course's* README, not the one you edited. Follow the sub-trees down instead: `labs` → `01-git-fundamentals` → `sample-app`, running `git cat-file -p` on each SHA in turn.
-5. `git cat-file -p <sample-app-tree-SHA>` — *this* tree lists your `README.md`. Note its blob SHA.
-6. `git cat-file -p <blob-SHA>` — confirm it matches your new file content.
-7. `git ls-tree HEAD sample-app/` — the same walk in one command. The `README.md` blob SHA should match the one you just traced by hand.
-
-**Part 2 — stage by hunk.** Reset `main` back to your fork's state first: `git reset --hard origin/main`. This drops the practice commit above (and anything else you committed on `main` while following the We-do): that's fine, we're about to do it properly.
-
-1. `git switch -c we-do-greeting-polish`.
-2. `scripts/seed-messy-state.sh` — confirm with `git status` that you have a known dirty tree across `sample-app/`.
-3. `git add -p` — stage **one** logical change, commit it. Repeat twice more, so you have three small commits. After each commit, glance at `git ls-tree -r HEAD sample-app/` and notice which blob SHA changed.
-4. `git log --graph --decorate --oneline -5` — confirm your three commits sit on top of `main`.
-
-> **Hint:** when `add -p` asks "Stage this hunk?", `y`/`n` is yes/no, `s` splits the hunk, `e` lets you hand-edit, `q` quits.
-
-### Solo
-
-Now work the two phases on your own. **Do Phase 1 first** — its gate (`scripts/verify-lab.sh`)
-checks that `HEAD` is your focused commit, and Phase 2's merges and resets break that check.
-
-### Phase 1 — whodunnit, then a focused commit
+clone. **Do Phase 1 first**: its gate (`scripts/verify-lab.sh`) checks that `HEAD` is your focused
+commit, and Phase 2's merges and resets break that check.
 
 > **Lab 01 stays on your machine: never push or Sync `main` in this lab.** Lab 02 starts by
 > resetting `main` to your fork.
 
-The warm-up left you on a scratch branch — first return to a clean `main` and delete the scratch branch, so it doesn't clutter `git log --all` in Phase 2:
+### Warm-up (together)
+
+**Part 0: open your fork's Lab 01 folder in VS Code.**
+
+```bash
+cd ~/mustry-academy/cicd-for-ignition/labs/01-git-fundamentals   # no clone yet? course README, step 1
+git remote -v                                    # origin shows YOUR username; upstream at Mustry-Academy is fine
+git config --global core.editor "code --wait"   # Git opens VS Code when it needs a message
+code .                                           # then work from its terminal (Ctrl+`)
+```
+
+Run every command in this lab from the lab folder, `labs/01-git-fundamentals/`.
+
+**Part 1: trace a commit through the object graph.**
+
+1. `git switch main`, then add a single sentence to `sample-app/README.md`.
+2. `git add sample-app/README.md && git commit -m "docs: expand sample-app intro"`.
+3. `git cat-file -p HEAD`: note the `tree` SHA and the `parent` SHA.
+4. `git cat-file -p <tree-SHA>`: this is the **root** tree of the course repo, so its `README.md` is the course's README, not the one you edited. Follow the sub-trees down: `labs` → `01-git-fundamentals` → `sample-app`, running `git cat-file -p` on each SHA in turn.
+5. `git cat-file -p <sample-app-tree-SHA>`: *this* tree lists your `README.md`. Note its blob SHA.
+6. `git cat-file -p <blob-SHA>`: your new content, and no filename.
+7. `git ls-tree HEAD sample-app/`: the same walk in one command. The `README.md` blob SHA matches the one you traced by hand.
+
+**Part 2: split a messy working tree into three commits with `git add -p`.**
+
+1. Reset `main` to your fork: `git reset --hard origin/main`. This drops the practice commit above (and anything else you committed on `main` during the We-do).
+2. `git switch -c we-do-greeting-polish`.
+3. `scripts/seed-messy-state.sh`: `git status` shows a known messy tree in `sample-app/`.
+4. `git add -p`: stage **one** logical change, commit it. Three commits in total. After each commit, run `git ls-tree -r HEAD sample-app/` and note which blob SHA changed.
+5. `git log --graph --decorate --oneline -5`: your three commits sit on top of `main`.
+
+### Phase 1 (solo): whodunnit, then a focused commit
+
+First return to a clean `main` and delete the warm-up branch:
 
 ```bash
 git switch main
 git branch -D we-do-greeting-polish
 ```
 
-Jot each answer in `NOTES.local.md` as you go.
+**Whodunnit? (1-4)**
 
-**Whodunnit? (1–4)**
+1. Open `sample-app/app.py` and find the line inside `farewell()` promising it's *"definitely safe to ship."*
+2. Run `git blame sample-app/app.py`. Every line shows its **commit, author and date**. A `^` before the SHA: the line dates from the first commit.
+3. **Who wrote that line?** Read the author off the blame output. Anyone you recognise?
+4. Read the full story of those lines: `git log -p -L :farewell:sample-app/app.py`.
 
-1. Open `sample-app/app.py` and find the suspicious line inside `farewell()` — the one promising it's *"definitely safe to ship."*
-2. Run `git blame sample-app/app.py`. Every line shows its **commit · author · date**.
-3. **Who wrote that line?** Read the author off the blame output. Anyone you recognise…?
-4. Read the full story of those lines: `git log -p -L :farewell:sample-app/app.py`. Blame finds the *who*, log finds the *why* — together they're how you reconstruct the reasoning behind any line.
+**Focused commit and gate (5-7)**
 
-**Focused commit + gate (5–7)**
+5. Add a line to `sample-app/README.md` with the **literal words "lab participant"** and your name, e.g. `Lab participant: Ada Lovelace`: the gate greps for those words. Commit it with a clear message.
+6. Compare `git ls-tree HEAD~1 sample-app/` with `git ls-tree HEAD sample-app/`: only the `README.md` blob SHA differs; the `app.py` blob and the `tests/` tree are identical.
+7. **The gate.** Run `scripts/verify-lab.sh`: it must print a green check. Run it **now**, before Phase 2.
 
-5. **Make a focused commit.** Add a line to `sample-app/README.md` that contains the **literal words "lab participant"** plus your name, e.g. `Lab participant: Ada Lovelace` — the Phase 1 gate script greps for those exact words. Commit it with a clear message.
-6. Prove that **only the `README.md` blob changed**: compare `git ls-tree HEAD~1 sample-app/` with `git ls-tree HEAD sample-app/` — the `README.md` blob SHA differs, and every other entry (the `app.py` blob, the `tests/` tree) is identical.
-7. **The gate.** Run `scripts/verify-lab.sh` — it should print all-green ✅. Run this **now**, before Phase 2: Phase 2 rewrites history, and the "HEAD touched only README" check no longer holds afterwards.
+### Phase 2 (solo): branch, merge and rebase
 
-### Phase 2 — branch, merge, and rebase
+**Part A: tag your starting point, then make three clean commits.**
 
-Tag your baseline now — `main` already includes your Phase 1 commit, and you'll reset
-back here a few times. A tag stays put while `main` moves, so `git reset --hard BASE`
-always brings you back to this exact commit:
+1. On `main` (which now includes your Phase 1 commit), tag the current commit `BASE`: `git switch main && git tag BASE`. A tag stays put while `main` moves, so `git reset --hard BASE` brings you back here in Parts B and C.
+2. `git switch -c feature/greeting-tweaks`, then run `scripts/seed-messy-state.sh`. `git status` shows three changed files.
+3. Use `git add -p` to make **three separate commits**, each containing **one** of the three changes, with a sensible message. Lumped everything into one commit? `git reset HEAD~1` and redo: it also unstages, so `add -p` has hunks to offer.
 
-```bash
-git switch main
-git tag BASE    # a name that stays put while main moves
-```
+**Part B: merge diverged branches.**
 
-**Part A — three clean commits.**
+4. Put one **unrelated** commit directly on `main`: `git switch main`, append a line to `docs/why-version-control.md` (a file neither Phase 1 nor the seed touches) and `git commit -am "chore: unrelated note on main"`. The branches have **diverged**: no fast-forward possible.
+5. `git merge feature/greeting-tweaks -m "Merge feature/greeting-tweaks"` records a **merge commit**.
+6. `git cat-file -p HEAD` lists **two `parent` lines**. `git log --graph --decorate --oneline --all` shows the diamond where the branches rejoin (at the top; the course repo's own history continues below it).
+7. **Sketch the graph in `NOTES.local.md`** and keep it for Part C.
 
-1. `git switch -c feature/greeting-tweaks` from `main`.
-2. Run `scripts/seed-messy-state.sh`. Confirm `git status` shows three changed files.
-3. Use `git add -p` to produce **three separate commits**, each containing **one** of the three changes. Write a sensible message for each — imagine the reviewer needs to skim them in 30 seconds. (Lumped everything into one commit? Redo with `git reset HEAD~1` and try again: unlike `--soft`, it also unstages, so `add -p` has hunks to offer.)
+**Part C: rebase instead.**
 
-**Part B — a real merge commit.**
+8. Still on `main`: `git reset --hard BASE` drops Part B's merge **and** its note commit. **Redo the note commit** (append another line to `docs/why-version-control.md`, `git commit -am "chore: unrelated note on main"`), or the rebase has nothing to do.
+9. `git switch feature/greeting-tweaks && git rebase main`. The three feature commits now sit on top of the new `main` tip with **new SHAs**, and no merge commit.
+10. `git switch main && git merge feature/greeting-tweaks`: this fast-forwards.
+11. Compare `git log --graph --decorate --oneline --all` with your Part B sketch: the same three feature commits, in a straight line instead of a diamond.
 
-4. From Part A, `feature/greeting-tweaks` is **three commits ahead**; `main` still sits at your Phase 1 commit.
-5. Put one small **unrelated** commit directly on `main`: `git switch main`, then append a line to `docs/why-version-control.md` (a file neither Phase 1 nor the seed touches) and `git commit -am "chore: unrelated note on main"`. Now the branches have **diverged**, so a fast-forward is impossible.
-6. `git merge feature/greeting-tweaks -m "Merge feature/greeting-tweaks"` — Git can't fast-forward, so it records a **merge commit**. The `-m` supplies its message inline, so no editor opens.
-7. `git cat-file -p HEAD` and **count the `parent` lines: two** — your own three-way merge commit from the slide. `git log --graph --decorate --oneline --all` shows the diamond where the branches rejoin (at the top; the course repo's own history continues below it).
-8. **Sketch the graph in `NOTES.local.md` and keep it** — in Part C you'll fold in the same feature work with a *linear* history instead.
+### Done?
 
-**Part C — linear rebase.**
-
-9. Reset once more — you're still on `main` from Part B: `git reset --hard BASE` — this drops Part B's merge **and** its note commit. Then **redo the note commit** (append another line to `docs/why-version-control.md`, `git commit -am "chore: unrelated note on main"`) so `main` is ahead of the feature branch's fork point — without it, the rebase has nothing to do.
-10. `git switch feature/greeting-tweaks && git rebase main`. The three feature commits should now sit on top of the new `main` tip, with no merge commit. (Notice the feature commits got **new SHAs** — rebase rewrote them.)
-11. `git switch main && git merge feature/greeting-tweaks` — this *will* fast-forward. The history is linear.
-12. Compare your final `git log --graph --decorate --oneline --all` to your Part B sketch: the same three feature commits, but in a straight line instead of a diamond.
+- `scripts/verify-lab.sh` printed a green check before Phase 2.
+- Part B: `git cat-file -p HEAD` showed two parents, and the sketch is in `NOTES.local.md`.
+- Part C: `git log --graph --decorate --oneline --all` shows the three feature commits in a straight line on `main`.
+- Nothing pushed: `main` on your fork is unchanged.
 
 ## Stretch challenges `[OPTIONAL]`
 
-Only if you finish the two phases early. The first is the higher-value one for this lab; the second
-is a deeper object-model dive for the curious; the third adds one more everyday tool to your belt.
+Only if you finish the two phases early.
 
 **1. Rebase through a conflict.** After Part C, `main` and `feature/greeting-tweaks` point at the
-**same commit** — a rebase would do nothing. Diverge them again first, then make `main` collide
-with the feature's docstring commit. Same-region edits on both branches are what *forces* a conflict:
+**same commit**. Diverge them again first, then make `main` collide with the feature's docstring commit:
 
 ```bash
-# 1 — pull main back behind the feature branch
+# 1: pull main back behind the feature branch
 git switch main
 git reset --hard HEAD~3     # the 3 feature commits leave main but stay on feature/greeting-tweaks
 
-# 2 — edit the same spot the feature's docstring commit touches
-#     (the python block below does it for you — or just make the edit by hand)
+# 2: edit the same spot the feature's docstring commit touches
+#    (the python block below does it for you, or make the edit by hand)
 python3 - <<'PY'
 from pathlib import Path
 p = Path("sample-app/app.py")
 t = p.read_text()
 t = t.replace(
     '    message = f"Hello, {name}!"',
-    '    # CONFLICT BAIT — main and your feature branch both edit greet()\n'
+    '    # CONFLICT BAIT: main and your feature branch both edit greet()\n'
     '    message = f"Hello, {name}!"',
 )
 p.write_text(t)
@@ -353,30 +245,25 @@ PY
 git commit -am "main: add a comment inside greet()"
 ```
 
-Then `git switch feature/greeting-tweaks && git rebase main` — the feature commit that added a docstring to `greet()` touches the same spot, so Git halts with a conflict on that commit. Open `sample-app/app.py`, resolve (keep both the comment and the docstring), `git add sample-app/app.py`, then `git rebase --continue` (an editor opens with the commit message: save and close it). Confirm linear history with `git log --graph --decorate --oneline --all`. If you'd rather bail, `git rebase --abort` is also a valid exit.
+Then `git switch feature/greeting-tweaks && git rebase main`: the feature commit that added a docstring to `greet()` touches the same spot, so Git halts with a conflict. Open `sample-app/app.py`, keep both the comment and the docstring, delete the markers, `git add sample-app/app.py`, then `git rebase --continue` (an editor opens with the commit message: save and close it). Confirm linear history with `git log --graph --decorate --oneline --all`. To bail out: `git rebase --abort`.
 
-**2. Diff without `git diff` (deeper dive).** Pick two adjacent commits you made yourself (e.g. two of your Part A commits). Using only `git cat-file` and `git ls-tree`, determine: which files exist in commit B but not A? For files in both, which blob SHAs differ? For the changed blobs, print both and identify the changed line(s) by eye. You're reconstructing what `git diff` does internally — a tree walk plus a blob comparison. Confirm with `git diff <A> <B>`.
+**2. Be `git diff`, by hand.** Pick two adjacent commits you made yourself, e.g. `HEAD~1` and `HEAD`. Using only `git ls-tree -r` and `git cat-file -p`: which files exist in one but not the other? For files in both, which blob SHAs differ? For a changed file, print both blobs and spot the changed lines. Then run `git diff HEAD~1 HEAD`: it should match.
 
-**3. Cherry-pick one commit.** Grab a **single** commit from a branch without merging the whole thing — and watch it land as a **brand-new commit**. (Did Stretch 1 first? Pick the **README (Run me)** or **test** commit: Stretch 1's rebase rewrote the docstring commit so its diff now expects the conflict-bait comment, and picking it onto `BASE` would conflict again.)
+**3. Cherry-pick one commit.** Copy a **single** commit from a branch onto `main`. (Did Stretch 1? Pick the **README (Run me)** or **test** commit: Stretch 1's rebase rewrote the docstring commit so it now expects the conflict-bait comment, and picking it onto `BASE` would conflict again.)
 
 ```bash
 git switch main && git reset --hard BASE    # main is behind your feature work again
 git log --oneline feature/greeting-tweaks   # pick one commit's SHA
 
 git cherry-pick <SHA>        # replays just that change onto main as a new commit
-git log --oneline -2         # same change — NEW SHA
-
-# other forms — pick what you need:
-git cherry-pick <A> <B>      # a hand-picked few
-git cherry-pick <A>~3..<A>   # a contiguous range
+git log --oneline -2         # same change, NEW SHA
 ```
 
-`cherry-pick` doesn't *move* a commit — it **replays the change as a new commit** on your current branch; `feature/greeting-tweaks` keeps its original. This is how you grab a single fix without merging a whole branch.
+`feature/greeting-tweaks` keeps its original commit.
 
-## Wrap-up & questions (15 min)
+## Wrap-up and questions (15 min)
 
-- Which of the "why VC matters" reasons resonated most with your day-to-day work?
-- When does the object-model mental model *actually* matter in real life? (Hint: rebase conflicts, recovery with `git reflog`, understanding why `git mv` is just rename + commit.)
+- Which of the things Git does for you would help your team most?
 - One thing that surprised you about how Git stores files.
 - Where would your team prefer **merge** over **rebase**, and why? Are there situations where the opposite is true?
 - If a teammate committed straight to `main` and pushed it: what do they do *now*?
