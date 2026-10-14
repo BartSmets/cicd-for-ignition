@@ -185,7 +185,7 @@ Draft a starter `.gitignore` for an Ignition project repo. Cover the **operation
 
 Commonly forgotten: `config/resources/local/` and `config/local/` (instance identity), `*.gwbk` (backups), `*.modl` (module binaries), `config/ignition/tags/*.idb` (tag value stores inside the versioned config tree), `migration-log-*.md` (written by the gateway at commissioning).
 
-> **This lab breaks two of those rules on purpose.** It deliberately tracks a throwaway seed identity under `config/local` and `resources/local` so fresh clones boot; `.gitignore` stops new churn. In a real repo, never commit them. (`services/config/resources/migration-log-202605211406.md` is tracked for the same historical reason: it is the log of the seed's one-time 8.1 to 8.3 conversion.)
+> **This lab breaks two of those rules on purpose.** It deliberately tracks a throwaway seed identity under `config/local` and `resources/local` so fresh clones boot; `.gitignore` stops new churn. In a real repo, never commit them.
 
 ---
 

@@ -17,7 +17,7 @@
       "ignitionVersion": "8.3.8",
       "modules": {
         "project-scan-endpoint": {
-          "enabled": false
+          "enabled": true
         }
       },
       "defaultEnvironment": "local",
@@ -30,7 +30,7 @@
           "ignitionVersion": "8.3.8",
           "modules": {
             "project-scan-endpoint": {
-              "enabled": false,
+              "enabled": true,
               "apiTokenFilePath": ".flint/tokens/local-api.json"
             }
           }
