@@ -124,6 +124,7 @@ labs/03-github-actions/
 │   ├── scan.sh                        ← push project-file edits to the running gateway
 │   ├── teardown.sh                    ← stop the gateway (--volumes to wipe state)
 │   ├── seed.sh                        ← plant Part 1's deliberately-broken state
+│   ├── prepare-part2.sh               ← set the reference workflow aside, scaffold your own
 │   └── validate.sh                    ← the PR green/red check (valid JSON + parseable Python)
 ├── projects/                          ← the Ignition project (bind-mounted into the gateway)
 │   └── lab-project/

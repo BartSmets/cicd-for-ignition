@@ -12,9 +12,9 @@ Actions workflow that makes those checks a required gate on every PR, then a loo
 > into a Docker volume we never commit. (Lab 04 goes deep on that file layout.)
 
 **What this lab is — and isn't.** Today you build the *safety net*: CI that catches problems
-in your project files before they ship. You won't deploy anything to a gateway yet —
-automated, file-based deployment is the subject of Labs 04–05. The goal here is to make
-"broken project files can't reach `main`" automatic.
+in your project files before they ship. You won't deploy anything to a gateway yet:
+automated deployment is the subject of Lab 04 (file-based) and Lab 05 (image-based).
+The goal here is to make "broken project files can't reach `main`" automatic.
 
 ## What you'll do
 
@@ -228,7 +228,8 @@ steps 1-3 on "Seed the broken state", steps 4-7 on "Fix everything".)
 
 > **No delete-cheats.** Don't silence ign-lint by deleting the Clock, the Kiln binding,
 > or the Power tile — only the *reference*, the *poll rate*, and the *name* were broken, so
-> restore real data bindings and a real name. The view must still load, and you can prove it
+> restore real data bindings and a real name. (The teaching deck's broken-binding slide shows
+> the Kiln binding before the edit.) The view must still load, and you can prove it
 > in the gateway: `docker compose restart` (or `scripts/scan.sh` with an API key in `.env`),
 > then reload the Overview page. A running gateway only picks up bind-mounted edits on a
 > project scan or a restart.
@@ -530,7 +531,7 @@ git switch -c fix/proper-route
 git commit -am "feat: reword overview subtitle"
 git push -u origin fix/proper-route
 gh pr create --fill
-sleep 15 && gh pr checks --watch && gh pr merge --merge   # checks take a few seconds to register
+sleep 15 && gh pr checks --watch && gh pr merge --merge --delete-branch   # checks take a few seconds to register
 git switch main && git pull
 ```
 
@@ -555,7 +556,7 @@ gh pr create --fill
 sleep 15 && gh pr checks --watch             # → lint fails; the merge stays blocked
 # edit the Clock binding → now(1500), then:
 git commit -am "fix: poll the clock at 1500 ms" && git push
-sleep 15 && gh pr checks --watch && gh pr merge --merge
+sleep 15 && gh pr checks --watch && gh pr merge --merge --delete-branch
 git switch main && git pull
 ```
 
@@ -622,8 +623,10 @@ git diff --no-index .github/ci-reference.yml ../../.github/workflows/lab03-ci.ym
   and the merge unlocks. Mind the caveat in GitHub's docs: a PR touching both docs *and*
   code triggers both workflows, and two check runs then report under each name.
 - **Add the manual Run button.** From the triggers slide: add `workflow_dispatch:` to your
-  `on:` block and push. The Actions tab grows a *Run workflow* button — click it and CI runs
-  without a PR or a push. (Part 3's runner demo uses the same trigger.)
+  `on:` block and merge it to `main` through a PR (the ruleset blocks a direct push, and GitHub
+  only shows the button for a workflow on the default branch). The Actions tab grows a
+  *Run workflow* button: click it and CI runs without a PR or a push. (Part 3's runner
+  demo uses the same trigger.)
 - **Watch GitHub censor a secret, in your own fork.** You saw the demo in the We-do; now do
   it yourself: `gh secret set EXAMPLE_SECRET --body "hunter2" -R "$(gh repo set-default --view)"`
   (the `-R` is needed because your clone has more than one remote), add a step that runs

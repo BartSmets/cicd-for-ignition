@@ -59,8 +59,6 @@ It's configured by the lab's `rule_config.json`, which is tuned so this lab's cl
 - **UnusedCustomPropertiesRule** — flags custom properties that nothing reads.
 - **ExcessiveContextDataRule** — flags oversized context data (large arrays, deep nesting, too many sibling properties / data points).
 
-This is the answer to the question the old version of this doc couldn't answer: yes, there *is* a public Ignition validator for Perspective views, and it runs gateway-free in CI.
-
 ## scripts/validate.sh — the gateway-free project validator
 
 `ign-lint` covers Perspective views deeply; `scripts/validate.sh` is the broad, dependency-light backstop. It walks `projects/` and checks two things:
