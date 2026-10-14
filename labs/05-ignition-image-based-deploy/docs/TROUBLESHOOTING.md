@@ -56,6 +56,12 @@ error there, the image was built without that `RUN`: put it back and rebuild.
   ```
 - **Trial expired.** Each gateway runs in 2-hour trial mode. Reset via *Platform → Licensing →
   Reset Trial*. Note: recreating test/production from a fresh image resets their trial clock too.
+- **Stuck commissioning.** `curl -s localhost:8089/StatusPing` keeps answering
+  `{"state":"RUNNING","details":"COMMISSIONING"}`. Despite the `RUNNING`, that gateway is not up:
+  it waits for something to be accepted, usually a module certificate or licence. `setup.sh` and
+  `scripts/deploy-image.sh` wait for it and say "still commissioning" when they give up. Open the
+  gateway in your browser to see what it asks for. Running the image with plain `docker run`? See
+  [Gateway stuck in `RUNNING / COMMISSIONING`](#gateway-stuck-in-running--commissioning-stand-alone-run).
 
 ## `docker build` / `scripts/build-image.sh` fails
 

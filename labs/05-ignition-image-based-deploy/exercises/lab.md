@@ -341,7 +341,8 @@ instructor deploys a Part 1 image to the test gateway once and points out:
    ```bash
    IGNITION_TEST_IMAGE=cicd-lab-05-ignition:sha-<short> docker compose up -d ignition-test
    ```
-5. **Wait for RUNNING:** `curl -s localhost:8089/StatusPing` until it prints RUNNING.
+5. **Wait for RUNNING:** `curl -s localhost:8089/StatusPing` until it prints `{"state":"RUNNING"}`.
+   `{"state":"RUNNING","details":"COMMISSIONING"}` means it is still commissioning: keep waiting.
 6. **Verify:** run the `docker inspect` from step 2 again: it now prints your short sha.
    Open http://localhost:8089/app/home/perspective/session-launcher and launch
    example-project: the baked project is live. Log in at http://localhost:8089: the Home page

@@ -518,14 +518,17 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
            exit 0
          fi
          docker restart "$IGNITION_CONTAINER"
+         # RUNNING without COMMISSIONING, like the module step above.
+         state=''
          for _ in $(seq 1 60); do
-           if curl -fsS --max-time 3 "$IGNITION_URL/StatusPing" 2>/dev/null | grep -q RUNNING; then
+           state="$(curl -fsS --max-time 3 "$IGNITION_URL/StatusPing" 2>/dev/null || true)"
+           if echo "$state" | grep -q '"state":"RUNNING"' && ! echo "$state" | grep -q COMMISSIONING; then
              echo "gateway RUNNING again."
              exit 0
            fi
            sleep 5
          done
-         echo "gateway did not come back after JAR restart" >&2
+         echo "gateway did not come back after JAR restart (last StatusPing: ${state:-no answer})" >&2
          exit 1
      ```
 

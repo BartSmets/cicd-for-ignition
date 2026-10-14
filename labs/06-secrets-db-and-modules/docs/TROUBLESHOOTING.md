@@ -44,6 +44,13 @@ turns CONNECTED within a minute.
   ```
 - **Trial expired.** Each gateway runs in 2-hour trial mode. After it lapses the gateway stops
   serving. Reset via *Platform → Licensing → Reset Trial* (unlimited, legal for test).
+- **Stuck commissioning.** `curl -s localhost:8088/StatusPing` keeps answering
+  `{"state":"RUNNING","details":"COMMISSIONING"}`. Despite the `RUNNING`, that gateway is not up:
+  it waits for something to be accepted, usually a module certificate or licence (Part 3's negative
+  test shows exactly this). `setup.sh` and the deploy workflow wait for it and say so when they give
+  up. Open the gateway in your browser to see what it asks for, then fix the acceptance in the
+  manifest that gateway boots with: `services/modules.json` for local,
+  `gateways/<test|production>/modules.json` (written by the deploy) for the others.
 
 ## `git status` shows lots of `resource.json` changes
 

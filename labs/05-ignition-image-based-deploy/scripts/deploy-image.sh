@@ -67,8 +67,10 @@ fi
 echo -e "${GREEN}Waiting for $ENV_NAME gateway at $URL to become RUNNING...${NC}"
 attempts=0
 max_attempts=120   # ~4 min; a fresh-image boot re-commissions the gateway
+# gateway_running (lib.sh) waits out that commissioning too: the token
+# install below restarts the gateway, which must not happen mid-commissioning.
 while [ $attempts -lt $max_attempts ]; do
-  if curl -fsS --max-time 3 "$URL/StatusPing" 2>/dev/null | grep -q RUNNING; then
+  if gateway_running "$URL"; then
     echo ""
     echo -e "${GREEN}$ENV_NAME gateway RUNNING — now serving $IMAGE${NC}"
     echo "  Verify which build it runs: docker inspect -f '{{ index .Config.Labels \"org.opencontainers.image.revision\" }}' $CONTAINER"
@@ -88,6 +90,15 @@ while [ $attempts -lt $max_attempts ]; do
 done
 
 echo ""
-echo -e "${RED}$ENV_NAME gateway did not reach RUNNING in $((max_attempts * 2))s.${NC}" >&2
+case "$GATEWAY_STATUS" in
+  *COMMISSIONING*)
+    echo -e "${RED}$ENV_NAME gateway is still commissioning after $((max_attempts * 2))s.${NC}" >&2
+    echo "  It waits for something to be accepted, usually a module certificate or" >&2
+    echo "  licence. Open $URL to see what it asks for." >&2
+    ;;
+  *)
+    echo -e "${RED}$ENV_NAME gateway did not reach RUNNING in $((max_attempts * 2))s.${NC}" >&2
+    ;;
+esac
 echo "  Check logs: docker logs --tail 200 $CONTAINER" >&2
 exit 1

@@ -220,14 +220,19 @@ jobs:
           }
           restart_gateway() {
             docker restart "$IGNITION_CONTAINER" >/dev/null
+            # StatusPing says {"state":"RUNNING","details":"COMMISSIONING"}
+            # while the gateway still commissions, and a scan then hits the
+            # commissioning page: wait for RUNNING without COMMISSIONING.
+            local state=''
             for _ in $(seq 1 60); do
-              if curl -fsS --max-time 3 "$IGNITION_URL/StatusPing" 2>/dev/null | grep -q RUNNING; then
+              state="$(curl -fsS --max-time 3 "$IGNITION_URL/StatusPing" 2>/dev/null || true)"
+              if echo "$state" | grep -q '"state":"RUNNING"' && ! echo "$state" | grep -q COMMISSIONING; then
                 echo "gateway RUNNING again"
                 return 0
               fi
               sleep 5
             done
-            echo "gateway did not reach RUNNING after restart" >&2
+            echo "gateway did not reach RUNNING after restart (last StatusPing: ${state:-no answer})" >&2
             exit 1
           }
           run_scans() {
@@ -280,12 +285,15 @@ jobs:
       - name: Smoke-check gateway health
         run: |
           set -euo pipefail
+          # Healthy = RUNNING and not stuck commissioning.
+          state=''
           for i in $(seq 1 10); do
-            if curl -fsS --max-time 3 "$IGNITION_URL/StatusPing" >/dev/null; then
+            state="$(curl -fsS --max-time 3 "$IGNITION_URL/StatusPing" 2>/dev/null || true)"
+            if echo "$state" | grep -q '"state":"RUNNING"' && ! echo "$state" | grep -q COMMISSIONING; then
               echo "gateway healthy after $((i * 2))s"
               exit 0
             fi
             sleep 2
           done
-          echo "gateway did not respond after deploy" >&2
+          echo "gateway not healthy after deploy (last StatusPing: ${state:-no answer})" >&2
           exit 1
