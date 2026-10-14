@@ -180,6 +180,27 @@ This lab uses GitHub Flow — the branch decides the gateway:
 - Module enable/disable (`services/modules.json`) needs a **restart**, not a scan:
   `docker compose restart gateway-test`.
 
+## `Error adding historian: TimescaleDB Historian` after Part 3
+
+The TimescaleDB Historian provider only starts once Part 3 installs its module,
+so a problem with its password stays hidden until then. Read the lines just
+above and below the error in `docker logs lab06-gateway-test`:
+
+- `Failed to resolve password secret` ... `Unable to decrypt ciphertext`: the
+  provider still has its seeded **embedded** password, which only your local
+  gateway can decrypt. Do the 1B sweep (`git grep -l '"Embedded"' -- services/config`),
+  re-point the historian's `password` in `core` and all three modes to
+  `LabSecrets` / `POSTGRES_PASSWORD`, and ship it.
+- `the password is an empty string` or `password authentication failed`: the
+  reference is there but resolves to nothing usable on that gateway. Same
+  checks as for the `TimescaleDB` connection: the `LabSecrets` provider sits
+  under `resources/core/` with a `POSTGRES_PASSWORD` entry, and the gateway
+  has `/run/secrets/postgres_password` (a recreated test/production container
+  has none until the next deploy ships it).
+
+The provider retries when its config changes, so the deploy that ships the
+fix (or a rescan) brings it to **Running** under *Services → Historians*.
+
 ## Validate before you push
 
 ```bash

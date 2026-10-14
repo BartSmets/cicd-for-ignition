@@ -818,6 +818,7 @@ services:
         <ul class="checks">
           <li class="no"><b>The UI saves into the active mode's collection.</b> The local gateway runs <code>-Dignition.config.mode=local-development</code>, so a new provider lands in <code>resources/local-development/</code>, which never deploys. Move it to <code>core</code>: that is what test and production inherit.</li>
           <li class="no"><b>Every override has its own password field.</b> <code>TimescaleDB</code> has local-development, test and production overrides: re-point the password in <b>each</b>, or that mode keeps its old embedded secret. <b>Create Override</b> in the connection adds one for another mode.</li>
+          <li class="no"><b>Sweep for the secret you didn't know about.</b> Any committed resource can embed a ciphertext, and one whose module isn't loaded yet stays silent until it is. Ask git, re-point what you own.</li>
         </ul>
         <div>
           <div class="col-head">What test resolves</div>
@@ -830,7 +831,10 @@ resources/<span class="grn">core</span>/ignition/secret-provider/LabSecrets/
 resources/core/.../TimescaleDB/config.json        <span class="cm"># Referenced</span>
 resources/test/.../TimescaleDB/config.json        <span class="cm"># Referenced too:</span>
 resources/production/.../TimescaleDB/config.json  <span class="cm"># each override</span>
-resources/local-development/.../TimescaleDB/...   <span class="cm"># has its own field</span></pre></div>
+resources/local-development/.../TimescaleDB/...   <span class="cm"># has its own field</span>
+
+<span class="cm"># sweep: which committed config still embeds a secret?</span>
+git grep -l '"Embedded"' -- services/config</pre></div>
         <div class="aside"><span class="label">Check with git, not with the UI</span>After every UI change, <code>git status</code> tells you which collection it went into. Green locally proves nothing about test.</div>
       </div>
     </div>
