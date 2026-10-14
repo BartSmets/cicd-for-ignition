@@ -20,32 +20,28 @@ You should leave this lab able to:
 
 ## Pre-flight
 
+Go to this lab's folder in your clone and start the stack:
+
 ```bash
 cd ~/mustry-academy/cicd-for-ignition/labs/04-ignition-file-based-deploy
-[ -f .env ] || cp .env.example .env   # no-op if course-setup.sh already created it
-scripts/setup.sh    # idempotent — brings up the stack and waits for all three gateways
+code .
+scripts/setup.sh    # idempotent: brings up the stack and waits for all three gateways
 # When it finishes:
 curl -fsS http://localhost:8088/StatusPing
 ```
 
 Open <http://localhost:8088> (the `local` gateway) in your browser. (Did `docker compose up` report a port that is already allocated? Set other host ports in `.env`, see [`docs/TROUBLESHOOTING.md`](../docs/TROUBLESHOOTING.md), and use those wherever this lab says `:8088` / `:8089` / `:8090`.) Login: `admin` / `password` (or whatever you set as `GATEWAY_ADMIN_PASSWORD_LOCAL` in `.env`). The test and production gateways (`:8089` / `:8090`) come up too but stay empty until the deploy part.
 
-Before you start the deploy part, get these in place (they take a few minutes and the #1 "nothing deploys" cause is forgetting to enable Actions on the fork — or a push that only touched docs, which the `paths:` filter skips):
+Two things the deploy part needs:
 
-- **Actions enabled on your fork.** Your fork's *Actions* tab lists your Lab 03 runs. If it still shows "I understand my workflows, go ahead and enable them", click it. The bundled runner registers against your fork, not the course repo.
-- **`gh` pointed at your fork:** `gh repo set-default <you>/cicd-for-ignition`. You did this once for the course clone; `gh repo set-default --view` confirms it. Without it, `gh` commands (like `gh pr create`) ask which repo you mean, or worse, target the course repo instead of your fork.
-- **A GitHub Personal Access Token (PAT) with `repo` scope**, plus `RUNNER_REPO_URL` in `.env` pointed at **your fork** (`https://github.com/<you>/cicd-for-ignition`). If you ran the root `course-setup.sh`, both are already in `.env`. The bundled `github-runner` container uses the PAT to auto-register against your fork. You create this token once here; **Lab 06 reuses the same one** (Lab 05 has no runner), so keep it somewhere safe. To create it:
-  1. Go to **github.com/settings/tokens** → **Generate new token** → **Generate new token (classic)**.
-  2. Give it a name (e.g. `cicd-course-runner`) and tick the **`repo`** scope.
-  3. Click **Generate token** and copy the `ghp_...` value (you can't read it back later).
-  4. Paste it into `.env` as `RUNNER_GITHUB_PAT=ghp_...`. It stays in `.env` and is never committed.
-- **Fork PR approval on your fork.** Lab 03 taught: never attach a self-hosted runner to a public repo that accepts fork PRs. This lab does exactly that on purpose: your fork is public, and the runner holds the Docker socket, which is root on your laptop. The deploy workflows only fire on a push to `main` or a tag, which a fork PR cannot cause, but a PR can edit any workflow to say `runs-on: [self-hosted, lab04]` and its `pull_request` run would execute on your machine. It is acceptable here because the runner only lives for the lab, nobody else opens PRs on your fork, and you switch on the guard rail first: your fork's **Settings → Actions → General → Approval for running fork pull request workflows from contributors → Require approval for all external contributors → Save**. A PR from anyone who is not a collaborator then waits for your click before any job starts. Same thing from the CLI:
+- **Fork PR approval on your fork.** Your fork is public and this lab's runner holds the Docker socket, which is root on your laptop. Set your fork's **Settings → Actions → General → Approval for running fork pull request workflows from contributors → Require approval for all external contributors → Save**. A PR from anyone who is not a collaborator then waits for your click before any job starts. Same thing from the CLI:
   ```bash
   echo '{"approval_policy":"all_external_contributors"}' | gh api -X PUT repos/<you>/cicd-for-ignition/actions/permissions/fork-pr-contributor-approval --input -
   ```
   Stop the runner when the course is over (`docker compose down` in this folder).
-- **An Ignition API key per gateway you want to scan.** You already have these: `scripts/setup.sh` generated a key per gateway into `.env` (`IGNITION_API_KEY_LOCAL` / `_TEST` / `_PRODUCTION`), unique to your clone, and installed the matching token on each gateway. Nothing key-related is in git — a committed key would be a working credential in every fork. (In the gateway UI you'd do the same by hand: *Platform → Security → API Keys → Create API Key*. 8.3 has no scan-only scope: a key gets a security level, and the scan API needs that level in *Gateway Write Permissions*, as in Lab 02.)
-- **GitHub Environments** for the deploy workflows: `lab04-gateway-test` for `lab04-deploy.yml`, `lab04-gateway-production` for `lab04-release.yml`. Each needs a secret `IGNITION_API_KEY` (the matching `_TEST` / `_PRODUCTION` value from your `.env`).
+- **The runner URL and PAT in `.env`.** The course setup wrote `RUNNER_REPO_URL` (your fork) and `RUNNER_GITHUB_PAT` (your `repo`-scope token) into this lab's `.env`. `scripts/setup.sh` warns if either is missing; Part 2.1 has the fix.
+
+`scripts/setup.sh` also generated an API key per gateway into `.env` (`IGNITION_API_KEY_LOCAL` / `_TEST` / `_PRODUCTION`) and installed the matching token on each gateway. Nothing key-related is in git.
 
 Read-ahead: [`docs/ignition-file-structure.md`](../docs/ignition-file-structure.md) and [`docs/file-based-deploy-pattern.md`](../docs/file-based-deploy-pattern.md).
 
@@ -136,14 +132,7 @@ Prove that the things people assume live "inside Ignition somewhere" are all pla
    diff services/config/resources/local-development/ignition/database-connection/TimescaleDB/config.json \
         services/config/resources/production/ignition/database-connection/TimescaleDB/config.json
    ```
-   Exactly one line differs: the `connectURL` points at `ignition_local_development` vs `ignition_production`. Same connection *name*, same everything else (that falls through to `core`), one per-mode override. The real-world version: a device named `PLC-01` is a **simulator in test** and the **real device in production**, under one name, so your project code never changes.
-
-5. **Where is the CSS "hidden"?** In Perspective, styling lives in a few honest places, all of them files:
-   - **Inline component styles** live right in the view: open `projects/example-project/com.inductiveautomation.perspective/views/pages/refrigeration/view.json` and find the `style` props on components.
-   - **Style classes** (reusable named styles) are a *project resource* under `com.inductiveautomation.perspective/style-classes/<name>/` when a project defines them. This repo styles inline, so it has none, but that is where they land.
-   - **Themes** (the gateway-wide look) are gateway-level resources: `services/config/resources/core/com.inductiveautomation.perspective/themes/<name>/` holds each theme's `index.css` and `variables.css`.
-
-   The takeaway: there is no secret CSS store. It is inline in views, or a style-class resource, or a gateway theme file — all readable, all diffable.
+   Exactly one line differs: the `connectURL` points at `ignition_local_development` vs `ignition_production`. Same connection *name*, same everything else (that falls through to `core`), one per-mode override.
 
 ## Solo: make three changes, classify every one (~25 min)
 
@@ -160,7 +149,7 @@ Pick three changes from this list (or invent your own). For each note:
 
 Suggested changes:
 
-1. Add a **Perspective view** to one of the two projects. No Designer? Simulate on disk: create `projects/packaging-site/com.inductiveautomation.perspective/views/pages/<Name>/{view.json, resource.json}` with the minimal 8.3 content from [`docs/ignition-file-structure.md`](../docs/ignition-file-structure.md). Note the `resource.json` manifest is **required** in 8.3, and that this lands under *one* project only, unlike a gateway resource.
+1. Add a **Perspective view** to one of the two projects. No Designer? Write it on disk: create `projects/packaging-site/com.inductiveautomation.perspective/views/pages/<Name>/{view.json, resource.json}` with the minimal 8.3 content from [`docs/ignition-file-structure.md`](../docs/ignition-file-structure.md), then `scripts/scan.sh`. Note the `resource.json` manifest is **required** in 8.3, and that this lands under *one* project only, unlike a gateway resource.
 2. Add a **device connection** (Connections → Devices → Connections, e.g. a Simulator)
 3. Add a **new user** to the gateway (Platform → Security → User Sources → ⋮ on `default` → Manage Users)
 4. Add a **new tag provider** (Services → Tags → Create Tag Provider)
@@ -187,7 +176,7 @@ Draft a starter `.gitignore` for an Ignition project repo. Cover the **operation
 
 Commonly forgotten: `config/resources/local/` and `config/local/` (instance identity), `*.gwbk` (backups), `*.modl` (module binaries), `config/ignition/tags/*.idb` (tag value stores inside the versioned config tree), `migration-log-*.md` (written by the gateway at commissioning).
 
-> **This lab breaks two of those rules on purpose.** It deliberately tracks a throwaway seed identity under `config/local` and `resources/local` so fresh clones boot; `.gitignore` stops new churn. In a real repo, never commit them.
+This repo tracks a seed copy of the two `local` folders (`config/local`, `config/resources/local`) so a fresh clone boots; `.gitignore` stops new churn. Never do that in a real repo.
 
 ---
 
@@ -222,7 +211,7 @@ Edit a view in the shipped `example-project` and ship it to test by hand — thi
 
    > **Expect red `null` values on test.** You copied the project, not the gateway config: test has no tag provider, OPC connection or database yet, so every binding shows red / `null`. That is expected. The first real deploy in Part 2.3 ships `services/config/` too, and the values come alive.
 
-   `lab04-deploy.yml` does one more thing before copying: it **wipes** `projects/` and `config/resources/` on the target (sparing the entries `.deployignore` protects — `config/local/`, `config/resources/local/`, and the gateway-owned internal identity by name: `user-source/default/`, `user-source/opcua-module/`, `identity-provider/default/`), so a resource deleted in the repo disappears from the gateway too. The gateway's runtime state next to `config/resources/`, such as the tag value store `config/ignition/tags/valueStore.idb`, is never wiped: the running gateway keeps that file open. You'll read that step line by line in the workflow anatomy below.
+   `lab04-deploy.yml` does one more thing before copying: it **wipes** `projects/` and `config/resources/` on the target, so a resource deleted in the repo disappears from the gateway too. It spares what `.deployignore` protects (`config/local/`, `config/resources/local/`, the internal identity by name: `user-source/default/`, `user-source/opcua-module/`, `identity-provider/default/`, and the gateway's own `api-token/`) and the gateway's runtime state next to `config/resources/`, such as the tag value store `config/ignition/tags/valueStore.idb`, which the running gateway keeps open.
 4. Inspect `.deployignore`. Notice it excludes `README.md`, `LICENSE`, the `.github/` directory, `docs/`, `scripts/`, the per-instance `services/config/resources/local/`, and the gateway-owned **internal** identity by name: `user-source/default/`, `user-source/opcua-module/`, `identity-provider/default/` (deploying those would overwrite the target's admin user — instant lockout). Identity resources you add yourself (database or AD user sources, SAML/OIDC providers) hold no password data and deploy normally, as does `security-properties` (permission policy — tracked and shipped). For each pattern, say **why the gateway shouldn't have that file**.
 
 > **Leave the edit uncommitted for now.** Part 2.3 commits it together with the project you'll create there — that's the moment the repo catches up with what you hand-deployed.
@@ -278,7 +267,9 @@ You **don't** need to set `IGNITION_URL` or `IGNITION_CONTAINER` variables unles
 ### Part 2.3 — Ship to test via `main` (15 min)
 
 1. Create a **new project named `sample-project`** on the local gateway, the way you always do in Ignition: Designer → New Project (or the gateway UI, Platform → Projects). Because local bind-mounts `./projects/`, the project lands in your working tree the moment the gateway saves it — `git status` shows it as an untracked `projects/sample-project/` folder. That folder is your deployable: no export, no file editing.
-2. Create **one simple view** in that project in the Designer (any name — e.g. a label with your name on it) and save. In the *New View* dialog, tick **Page URL** and give it `/`: that makes the view the project's start page, so a browser can open it. That gives you something visible to recognize on the test gateway after the deploy.
+2. Create **one simple view** in that project in the Designer (any name, e.g. a label with your name on it) and save. In the *New View* dialog, tick **Page URL** and give it `/`: that makes the view the project's start page, so a browser can open it. That gives you something visible to recognize on the test gateway after the deploy.
+
+   No Designer? Write the view on disk: the minimal 8.3 content in [`docs/ignition-file-structure.md`](../docs/ignition-file-structure.md) creates `projects/sample-project/` with one view and the page config that opens it at `/`. Then run `scripts/scan.sh` and open <http://localhost:8088/data/perspective/client/sample-project>.
 3. Branch off `main` and commit it, together with the still-uncommitted *Run Control v2* edit from the deploy-by-hand, so the repo matches what's already on the local gateway:
    ```bash
    git switch main && git switch -c feature/add-sample-project

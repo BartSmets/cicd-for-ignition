@@ -119,8 +119,8 @@ pf_persist_lab_gid
 # The github-runner container auto-registers against your fork using the
 # GitHub Personal Access Token in RUNNER_GITHUB_PAT (see .env). If it's still
 # the placeholder, the runner container will restart-loop with a 401 in its
-# logs — the gateways still come up fine, so this is only a heads-up. This is
-# the lab where you create the PAT; Lab 06 reuses the same token.
+# logs; the gateways still come up fine, so this is only a heads-up. The
+# course setup puts the PAT here; Lab 06 uses the same token.
 runner_pat_reminder() {
     local pat repo_url
     pat="$(env_value RUNNER_GITHUB_PAT)"

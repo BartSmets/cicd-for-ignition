@@ -531,7 +531,7 @@ a{color:var(--primary-deep)}
   <div class="body">
     <ul class="checks" style="max-width:68rem">
       <li><b>Share your screen</b> in your breakout room: this is a "look over your shoulder" class, so we drop in where it's useful.</li>
-      <li><b>Run <code>scripts/setup.sh</code> first</b> (idempotent). It brings up three gateways, TimescaleDB and the runner, and waits until everything is RUNNING (a cold start takes a few minutes).</li>
+      <li><b><code>scripts/setup.sh</code> is safe to re-run.</b> It waits until every gateway is RUNNING; a cold start takes a few minutes.</li>
       <li><b>Trial mode is fine.</b> Each gateway runs a 2-hour trial. Reset it when necessary (<i>Platform → Licensing → Reset Trial</i>).</li>
       <li><b><code>exercises/lab.md</code> is the source of truth.</b> These slides summarise it; when they differ, follow <code>lab.md</code>.</li>
     </ul>
@@ -553,60 +553,31 @@ a{color:var(--primary-deep)}
   </div>
 </section>
 
-<!-- SETUP · FORK -->
+<!-- SETUP -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num warm">SETUP · 1</span><h2 class="title">In your fork: check Actions, require approval for outside PRs</h2></div>
+  <div class="sechead"><span class="num warm">SETUP</span><h2 class="title">Open this lab, require approval for outside PRs, start the stack</h2></div>
   <div class="body">
     <div class="work">
       <ol class="steps alt">
-        <li><b>Open this lab</b> in your course clone: <code>labs/04-ignition-file-based-deploy</code>.</li>
-        <li><b>Actions on?</b> Your fork's <b>Actions</b> tab lists your Lab 03 runs. If it still shows "<i>I understand my workflows, go ahead and enable them</i>", click it: without it nothing ever deploys.</li>
-        <li><b>Require approval for outside PRs:</b> <i>Settings → Actions → General</i> → <b>Approval for running fork pull request workflows from contributors</b> → <b>Require approval for all external contributors</b> → Save. Your fork is public and this lab's runner holds the Docker socket (Lab 03's rule).</li>
+        <li><b>Go to this lab's folder</b> in your clone and open it in VS Code.</li>
+        <li><b>Require approval for outside PRs:</b> <i>Settings → Actions → General</i> → <b>Approval for running fork pull request workflows from contributors</b> → <b>Require approval for all external contributors</b> → Save. Your fork is public and this lab's runner holds the Docker socket.</li>
+        <li><b>Start the stack:</b> three gateways, TimescaleDB and the runner. <code>setup.sh</code> warns if <code>.env</code> has no runner URL or PAT yet.</li>
       </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># 1: this lab's folder in your course clone</span>
+        <div class="code"><pre><span class="cm"># 1: this lab's folder</span>
 cd ~/mustry-academy/cicd-for-ignition
 cd labs/04-ignition-file-based-deploy
+code .
 
-<span class="cm"># 3: the same setting from the CLI</span>
+<span class="cm"># 2: the same setting from the CLI</span>
 R=<span class="cmd2">&lt;you&gt;</span>/cicd-for-ignition
 echo '{"approval_policy":"all_external_contributors"}' \
   | gh api -X PUT --input - \
-    repos/$R/actions/permissions/fork-pr-contributor-approval</pre></div>
-      </div>
-    </div>
-  </div>
-</section>
+    repos/$R/actions/permissions/fork-pr-contributor-approval
 
-<!-- SETUP · TOKEN, .ENV, STACK -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num warm">SETUP · 2</span><h2 class="title">Create a runner token, fill in <code>.env</code>, start the stack</h2></div>
-  <div class="body">
-    <div class="work">
-      <ol class="steps alt">
-        <li data-n="4"><b>Create a runner PAT</b> at <code>github.com/settings/tokens</code>: <b>Generate new token (classic)</b>, tick <code>repo</code>, <b>Generate</b>, copy the <code>ghp_…</code> value. Made <b>once</b>; Lab 06 reuses it.</li>
-        <li data-n="5"><b>Copy the env file</b> and change <b>two lines</b>: <code>RUNNER_REPO_URL</code> points at <b>your fork</b>, your token goes in <code>RUNNER_GITHUB_PAT</code>. Leave the logins as shipped and the three <code>IGNITION_API_KEY_*</code> lines <b>empty</b>: <code>setup.sh</code> generates a key per gateway. No key ever lives in the repo.</li>
-        <li data-n="6"><b>Check the remotes:</b> <code>origin</code> shows <b>your username</b>. <code>gh repo set-default</code> makes <code>gh</code> target your fork. Then <code>code .</code> and <code>scripts/setup.sh</code>.</li>
-      </ol>
-      <div class="side">
-        <div class="code"><pre><span class="cm"># 4: make a repo-scope PAT (github.com/settings/tokens)</span>
-<span class="cm">#    Generate new token (classic) → tick "repo" → copy ghp_…</span>
-
-<span class="cm"># 5: copy the env file, change TWO lines only</span>
-[ -f .env ] || cp .env.example .env
-<span class="cm">#    RUNNER_REPO_URL=https://github.com/<span class="cmd2">&lt;you&gt;</span>/cicd-for-ignition</span>
-<span class="cm">#    RUNNER_GITHUB_PAT=<span class="cmd2">ghp_your_token</span></span>
-<span class="cm">#    leave the logins as-is; setup.sh fills the API keys in</span>
-
-<span class="cm"># 6: origin → YOUR username? Make gh target YOUR fork,</span>
-<span class="cm">#    open VS Code, then bring the stack up</span>
-git remote -v
-gh repo set-default <span class="cmd2">&lt;you&gt;</span>/cicd-for-ignition
-code .
-scripts/setup.sh
-<span class="cm"># three gateways + TimescaleDB + runner</span></pre></div>
+<span class="cm"># 3: start the stack</span>
+scripts/setup.sh</pre></div>
       </div>
     </div>
   </div>
@@ -662,12 +633,15 @@ git status                 <span class="cm"># the same files, in your repo</span
     <ol class="steps alt">
       <li data-n="4"><b>Everything is a file.</b> Open the shipped <code>TimescaleDB</code> connection, the <code>Simulator</code> device and the <code>example-tags</code> tag definitions.</li>
       <li data-n="5"><b>Deployment modes:</b> <code>diff</code> the <code>local-development</code> vs <code>production</code> connection. Exactly one line differs.</li>
-      <li data-n="6"><b>Styles:</b> find where Perspective keeps them (inline in views, style classes, gateway themes).</li>
     </ol>
-    <div class="code"><pre><span class="cm"># 5: deployment modes, one per-mode override</span>
+    <div class="code"><pre><span class="cm"># 4: under services/config/resources/core/</span>
+ignition/database-connection/TimescaleDB/config.json
+com.inductiveautomation.opcua/device/Simulator/config.json
+ignition/tag-definition/example-tags/tags.json
+
+<span class="cm"># 5: deployment modes, one per-mode override</span>
 diff services/config/resources/local-development/ignition/database-connection/TimescaleDB/config.json \
      services/config/resources/production/ignition/database-connection/TimescaleDB/config.json</pre></div>
-    <div class="aside warn"><span class="label">Heads-up</span>A UI edit lands in the collection selected in the <b>Deployment Modes</b> bar: <code>local-development</code> on local. Shared config belongs in <code>core</code>. And not everything shows in git: a <b>new user</b> is written to <code>…/user-source/default/users.json</code>, which <code>.gitignore</code> hides because it holds <b>password hashes</b>.</div>
   </div>
 </section>
 
@@ -680,7 +654,7 @@ diff services/config/resources/local-development/ignition/database-connection/Ti
       <div>
         <h3 class="col-head">Pick three (list in <code>lab.md</code>)</h3>
         <ul class="dots">
-          <li>a Perspective view</li>
+          <li>a Perspective view (no Designer? write it on disk: <code>docs/ignition-file-structure.md</code>)</li>
           <li>a device connection</li>
           <li>a user</li>
           <li>a tag provider</li>
@@ -720,20 +694,19 @@ diff services/config/resources/local-development/ignition/database-connection/Ti
 <!-- PART 2 · WE DO · BY HAND -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num warm">PART 2 · WE DO</span><h2 class="title">The deploy by hand: edit a view, scan local, copy it to test</h2></div>
+  <div class="sechead"><span class="num warm">PART 2 · WE DO</span><h2 class="title">Deploy a view to test by hand, then read <code>.deployignore</code></h2></div>
   <div class="body">
     <div class="work">
       <ol class="steps alt">
         <li><b>Edit a view that already exists:</b> in <code>example-project</code>'s <code>overview</code> <code>view.json</code>, change the label text <code>"Run Control"</code> to <code>"Run Control v2"</code>. Local bind-mounts <code>./projects/</code>, so this <b>is</b> editing local's disk.</li>
         <li>Run <code>scripts/scan.sh</code>, open <code>localhost:8088/data/perspective/client/example-project</code>: the top-left card reads <b>RUN CONTROL V2</b>.</li>
         <li><b>Ship to test by hand:</b> <code>docker cp</code> the project, scan. Test starts <b>empty</b>, so nothing to wipe. Verify at <code>localhost:8089/…/example-project</code>.</li>
+        <li><b>Read <code>.deployignore</code>:</b> for each pattern, say why the gateway shouldn't have that file.</li>
       </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># 1: edit the shipped view; the bind mount means your</span>
-<span class="cm">#   working-tree edit is already on local's disk</span>
-<span class="cm">#   projects/example-project/com.inductiveautomation</span>
-<span class="cm">#     .perspective/views/pages/overview/view.json</span>
-<span class="cm">#   "text": "Run Control" → "Run Control v2"</span>
+        <div class="code"><pre><span class="cm"># 1: projects/example-project/com.inductiveautomation</span>
+<span class="cm">#      .perspective/views/pages/overview/view.json</span>
+<span class="cm">#    "text": "Run Control" → "Run Control v2"</span>
 
 <span class="cm"># 2 (local): just scan, then verify at :8088</span>
 scripts/scan.sh
@@ -741,35 +714,12 @@ scripts/scan.sh
 <span class="cm"># 3 (test): copy the project over, then scan the test gateway</span>
 docker cp ./projects/. \
   lab04-ignition-test:/usr/local/bin/ignition/data/projects/
-scripts/scan.sh test</pre></div>
-        <div class="aside warn" style="font-size:var(--text-base)"><span class="label">Red null values on test are expected</span>You copied only the project: test has no tags or connections yet. The first real deploy ships the config too. Host check: <code>ls gateways/test/projects</code>.</div>
-      </div>
-    </div>
-  </div>
-</section>
+scripts/scan.sh test
+ls gateways/test/projects   <span class="cm"># on the host</span>
 
-<!-- PART 2 · WE DO · DEPLOYIGNORE -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num warm">PART 2 · WE DO</span><h2 class="title">Read <code>.deployignore</code>, and what <code>lab04-deploy.yml</code> adds</h2></div>
-  <div class="body">
-    <ol class="steps alt" style="max-width:68rem">
-      <li data-n="4">Open <code>.deployignore</code>. For each pattern, say <b>why the gateway shouldn't have that file</b>. The leading <code>/</code> anchors a pattern to the lab root, as in <code>.gitignore</code>: without it, <code>tests/</code> would also prune <code>example-project</code>'s script package <code>tests</code>.</li>
-    </ol>
-    <div class="compare wipe">
-      <div class="blue">
-        <h3>The workflow wipes first</h3>
-        <p class="t-md muted">Before copying, <code>lab04-deploy.yml</code> <b>wipes</b> <code>projects/</code> and <code>config/resources/</code>, so a resource deleted in the repo disappears from the gateway too. You'll read that step in the workflow.</p>
-      </div>
-      <div style="border-top-color:var(--teal)">
-        <h3>…sparing what <code>.deployignore</code> protects</h3>
-        <ul class="dots">
-          <li><code>config/local/</code> and <code>config/resources/local/</code></li>
-          <li>The internal identity, by name: <code>user-source/default/</code>, <code>user-source/opcua-module/</code>, <code>identity-provider/default/</code></li>
-          <li>The gateway's own <code>api-token/</code></li>
-          <li>The gateway's runtime state next to <code>config/resources/</code>, such as the tag value store in <code>config/ignition/tags/</code></li>
-        </ul>
-        <p class="t-sm muted">Other identity resources and <code>security-properties</code> are ordinary config and ship normally.</p>
+<span class="cm"># 4: what never lands on a gateway</span>
+cat .deployignore</pre></div>
+        <div class="aside warn" style="font-size:var(--text-base)"><span class="label">Red null values on test are expected</span>You copied only the project: test has no tags or connections yet. The first real deploy ships the config too.</div>
       </div>
     </div>
   </div>
@@ -804,8 +754,8 @@ docker compose logs --tail 50 github-runner
   <div class="body">
     <div class="work">
       <ol class="steps">
-        <li><b>Create a project <code>sample-project</code></b> on the local gateway, the usual way (Designer → New Project, or Platform → Projects). The bind mount drops it into your working tree: that folder <b>is</b> your deployable.</li>
-        <li><b>Create one simple view</b> in the Designer (e.g. a label with your name). Tick <b>Page URL</b> (<code>/</code>) in the <i>New View</i> dialog so a browser can open it. <b>Save</b>.</li>
+        <li><b>Create a project <code>sample-project</code></b> on the local gateway (Designer → New Project, or Platform → Projects). The bind mount drops it into your working tree: that folder <b>is</b> your deployable.</li>
+        <li><b>Create one simple view</b> in the Designer (e.g. a label with your name). Tick <b>Page URL</b> (<code>/</code>) in the <i>New View</i> dialog so a browser can open it. <b>Save</b>. No Designer? Write the view on disk with the minimal 8.3 content from <code>docs/ignition-file-structure.md</code>, then <code>scripts/scan.sh</code>.</li>
         <li>Branch <code>feature/add-sample-project</code> off <code>main</code>, <code>git add projects/</code> and commit (this also picks up the <i>Run Control v2</i> edit), then push.</li>
       </ol>
       <div class="side">
@@ -838,8 +788,9 @@ git push -u origin feature/add-sample-project</pre></div>
         <div class="code"><pre><span class="cm"># then on GitHub: PR into main → CI green → merge</span>
 
 <span class="cm"># 6: after the deploy, see what CI shipped</span>
-ls gateways/test/projects</pre></div>
-        <p class="t-md">The listing shows <code>example-project</code>, <code>packaging-site</code> <b>and</b> yours: the unit of deploy is the whole <code>projects/</code> tree.</p>
+ls gateways/test/projects
+<span class="cm"># example-project  packaging-site  sample-project:</span>
+<span class="cm"># one deploy ships the whole projects/ tree</span></pre></div>
         <div class="aside warn"><span class="label">Nothing deployed?</span>Two classic causes: the change didn't touch a deploy path (the <code>paths:</code> filter skipped it), or Actions isn't enabled on your fork.</div>
       </div>
     </div>
@@ -853,9 +804,8 @@ ls gateways/test/projects</pre></div>
   <div class="body">
     <div class="work">
       <ol class="steps">
-        <li>The change is already on <code>main</code> from the test deploy: now tag it.</li>
-        <li><b>The tag is what ships production.</b> The merge already shipped test, but only a <code>lab04-v*</code> tag reaches production.</li>
-        <li>Tag <code>lab04-v0.1.0</code> and push the tag: <code>lab04-release.yml</code> runs the same five steps against the production container. Tag already taken (inherited at fork time)? Use the next free number; <code>git tag -l</code> shows what's taken.</li>
+        <li><b>The tag is what ships production.</b> The merge already shipped test; the change is on <code>main</code>, so you only tag it.</li>
+        <li>Tag <code>lab04-v0.1.0</code> and push the tag: <code>lab04-release.yml</code> runs the same five steps against the production container. Tag already taken? Use the next free number; <code>git tag -l</code> shows what's taken.</li>
         <li><b>Verify at localhost:8090</b> (or Designer). Host check: <code>ls gateways/production/projects</code>.</li>
       </ol>
       <div class="side">
@@ -939,9 +889,8 @@ docker compose up -d ignition-test  <span class="cm"># recovery</span></pre></di
         <ol class="steps alt">
           <li>From memory, draft a starter <code>.gitignore</code> covering the <b>operational bucket</b>: the internal DB, tag value stores, caches, blob stores.</li>
           <li>Compare with the shipped <code>.gitignore</code>. <b>What did you miss? What did the shipped one miss?</b></li>
-          <li>Commonly forgotten: <code>config/resources/local/</code> and <code>config/local/</code> (instance identity), <code>*.gwbk</code>, <code>*.modl</code>, <code>tags/*.idb</code>, <code>migration-log-*.md</code>.</li>
+          <li>Commonly forgotten: <code>config/resources/local/</code> and <code>config/local/</code> (instance identity), <code>*.gwbk</code>, <code>*.modl</code>, <code>tags/*.idb</code>, <code>migration-log-*.md</code>. This repo tracks a seed copy of the two <code>local</code> folders so a fresh clone boots; never do that in a real repo.</li>
         </ol>
-        <div class="aside warn" style="font-size:var(--text-base)"><span class="label">This lab breaks the rule on purpose</span>It tracks a throwaway seed identity under <code>config/local</code> and <code>resources/local</code> so fresh clones boot; <code>.gitignore</code> stops new churn. In a real repo, never commit them.</div>
       </div>
       <div class="side">
         <div class="code"><pre><span class="cm"># a reasonable answer looks something like:</span>
