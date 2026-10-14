@@ -130,7 +130,10 @@ values and the per-environment database target.)
      secrets-management keys that are committed for the local gateway
      (services/config/ignition/keys/ + IGNITION_ROOT_KEY_PASSWORD in compose)
      and excluded from the deploy payload — so local decrypts them and
-     test/production fault with "Unable to decrypt ciphertext", by design. -->
+     test/production fault with "Unable to decrypt ciphertext", by design.
+     The TimescaleDB Historian provider (core + all three modes) carries the
+     same kind of custom-key ciphertext for `ignition`; it stays silent until
+     Part 3 installs its module, and the 1B sweep is what catches it. -->
 
 ### Part 1 — hook up a secret for the db-connection (±30 min)
 Two db-connections, same database server, different users: `TimescaleDB` logs in
@@ -156,6 +159,27 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
   mv services/config/resources/{local-development,core}/ignition/secret-provider
   ./scripts/scan.sh          # still Valid, now from core
   ```
+
+  Then **sweep for the last embedded secret**: the two connections were the
+  ones you knew about, but any committed resource can carry a ciphertext.
+  Ask git which committed config files still do:
+
+  ```bash
+  git grep -l '"Embedded"' -- services/config
+  ```
+
+  Two resources answer. The built-in `Ignition OPC UA Server` connection is
+  the gateway's loopback to its own OPC UA server, with Ignition's stock
+  credentials under the default key every installation shares, so it
+  decrypts everywhere: leave it. The other is the **TimescaleDB Historian** provider, in `core` and all
+  three modes (`resources/*/com.inductiveautomation.historian/historian-provider/TimescaleDB Historian/config.json`):
+  it logs in as `ignition` with an embedded password that only your local
+  gateway can decrypt. Part 3 installs its module, so nothing complains yet.
+  Re-point it the same way: in each of the four files, replace the
+  `"password"` block under `settings` with the referenced one for
+  `POSTGRES_PASSWORD`. Edit the JSON by hand: the gateway UI cannot open
+  this provider until its module is installed. Re-run the grep; only the
+  OPC UA connection is left.
 
   Finally, grep the exported config to prove no value leaked.
 - **1C.** Build the fix for test, in two halves: add the **test
@@ -199,8 +223,9 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
   (both Valid, `TimescaleDB_Reports` on `ignition_production`). Fork carried a
   stale `lab06-v1.0.0` over? `git tag -l 'lab06-*'`, take the next free number.
 - **Gate:** both connections Valid on test AND production, fixed by the pipeline
-  and not by hand, and you can narrate: GitHub secret → file → provider →
-  reference.
+  and not by hand, `git grep -l '"Embedded"' -- services/config` down to the
+  OPC UA loopback connection, and you can narrate: GitHub secret → file →
+  provider → reference.
 
 ### Part 2 — ship a schema change as a migration (±20 min)
 - **2A.** Write `db-migration/migrate/0002_add_downtime_log.up.sql` **and**
@@ -332,13 +357,15 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
 
   **Step 6: ship them.** PR → merge → deploy run. Because the module manifest changed, the deploy **restarts** the gateway: modules only load at boot, unlike projects and config, which reload hot. The same run ships test's secret files again, so its connections turn Valid.
 
+  Then open *Services → Historians* on test: the **TimescaleDB Historian** provider is **Running**. You never configured it on test: its config waited in the repo for its module, and since your 1B sweep its password is a **reference** (`LabSecrets` / `POSTGRES_PASSWORD`) that each gateway resolves from its own secret file. Skipped the sweep? Test shows `Error adding historian: TimescaleDB Historian`: the embedded ciphertext only decrypts on your local gateway, so a forgotten embedded secret surfaces here, one part later.
+
   **Step 7: release it.** Production still runs `lab06-v1.0.0`, and since step 4 its connections are Faulted:
 
   ```bash
   git switch main && git pull && git tag lab06-v1.1.0 && git push origin lab06-v1.1.0
   ```
 
-  Check production (`http://localhost:8090`): the three modules **Running**, both connections **Valid**, and the `ignition_production` ledger at 2 (this release also carries Part 2's migration):
+  Check production (`http://localhost:8090`): the three modules **Running**, the TimescaleDB Historian provider **Running**, both connections **Valid**, and the `ignition_production` ledger at 2 (this release also carries Part 2's migration):
 
   ```bash
   docker exec lab06-timescaledb psql -U ignition -d ignition_production -c 'SELECT * FROM schema_migrations;'
@@ -392,7 +419,7 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
   its config tree survives is exactly how you lock yourself out of a gateway.
   `scripts/setup.sh` choreographs the first boot to avoid it; a bare
   `docker compose up` on a wiped volume does not.
-- **Gate:** all three modules Running on test **and** production, hands-free (*Platform → Modules* shows all three Running), and production's connections Valid with its ledger at 2 after the `lab06-v1.1.0` release.
+- **Gate:** all three modules Running on test **and** production, hands-free (*Platform → Modules* shows all three Running), the TimescaleDB Historian provider Running on both (*Services → Historians*), and production's connections Valid with its ledger at 2 after the `lab06-v1.1.0` release.
 
 ### Stretch (optional)
 - **S1.** The internal secret provider, and where it breaks: create an **internal secret provider** on the local gateway, store `REPORTING_PASSWORD` in it (the gateway encrypts it and keeps the ciphertext in its own config) and point `TimescaleDB_Reports` at it in core **and** in the test override from 1C (it overrides the password field, so a core-only change never reaches test). Locally it stays Valid; ship it and test faults: the ciphertext only decrypts on the gateway that created it. Explore `ignition-secrets-tool.sh` (shared root key + KEK under `data/config/ignition/keys/`) as the escape hatch, then revert to the referenced secret. What is "the secret" now, and who owns it?
