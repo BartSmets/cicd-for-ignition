@@ -111,5 +111,6 @@ Thumbs.db
 .yamllint.yml
 .shellcheckrc
 rule_config.json
+.config/
 flint.config.json
 .flint/

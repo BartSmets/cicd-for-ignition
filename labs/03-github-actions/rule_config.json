@@ -1,12 +1,12 @@
 {
-  "_comment": "ign-lint rules for the lab's Perspective views. Tuned so the clean lab-project passes with zero findings: min_length 2 admits the two-letter station tiles (CO, HT, ...), min_length 1 admits SVG attributes like 'r'. Docs: https://bw-design-group.github.io/ignition-lint",
+  "_comment": "ign-lint rules for the lab's Perspective views, the same in every lab from Lab 03 on. Component min_length is 1: the station tiles use two-letter names (CO, HT, ...) and the dense KPI/status tiles use single-character leaf names (L, V, U, S) by design. Scripts are linted with .config/.ignition-pylintrc: ign-lint's bundled pylint config plus import-outside-toplevel disabled, because a Perspective transform or event script is a function body and can only import inside itself. ign-lint resolves that path against its working directory, so it (and debug_dir, the scratch folder for pylint's input) is repo-root-relative and every ign-lint run (CI, the pre-commit hook, by hand) starts in the repo root. Docs: https://bw-design-group.github.io/ignition-lint",
   "NamePatternRule": {
     "enabled": true,
     "kwargs": {
       "node_type_specific_rules": {
         "component": {
           "convention": "PascalCase",
-          "min_length": 2,
+          "min_length": 1,
           "severity": "error"
         },
         "property": {
@@ -36,9 +36,9 @@
   "PylintScriptRule": {
     "enabled": true,
     "kwargs": {
-      "pylintrc": null,
+      "pylintrc": "labs/03-github-actions/.config/.ignition-pylintrc",
       "debug": false,
-      "debug_dir": ".ignition-lint/debug/",
+      "debug_dir": "labs/03-github-actions/.ignition-lint/debug/",
       "batch_mode": false,
       "category_mapping": {
         "F": "error",
