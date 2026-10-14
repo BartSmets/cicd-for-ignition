@@ -10,6 +10,8 @@ This is the course repo. Everything you work on during the four days lives here:
 
 ## Before Day 1 (at least two days ahead)
 
+The welcome package you received as a PDF covers the same steps with more background. It is also [online](https://share.mustrysolutions.com/040ca767-f8fc-43bb-9949-e0f8402a43f7): click **Open document** to read it in your browser.
+
 Work in **WSL2 (Windows), Linux or macOS**. On Windows, keep the clone in your Linux home (`~/…`), never on `/mnt/c/…`: the Docker labs break there.
 
 Have these ready before you start:
