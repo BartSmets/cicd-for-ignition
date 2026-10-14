@@ -553,6 +553,19 @@ a{color:var(--primary-deep)}
 .resolve .u{font-family:var(--font-mono);font-size:var(--text-base);color:var(--ink);padding:.45rem 0;border-bottom:1px solid var(--line-2)}
 .resolve .u b{color:var(--primary-deep)}
 
+/* git helpers table */
+.table.helpers td,.table.helpers th{font-size:var(--text-base);padding-top:.55rem;padding-bottom:.55rem}
+.table.helpers td:first-child{white-space:nowrap;color:var(--ink-strong)}
+.table.helpers td:nth-child(2){width:34%}
+
+/* wiped vs kept on the target gateway */
+.bk.wipe{color:hsl(var(--chart-3-light));background:hsl(var(--chart-3-light) / .14)}
+.bk.keep{color:var(--teal);background:hsl(var(--chart-4-light) / .12)}
+.split.wipegrid{grid-template-columns:1.45fr 1fr;align-items:start}
+.wipegrid .dtree .p{font-size:var(--text-sm)}
+.wipegrid .dtree .n{font-size:var(--text-sm)}
+@media screen and (max-width:820px),screen and (max-height:520px){.wipegrid .dtree .p,.wipegrid .dtree .n{font-size:var(--text-base)}}
+
 /* scan vs restart */
 .applies{display:grid;grid-template-columns:1.4fr 1fr;gap:3rem}
 .applies .how{font-family:var(--font-mono);font-size:var(--text-sm);color:var(--faint);margin-left:.5rem}
@@ -567,7 +580,7 @@ a{color:var(--primary-deep)}
 .compare.wipe{grid-template-columns:1fr 1.6fr;grid-auto-flow:row}
 /* small screens: this deck's grids collapse to one column */
 @media screen and (max-width:820px),screen and (max-height:520px){
-  .split.treegrid,.split.smallfiles,.compare.wipe{grid-template-columns:1fr}
+  .split.treegrid,.split.smallfiles,.compare.wipe,.split.wipegrid{grid-template-columns:1fr}
   .table tr{display:block;padding:.5rem 0;border-bottom:1px solid var(--line-2)}
   .table td,.table th{display:block;border:none;padding:.1rem 0}
   .table tr:has(th){display:none}
@@ -821,27 +834,35 @@ local-development/config-mode.json   <span class="cm"># scope descriptor {parent
 <!-- RESOURCE CHURN -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">08</span><h2 class="title">Undo the <code>resource.json</code> rewrites the gateway makes in your repo</h2></div>
+  <div class="sechead"><span class="num">08</span><h2 class="title">The git helpers in this lab: where they live and when they run</h2></div>
   <div class="body">
-    <p class="t-md" style="max-width:66rem">On <b>local</b> your repo <i>is</i> the gateway's disk, so every UI interaction rewrites <code>resource.json</code> manifests, often touching only a timestamp and a signature. <b>Undo that noise; don't hide your files from git.</b></p>
-    <div class="work">
-      <div class="layers">
-        <div class="layer"><span class="ln">Clean diffs</span><span class="lt"><code>.gitattributes</code> routes every <code>resource.json</code> through a normalizer that strips timestamp, actor and signature.</span></div>
-        <div class="layer"><span class="ln">Undo noise</span><span class="lt">The churn script compares each modified manifest to HEAD without that metadata; <code>--apply</code> restores volatile-only ones, staged or not. Real edits are never touched.</span></div>
-        <div class="layer"><span class="ln">Machine identity</span><span class="lt"><code>local-system-properties/config.json</code> stays <b>skip-worktree</b> (setup.sh + a <code>post-checkout</code> hook). New gateway files stay untracked until you <code>git add</code>.</span></div>
-      </div>
-      <div class="side">
-        <div class="code"><pre><span class="cm"># one-time wiring (run once after cloning):</span>
-scripts/setup.sh
-<span class="cm">#   → scripts/git-hooks/       skip-worktree, machine-local file only</span>
-<span class="cm">#   → scripts/git-diff/normalize-ignition-resource-json.py</span>
-<span class="cm">#     textconv driver: clean diffs</span>
-
-<span class="cm"># undo volatile-only manifest rewrites:</span>
-scripts/clean-ignition-resource-churn.sh          <span class="cm"># dry run</span>
-scripts/clean-ignition-resource-churn.sh --apply  <span class="cm"># restore from HEAD</span></pre></div>
-      </div>
-    </div>
+    <table class="table helpers">
+      <tr><th>Helper</th><th>Installed by <code>scripts/setup.sh</code> as</th><th>Runs on</th><th>Does</th></tr>
+      <tr>
+        <td><b>Diff normalizer</b></td>
+        <td class="wrap"><code>.gitattributes</code> routes <code>**/resource.json</code> to <code>diff=ignition-resource</code>; setup.sh sets <code>diff.ignition-resource.textconv</code> in your clone's git config to the repo's <code>scripts/git-diff/normalize-ignition-resource-json.py</code></td>
+        <td class="wrap"><code>git diff</code>, <code>git log -p</code>, <code>git show</code></td>
+        <td>Hides the timestamp, actor and signature in the diff output. The file on disk is unchanged.</td>
+      </tr>
+      <tr>
+        <td><b>post-checkout hook</b></td>
+        <td class="wrap"><code>core.hooksPath = scripts/git-hooks</code> (repo root); that dispatcher runs this lab's <code>scripts/git-hooks/post-checkout</code></td>
+        <td class="wrap"><code>git checkout</code> / <code>git switch</code> that changes Lab 04 files; setup.sh runs it once too</td>
+        <td>Marks <code>local-system-properties/{config,resource}.json</code> skip-worktree: this box's UID and trial state never show as a change.</td>
+      </tr>
+      <tr>
+        <td><b>pre-commit hook</b></td>
+        <td class="wrap">Same dispatcher; runs <code>.pre-commit-config.yaml</code> if you installed <code>pre-commit</code></td>
+        <td class="wrap"><code>git commit</code> with staged Lab 04 files</td>
+        <td>yamllint, shellcheck, actionlint, ign-lint. Leaves <code>resource.json</code> alone.</td>
+      </tr>
+      <tr>
+        <td><b>Churn script</b></td>
+        <td>Nothing to install</td>
+        <td class="wrap">By hand: <code>scripts/clean-ignition-resource-churn.sh</code></td>
+        <td>Lists every changed or staged <code>resource.json</code> whose only change is that metadata. <code>--apply</code> restores them from HEAD; real edits are never touched.</td>
+      </tr>
+    </table>
   </div>
 </section>
 
@@ -1021,46 +1042,36 @@ docker cp ./services/config/. "$IGNITION_CONTAINER:$DATA/config/"</pre></div>
   </div>
 </section>
 
-<!-- WHAT THE WIPE SPARES -->
+<!-- WHAT THE SHIP STEP WIPES AND KEEPS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">15</span><h2 class="title">The wipe clears what the repo owns and spares what the gateway owns</h2></div>
+  <div class="sechead"><span class="num">15</span><h2 class="title">What the Ship step wipes and keeps, and how a half copy gets fixed</h2></div>
   <div class="body">
-    <div class="compare wipe">
-      <div class="blue">
-        <h3>Wiped, then copied fresh</h3>
-        <ul class="dots">
-          <li><code>projects/*</code></li>
-          <li>The rest of <code>config/resources/</code></li>
-          <li><code>security-properties</code></li>
-          <li>Any DB, AD or SAML identity resources you added</li>
-        </ul>
-        <p class="t-sm muted">All committed, all shipped by the copy.</p>
+    <div class="split wipegrid">
+      <div class="dtree">
+        <div class="head">/usr/local/bin/ignition/data/ on test and production</div>
+        <div class="r"><span class="p">projects/*</span><span class="b"><span class="bk wipe">wiped</span></span><span class="n">copied fresh</span></div>
+        <div class="r"><span class="p">config/resources/ <span class="sub">except:</span></span><span class="b"><span class="bk wipe">wiped</span></span><span class="n">copied fresh, UI-made resources go too</span></div>
+        <div class="r"><span class="p"><i>└</i> local/</span><span class="b"><span class="bk keep">kept</span></span><span class="n">this box's identity</span></div>
+        <div class="r"><span class="p"><i>└</i> core/ignition/user-source/default/ <span class="sub">· opcua-module/</span></span><span class="b"><span class="bk keep">kept</span></span><span class="n">the internal users</span></div>
+        <div class="r"><span class="p"><i>└</i> core/ignition/identity-provider/default/</span><span class="b"><span class="bk keep">kept</span></span><span class="n">the internal login</span></div>
+        <div class="r"><span class="p"><i>└</i> core/ignition/api-token/</span><span class="b"><span class="bk keep">kept</span></span><span class="n">the scan key</span></div>
+        <div class="r"><span class="p"><i>└</i> .resources/</span><span class="b"><span class="bk keep">kept</span></span><span class="n">the live blob store</span></div>
+        <div class="r"><span class="p">config/local/ <span class="sub">·</span> config/ignition/tags/valueStore.idb</span><span class="b"><span class="bk keep">kept</span></span><span class="n">runtime state, never touched</span></div>
+        <div class="r"><span class="p">db/ <span class="sub">· modules.json · gateway.xml · …</span></span><span class="b"><span class="bk keep">kept</span></span><span class="n">outside the deploy</span></div>
       </div>
-      <div style="border-top-color:var(--teal)">
-        <h3>Spared: the six <code>.deployignore</code> entries, plus runtime state</h3>
-        <table class="table tight">
-          <tr><td><code>config/local/</code><br><code>config/resources/local/</code></td><td>UUID, OPC-UA keystores</td></tr>
-          <tr><td><code>user-source/default/</code><br><code>user-source/opcua-module/</code><br><code>identity-provider/default/</code></td><td>The internal identity: <code>users.json</code> is that gateway's admin hash. Deploying <i>or</i> wiping it locks everyone out.</td></tr>
-          <tr><td><code>api-token/</code></td><td>The scan key setup.sh generated. Not in git: wiping it revokes the key the deploy scans with.</td></tr>
-          <tr><td><code>config/resources/.resources/</code></td><td>The live blob store: deleting it breaks every login until a scan or restart.</td></tr>
-          <tr><td><code>config/ignition/tags/</code></td><td>The tag value store: the gateway keeps <code>valueStore.idb</code> open, so deleting it breaks tag value writes until a restart.</td></tr>
-        </table>
-        <p class="t-sm muted"><code>.deployignore</code> prunes the six, so the copy never brings them back.</p>
+      <div class="side stack" style="gap:1.5rem">
+        <div class="code"><pre><span class="cm"># lab04-deploy.yml / lab04-release.yml, Ship step</span>
+rm -rf $DATA/projects/*
+find $DATA/config/resources -mindepth 1 -maxdepth 1 \
+  ! -name local ! -name core ! -name .resources \
+  -exec rm -rf {} +
+<span class="cm"># same inside core/, core/ignition/, user-source/,</span>
+<span class="cm"># identity-provider/: spare only the names above</span>
+docker cp ./projects/.        …:$DATA/projects/
+docker cp ./services/config/. …:$DATA/config/</pre></div>
+        <div class="aside good"><span class="label">Copy stopped halfway?</span>Re-run the workflow (<i>Re-run jobs</i> on the run, or <code>workflow_dispatch</code>). It wipes and copies the same commit again and ends in the same state as a clean run.</div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- WIPE LIMITS -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">16</span><h2 class="title">Wipe-then-copy is not atomic, and only wipes what the repo owns</h2></div>
-  <div class="body">
-    <div class="layers">
-      <div class="layer"><span class="ln">Not atomic</span><span class="lt">A runner killed mid-copy leaves a partial tree. Deploys are idempotent, so you <b>re-run and it converges</b>.</span></div>
-      <div class="layer"><span class="ln">In production</span><span class="lt"><code>docker cp</code> is lab topology. Real-world transports: an <b>NFS-mounted <code>data/</code></b>, or a runner <b>on the gateway host</b> writing to the filesystem. Same five steps, different transport.</span></div>
-      <div class="layer"><span class="ln" style="color:var(--warn)">Production-owned</span><span class="lt">Only wipe paths the <b>repo</b> is the source of truth for. If you <b>manage tags directly in production</b>, a blanket <code>rm -rf</code> of that tree <b>deletes them</b> and the copy won't bring them back. Scope the wipe, or keep gateway-owned resources out of the deploy path.</span></div>
     </div>
   </div>
 </section>
@@ -1068,7 +1079,7 @@ docker cp ./services/config/. "$IGNITION_CONTAINER:$DATA/config/"</pre></div>
 <!-- THE SCAN API -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">17</span><h2 class="title">The scan API: one POST per tree, with a per-gateway key</h2></div>
+  <div class="sechead"><span class="num">16</span><h2 class="title">The scan API: one POST per tree, with a per-gateway key</h2></div>
   <div class="body">
     <div class="work">
       <div class="code"><pre><span class="cm"># what scripts/scan.sh does under the hood</span>
@@ -1093,7 +1104,7 @@ scripts/scan.sh test</pre></div>
 <!-- SCAN SYMPTOMS + KEY ON DISK -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">18</span><h2 class="title">Read a scan failure, and know where the API key lives</h2></div>
+  <div class="sechead"><span class="num">17</span><h2 class="title">Read a scan failure, and know where the API key lives</h2></div>
   <div class="body">
     <div class="cols2">
       <div>
@@ -1122,7 +1133,7 @@ scripts/scan.sh test</pre></div>
 <!-- GITHUB ENVIRONMENTS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">19</span><h2 class="title">Create a GitHub Environment per gateway and give it its own secret</h2></div>
+  <div class="sechead"><span class="num">18</span><h2 class="title">Create a GitHub Environment per gateway and give it its own secret</h2></div>
   <div class="body">
     <div class="work wide-r">
       <div class="side">
@@ -1156,7 +1167,7 @@ grep '^IGNITION_API_KEY_TEST=' .env | cut -d= -f2- \
 <!-- FAILURE MODES -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">20</span><h2 class="title">Five ways a file-based deploy goes wrong</h2></div>
+  <div class="sechead"><span class="num">19</span><h2 class="title">Five ways a file-based deploy goes wrong</h2></div>
   <div class="body">
     <table class="table">
       <tr><th>Failure</th><th>What happens</th><th>Recovery</th></tr>
@@ -1173,7 +1184,7 @@ grep '^IGNITION_API_KEY_TEST=' .env | cut -d= -f2- \
 <!-- TWO WORKFLOWS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">21</span><h2 class="title">Two workflows, one pattern: only the trigger and the target differ</h2></div>
+  <div class="sechead"><span class="num">20</span><h2 class="title">Two workflows, one pattern: only the trigger and the target differ</h2></div>
   <div class="body">
     <table class="table">
       <tr><th></th><th><code>lab04-deploy.yml</code> → test</th><th><code>lab04-release.yml</code> → production</th></tr>

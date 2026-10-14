@@ -32,7 +32,7 @@ Open <http://localhost:8088> (the `local` gateway) in your browser. (Did `docker
 
 Before you start the deploy part, get these in place (they take a few minutes and the #1 "nothing deploys" cause is forgetting to enable Actions on the fork — or a push that only touched docs, which the `paths:` filter skips):
 
-- **Your fork of the course repo (`<you>/cicd-for-ignition`), with Actions enabled.** The bundled runner registers against your fork, not the upstream. Forks ship with workflows **disabled** — if you haven't yet, open your fork's *Actions* tab and click "I understand my workflows, go ahead and enable them." (Once per fork, not per lab.)
+- **Actions enabled on your fork.** Your fork's *Actions* tab lists your Lab 03 runs. If it still shows "I understand my workflows, go ahead and enable them", click it. The bundled runner registers against your fork, not the course repo.
 - **`gh` pointed at your fork:** `gh repo set-default <you>/cicd-for-ignition`. You did this once for the course clone; `gh repo set-default --view` confirms it. Without it, `gh` commands (like `gh pr create`) ask which repo you mean, or worse, target the course repo instead of your fork.
 - **A GitHub Personal Access Token (PAT) with `repo` scope**, plus `RUNNER_REPO_URL` in `.env` pointed at **your fork** (`https://github.com/<you>/cicd-for-ignition`). If you ran the root `course-setup.sh`, both are already in `.env`. The bundled `github-runner` container uses the PAT to auto-register against your fork. You create this token once here; **Lab 06 reuses the same one** (Lab 05 has no runner), so keep it somewhere safe. To create it:
   1. Go to **github.com/settings/tokens** → **Generate new token** → **Generate new token (classic)**.
