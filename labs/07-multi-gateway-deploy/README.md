@@ -2,7 +2,7 @@
 
 Day 4 (afternoon) of the [CI/CD for Ignition Masterclass](https://github.com/Mustry-Academy/cicd-for-ignition).
 
-> The capstone. For once you do **not** work in your fork. Everyone works as a
+> The final lab. For once you do **not** work in your fork. Everyone works as a
 > **contributor on one real, public repo**,
 > [`Mustry-Solutions/demo-oatmakers`](https://github.com/Mustry-Solutions/demo-oatmakers):
 > the repo behind Mustry's live Oatmakers demo at
@@ -77,7 +77,7 @@ The slides and the resource.json page open in your browser (click **Open documen
 | [`slides/assignment.html`](https://share.mustrysolutions.com/a95c879a-d14b-4f76-8214-8f39784f09b1) ([offline copy](./slides/assignment.html)) | The you-do, slide by slide |
 | [`exercises/lab.md`](./exercises/lab.md) | The exercise, including the rules for a shared live demo and troubleshooting |
 | [`docs/multi-gateway-deployments.md`](./docs/multi-gateway-deployments.md) | The teaching content written out in full |
-| [`docs/capstone-gateway.md`](./docs/capstone-gateway.md) | The production gateway: what it is, how deploys reach it, the ground rules |
+| [`docs/production-gateway.md`](./docs/production-gateway.md) | The production gateway: what it is, how deploys reach it, the ground rules |
 | [`docs/resource-json-hygiene.html`](https://share.mustrysolutions.com/cd8236d4-d050-4d49-b8c7-bbe4bfc35a0f) ([offline copy](./docs/resource-json-hygiene.html)) | Why `resource.json` churns and the two tools in demo-oatmakers that deal with it |
 | [`docs/wsl-setup.md`](./docs/wsl-setup.md) | Windows / WSL setup |
 | [`architectures/`](./architectures/) | The three reference architecture diagrams |

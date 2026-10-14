@@ -44,7 +44,7 @@ Have these ready before you start:
 | 06 | [Secrets, database migrations, modules & JARs](./labs/06-secrets-db-and-modules/) | 4 (morning) | [teaching](https://share.mustrysolutions.com/9d789532-1459-4e18-b819-686fcc62a164) · [assignment](https://share.mustrysolutions.com/014ffcf0-71b9-4e7a-81ef-64d13ea0dbc4) |
 | 07 | [Deployments in a multi-gateway architecture](./labs/07-multi-gateway-deploy/) | 4 (afternoon) | [teaching](https://share.mustrysolutions.com/8e1ea98f-1dc8-4972-8d59-65afb8afb879) · [assignment](https://share.mustrysolutions.com/a95c879a-d14b-4f76-8214-8f39784f09b1) |
 
-Each day runs **09:00–17:15 CET**. Start every lab from its README.
+Each day runs **09:00-18:00 Belgian time (CET/CEST)**. Start every lab from its README.
 
 The slides open in your browser: click **Open document** on the first page. Every lab folder also keeps the same decks under `slides/` as an offline copy; open those from your clone if a link doesn't load.
 
@@ -78,5 +78,5 @@ Code: [Apache 2.0](./labs/01-git-fundamentals/LICENSE), see each lab's `LICENSE`
 ## Contact
 
 - Lead instructor: Jasper Louage (jasper@mustrysolutions.com)
-- General enquiries: academy@mustrysolutions.com
+- General enquiries: info@mustrysolutions.com
 - Discord: cohort link in your welcome email
