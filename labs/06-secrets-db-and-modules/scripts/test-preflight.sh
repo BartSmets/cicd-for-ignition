@@ -271,7 +271,8 @@ name=cfg.get("name","")
 for k,v in (cfg.get("volumes") or {}).items():
     print((v or {}).get("name") or f"{name}_{k}")' 2>/dev/null)"
     if [ -n "$proj_vols" ]; then
-      stray="$(printf '%s\n' "$proj_vols" | grep -viE "^$(basename "$PWD" | tr '[:upper:]' '[:lower:]')" || true)"
+      proj_name="$(docker compose config --format json 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("name",""))' 2>/dev/null)"
+      stray="$(printf '%s\n' "$proj_vols" | grep -v "^${proj_name}_" || true)"
       if [ -z "$stray" ]; then
         ok "volume repair is scoped to this compose project only"
       else

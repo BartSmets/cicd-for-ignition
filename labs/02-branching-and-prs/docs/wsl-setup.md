@@ -125,15 +125,19 @@ Earlier versions ran the Ignition container as `root`, so every file it wrote
 into `projects/` and `services/config/` was root-owned and you needed `sudo` to
 edit your own project files.
 
-The container now runs as the image's own user (uid 2003) with your group added,
-and `setup.sh` makes the bind-mounted directories group-writable. Files the
-gateway writes stay editable by you.
+The local gateway (the one your Designer saves to) now runs as **your own user
+id** in group 0. The Ignition image is built for that: everything it needs is
+owned by group 0 and group-writable. So it can write every file and folder git
+puts in your working tree, also folders a later pull or branch switch adds, and
+everything it writes there is yours. The test and production gateways keep the
+image's own user (uid 2003) with your group added, and `setup.sh` makes their
+bind-mounted directories group-writable.
 
-`setup.sh` also records your group id as `LAB_GID=...` in `.env`. Compose reads
-`.env` on every invocation, so running `docker compose up -d` yourself later —
-from a fresh terminal, without `setup.sh` — keeps the gateway in your group.
-Leave that line alone; if it ever goes missing, re-running `scripts/setup.sh`
-puts it back.
+`setup.sh` records your ids as `LAB_UID=...` and `LAB_GID=...` in `.env`.
+Compose reads `.env` on every invocation, so running `docker compose up -d`
+yourself later (from a fresh terminal, without `setup.sh`) keeps the same
+users. Leave those lines alone; if they ever go missing, re-running
+`scripts/setup.sh` puts them back.
 
 If you have gateway data volumes from an earlier run, they still contain
 root-owned files and the gateway will fail to start with:

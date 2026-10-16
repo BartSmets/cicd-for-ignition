@@ -475,10 +475,13 @@ into the gateway container, and the Ignition image runs as **uid 2003**. On **na
 WSL2**, bind mounts keep real file permissions, so a folder you own with the default mode `755` is
 read-only to uid 2003.
 
-**You don't need to fix that by hand: the labs already do.** Each lab's `scripts/setup.sh` makes
-the mounted folders group-writable with the setgid bit, and its compose file runs the gateway as
-`2003:0` with your own primary group added (`group_add: ${LAB_GID}`). The preflight tests exactly
-that combination, so when this check fails, something on your machine blocks it even then:
+**You don't need to fix that by hand: the labs already do.** The local gateway, which reads and
+writes your working tree, runs as your own user id in group 0 (`user: ${LAB_UID}:0`), so it owns
+what it writes and can write every folder git creates, also after a pull. The test and production
+gateways run as `2003:0` with your own primary group added (`group_add: ${LAB_GID}`), and each
+lab's `scripts/setup.sh` makes their mounted folders group-writable with the setgid bit. The
+preflight tests the second, stricter, combination, so when this check fails, something on your
+machine blocks it even then:
 
 - **SELinux (Fedora/RHEL):** relabel the course repo once, then re-run the preflight:
   `sudo chcon -Rt container_file_t ~/mustry-academy/cicd-for-ignition`.
@@ -487,11 +490,6 @@ that combination, so when this check fails, something on your machine blocks it 
 - **The repo is on `/mnt/c` (WSL):** Windows drives drop permission bits. Move the clone to your
   Linux home (the preflight checks this separately).
 - **Anything else:** paste `preflight/preflight-report.txt` in `#preflight-help`.
-
-Folders git creates **later** (a pull or branch switch that adds a project or view) arrive as `755`
-again; the course repo's git hooks (post-checkout, post-merge, post-rewrite) re-apply the group
-permissions, and `scripts/fix-bind-mount-perms.sh` does the same by hand. Without it a Designer save
-into such a folder fails with `PushException: I/O error during prepare: ... .tmp`.
 
 ## "chmod g+s (setgid) is not permitted on directories in …"
 

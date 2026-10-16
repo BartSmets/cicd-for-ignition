@@ -260,25 +260,32 @@ pf_export_container_user() {
 pf_persist_lab_gid() {
   [ "${LAB_SKIP_PREFLIGHT:-}" = "1" ] && return 0
   [ -f .env ] || return 0
-  local gid
-  gid="$(id -g)"
-  if grep -q '^LAB_GID=' .env 2>/dev/null; then
-    grep -q "^LAB_GID=${gid}\$" .env && return 0
-    local tmp
-    tmp="$(mktemp)" || return 0
-    # cat-over instead of mv: keeps .env's inode and permission bits.
-    sed "s/^LAB_GID=.*/LAB_GID=${gid}/" .env > "$tmp" && cat "$tmp" > .env
-    rm -f "$tmp"
-  else
-    {
-      echo ""
-      echo "# Written by scripts/preflight.sh: your group id. docker-compose joins the"
-      echo "# gateway container to this group (group_add) so files it writes into the"
-      echo "# bind mounts stay editable by you — also when you run 'docker compose"
-      echo "# up -d' yourself from a fresh terminal. See docs/wsl-setup.md."
-      echo "LAB_GID=${gid}"
-    } >> .env
-  fi
+  local key val tmp
+  for key in LAB_UID LAB_GID; do
+    if [ "$key" = "LAB_UID" ]; then val="$(id -u)"; else val="$(id -g)"; fi
+    if grep -q "^${key}=" .env 2>/dev/null; then
+      grep -q "^${key}=${val}\$" .env && continue
+      tmp="$(mktemp)" || return 0
+      # cat-over instead of mv: keeps .env's inode and permission bits.
+      sed "s/^${key}=.*/${key}=${val}/" .env > "$tmp" && cat "$tmp" > .env
+      rm -f "$tmp"
+    else
+      {
+        echo ""
+        if [ "$key" = "LAB_UID" ]; then
+          echo "# Written by scripts/preflight.sh: your user id. The local gateway runs"
+          echo "# as this uid, so it can write every file and folder in your working tree"
+          echo "# and everything it writes there is yours. See docs/wsl-setup.md."
+        else
+          echo "# Written by scripts/preflight.sh: your group id. docker-compose joins the"
+          echo "# gateway container to this group (group_add) so files it writes into the"
+          echo "# bind mounts stay editable by you, also when you run 'docker compose"
+          echo "# up -d' yourself from a fresh terminal. See docs/wsl-setup.md."
+        fi
+        echo "${key}=${val}"
+      } >> .env
+    fi
+  done
 }
 
 # Make the bind-mounted trees group-writable and setgid, so files the gateway
@@ -361,7 +368,11 @@ pf_repair_gateway_volumes() {
   # name pattern instead would sweep up unrelated Ignition stacks on the same
   # machine (other customers' repos, personal sandboxes) and chown their data —
   # destructive and completely outside this lab's business.
-  local vols vol
+  # One "<volume> <uid>" line per gateway volume: the uid is the one the
+  # service runs as (`user:` in compose, LAB_UID for the local gateway, 2003
+  # for the others). Services without a numeric user (databases, the runner)
+  # are skipped: their volumes have their own owners.
+  local vols vol uid
   vols="$(docker compose config --format json 2>/dev/null \
           | python3 -c 'import json,sys
 try:
@@ -369,36 +380,51 @@ try:
 except Exception:
     sys.exit(0)
 name = cfg.get("name", "")
-for key, v in (cfg.get("volumes") or {}).items():
-    # Respect an explicit external/custom name; otherwise compose prefixes it.
-    print((v or {}).get("name") or f"{name}_{key}")' 2>/dev/null || true)"
+decl = cfg.get("volumes") or {}
+for svc in (cfg.get("services") or {}).values():
+    uid = str(svc.get("user") or "").split(":")[0]
+    if not uid.isdigit():
+        continue
+    for m in svc.get("volumes") or []:
+        if not isinstance(m, dict) or m.get("type") != "volume" or m.get("source") not in decl:
+            continue
+        key = m["source"]
+        # Respect an explicit external/custom name; otherwise compose prefixes it.
+        print((decl[key] or {}).get("name") or f"{name}_{key}", uid)' 2>/dev/null || true)"
   [ -z "$vols" ] && return 0
 
   local repaired=0
-  for vol in $vols; do
-    # Only Ignition gateway volumes: a database volume (timescaledb/postgres)
-    # has its own uid and must NOT be chowned to the Ignition user.
+  while read -r vol uid; do
+    [ -n "$vol" ] || continue
+    # Never a database volume, whatever compose says about its user.
     case "$vol" in
       *timescale*|*postgres*|*mssql*|*db-data*) continue ;;
     esac
     docker volume inspect "$vol" >/dev/null 2>&1 || continue
 
-    # Does it hold files the gateway (uid 2003) cannot write?
+    # Does it hold files another uid owns (root from an old `user: root`
+    # run, or 2003 from before the local gateway ran as LAB_UID)? Some of
+    # them are mode 600 (Flint's api-token.json), so group 0 is not enough.
     # NOTE: this runs under BusyBox find (alpine), which has no -uid and no
-    # -quit — use -user with a numeric id and cap the output with head.
+    # -quit: use -user with a numeric id and cap the output with head.
     if docker run --rm -v "$vol:/d" alpine:3 \
-         sh -c '[ -n "$(find /d -maxdepth 2 ! -user 2003 2>/dev/null | head -n1)" ]' \
+         sh -c "[ -n \"\$(find /d -maxdepth 2 ! -user $uid 2>/dev/null | head -n1)\" ]" \
          >/dev/null 2>&1; then
       if [ "$repaired" = "0" ]; then
         echo ""
-        echo "${YELLOW}Repairing gateway data volumes left root-owned by an earlier run.${NC}"
-        echo "(The gateway no longer runs as root, so it cannot write those files.)"
+        echo "${YELLOW}Handing gateway data volumes to the user their gateway runs as.${NC}"
       fi
-      docker run --rm -v "$vol:/d" alpine:3 chown -R 2003:0 /d >/dev/null 2>&1 \
-        && { echo "  repaired: $vol"; repaired=$((repaired+1)); } \
+      # Stop the gateway on it first: a running one keeps writing files as
+      # its old uid behind the chown. setup.sh starts it again right after.
+      # shellcheck disable=SC2046
+      docker stop $(docker ps -q --filter "volume=$vol") >/dev/null 2>&1 || true
+      docker run --rm -v "$vol:/d" alpine:3 chown -R "$uid:0" /d >/dev/null 2>&1 \
+        && { echo "  $vol -> uid $uid"; repaired=$((repaired+1)); } \
         || echo "  ${RED}could not repair: $vol${NC}"
     fi
-  done
+  done <<EOF_VOLS
+$vols
+EOF_VOLS
   [ "$repaired" -gt 0 ] && echo ""
   return 0
 }

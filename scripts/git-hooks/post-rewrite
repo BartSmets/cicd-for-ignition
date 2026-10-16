@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-# Repo-wide post-rewrite dispatcher: a rebase (pull --rebase) can add folders that git creates
-# 0755, which the gateways cannot write on Linux/WSL. See
-# scripts/fix-bind-mount-perms.sh.
-#
-# Installed by scripts/install-git-config.sh (core.hooksPath=scripts/git-hooks).
-top="$(git rev-parse --show-toplevel)"
-"$top/scripts/fix-bind-mount-perms.sh" || true
-exit 0

@@ -22,15 +22,14 @@ services:
   ignition:
     image: inductiveautomation/ignition:8.3.8
     container_name: lab02-ignition
-    # Keep the image's own identity (uid 2003, gid 0): its data/ tree is
-    # owned 2003:0 mode 775, so any OTHER primary gid loses write access and
-    # the gateway fails to boot ("gateway.xml exists, but isnt readable or
-    # writable"). Instead we ADD the student's group, which -- together with
-    # the group-write + setgid bits scripts/setup.sh applies to the
-    # bind-mounted dirs -- makes everything the gateway writes editable by
-    # the student. No root-owned files, so no sudo.
-    # LAB_GID is exported by scripts/preflight.sh.
-    user: "2003:0"
+    # Run as YOUR uid with gid 0. The image is built for any uid in group 0
+    # (everything under ignition/ is owned 2003:0 mode 775), and this is the
+    # gateway that reads and writes your working tree: as you, it can write
+    # every folder git creates (a pulled project, a new view) and everything
+    # it writes is yours. The group_add keeps files an older uid-2003 run
+    # left in the bind mounts writable. scripts/preflight.sh writes LAB_UID
+    # and LAB_GID to .env and re-owns the data volume to LAB_UID.
+    user: "${LAB_UID:-2003}:0"
     group_add:
       - "${LAB_GID:-0}"
     # Run the gateway under umask 0002. The image's default umask (022) makes
