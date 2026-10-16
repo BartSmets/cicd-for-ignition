@@ -18,7 +18,7 @@ a required gate on every PR, then a look at *where* CI runs when GitHub-hosted i
 
 ## Setup
 
-You'll need Docker (Compose V2) and Python 3.10+. From this lab's folder in your clone,
+You'll need Docker (Compose V2) and Python 3.12. From this lab's folder in your clone,
 stop the Lab 02 gateway (both labs use port 8088), copy the env file and boot the gateway:
 
 ```bash
@@ -35,27 +35,28 @@ scripts/setup.sh        # boots one Ignition gateway, waits for RUNNING, prints 
 > **Port 8088 taken by something else?** Set `GATEWAY_PORT=8090` (any free port) in `.env`
 > and re-run `scripts/setup.sh`; it prints the matching URL.
 
-Install the linters, pinned, in a venv on Python 3.10 to 3.13:
+Install the linters, pinned, in a Python 3.12 venv (the version CI uses):
 
 ```bash
 # macOS: Apple's python3 is 3.9, so install 3.12 alongside the linters
 brew install shellcheck actionlint python@3.12
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install yamllint==1.35.1 ign-lint==0.6.1
-python -V                    # 3.10 to 3.13
+python -V                    # Python 3.12.x, same as CI
 
 # Debian/Ubuntu/WSL: actionlint has no apt package, so grab the release binary
-sudo apt install shellcheck python3-venv
+sudo apt install shellcheck python3.12-venv
 bash <(curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
 sudo mv actionlint /usr/local/bin/
-python3 -m venv .venv && source .venv/bin/activate
+python3.12 -m venv .venv && source .venv/bin/activate
 pip install yamllint==1.35.1 ign-lint==0.6.1
-python -V                    # 3.10 to 3.13
+python -V                    # Python 3.12.x, same as CI
 ```
 
-> **`No matching distribution found for ign-lint`?** The venv runs an older Python. ign-lint
-> needs 3.10 to 3.13. Ubuntu 20.04 needs `python3.12` from the deadsnakes PPA. In a new
-> terminal, re-activate with `source .venv/bin/activate`.
+> **`python3.12: command not found`?** Ubuntu 24.04 (what `wsl --install -d Ubuntu` gives you)
+> ships it. On Ubuntu 22.04 or older, add it first:
+> `sudo add-apt-repository ppa:deadsnakes/ppa && sudo apt install python3.12 python3.12-venv`.
+> In a new terminal, re-activate with `source .venv/bin/activate`.
 
 > **No CI on your PRs?** `course-setup.sh` enabled Actions on your fork and pointed `gh` at
 > it. If your fork's **Actions** tab still shows *"I understand my workflows, go ahead and

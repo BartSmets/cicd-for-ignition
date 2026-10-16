@@ -599,6 +599,21 @@ else
   log_missing "$REQUIRED" "python3 not found" "Ubuntu/WSL: sudo apt install python3 python3-venv. macOS: brew install python"
 fi
 
+# Lab 03 runs its linters in a Python 3.12 venv, the same version as CI, so
+# python3.12 must exist next to whatever python3 is.
+PY312_FIX="Ubuntu 24.04/WSL: sudo apt install python3.12-venv. Ubuntu 22.04: sudo add-apt-repository ppa:deadsnakes/ppa && sudo apt install python3.12 python3.12-venv. macOS: brew install python@3.12"
+if command -v python3.12 >/dev/null 2>&1; then
+  VENV_TMP="$(mktemp -d 2>/dev/null || echo "${TMPDIR:-/tmp}/preflight-venv312-$$")"
+  if python3.12 -m venv "$VENV_TMP/venv" >/dev/null 2>&1 && [ -x "$VENV_TMP/venv/bin/pip" ]; then
+    log_pass "python3.12 can create a venv with pip (Lab 03 linters, same Python as CI)"
+  else
+    log_missing "$REQUIRED" "python3.12 cannot create a virtual environment with pip" "$PY312_FIX"
+  fi
+  rm -rf "$VENV_TMP"
+else
+  log_missing "$REQUIRED" "python3.12 not found (Lab 03 runs its linters on Python 3.12, like CI)" "$PY312_FIX"
+fi
+
 # --- Docker (required) -----------------------------------------------------
 section "Docker"
 if command -v docker >/dev/null 2>&1; then
