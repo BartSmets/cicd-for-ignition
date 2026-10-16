@@ -861,7 +861,7 @@ repos:
         files: <span class="cmd2">^labs/03-github-actions/.*view\.json$</span>
   <span class="cm"># + yamllint, shellcheck, actionlint the same way</span></pre></div>
       <div class="code"><pre><span class="cm"># install the tool; there is no `pre-commit install`</span>
-pip install pre-commit
+uv pip install pre-commit
 git config core.hooksPath     <span class="cm"># → scripts/git-hooks</span>
 pre-commit run --all-files --config .pre-commit-config.yaml
 

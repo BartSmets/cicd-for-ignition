@@ -1025,12 +1025,12 @@ docker rm -f lab03-runner</pre></div>
   <div class="body">
     <div class="work">
       <ol class="steps alt">
-        <li><b>Install the tool:</b> <code>pip install pre-commit</code>. No <code>pre-commit install</code>: <code>scripts/setup.sh</code> already set <code>core.hooksPath</code>.</li>
+        <li><b>Install the tool</b> in your venv: <code>uv pip install pre-commit</code>. No <code>pre-commit install</code>: <code>scripts/setup.sh</code> already set <code>core.hooksPath</code>.</li>
         <li><b>Baseline run</b> over the whole lab: clean after Part 1.</li>
         <li><b>Set the Clock binding to <code>now(250)</code></b>, try to commit, and watch the <b>ign-lint hook refuse the commit</b>.</li>
         <li><b>Undo the bad change.</b> Commit went through anyway? Check <code>pre-commit --version</code> (venv active) and that <code>git config core.hooksPath</code> prints <code>scripts/git-hooks</code>; if not, re-run <code>scripts/setup.sh</code>.</li>
       </ol>
-      <div class="code"><pre>pip install pre-commit
+      <div class="code"><pre>uv pip install pre-commit
 git config core.hooksPath     <span class="cm"># → scripts/git-hooks</span>
 pre-commit run --all-files --config .pre-commit-config.yaml
 

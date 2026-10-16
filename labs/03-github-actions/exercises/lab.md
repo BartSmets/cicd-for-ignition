@@ -152,7 +152,7 @@ Hunt every planted issue and fix them all. (The step numbers match the assignmen
 
 The lab ships `.pre-commit-config.yaml` with all four linters as hooks.
 
-1. Install the tool: `pip install pre-commit`. There is no `pre-commit install`:
+1. Install the tool in your venv: `uv pip install pre-commit`. There is no `pre-commit install`:
    `scripts/setup.sh` already set `core.hooksPath=scripts/git-hooks`, which runs this lab's
    config whenever a commit touches `labs/03-github-actions/`.
 2. Baseline run over the whole lab, clean after Part 1:
