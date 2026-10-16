@@ -595,17 +595,14 @@ scripts/teardown.sh     <span class="cm"># stops it again</span></pre></div>
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
   <div class="sechead"><span class="num warm">SETUP · 2</span><h2 class="title">Install the linters, pinned, in a Python 3.12 venv</h2></div>
   <div class="body">
-    <div class="code"><div class="code-title">macOS</div><pre><span class="cm"># Apple's python3 is 3.9: install 3.12 alongside the linters</span>
-brew install shellcheck actionlint python@3.12
-python3.12 -m venv .venv &amp;&amp; source .venv/bin/activate
-pip install yamllint==1.35.1 ign-lint==0.6.1
-python -V                    <span class="cm"># Python 3.12.x, same as CI</span></pre></div>
+    <div class="code"><div class="code-title">macOS</div><pre>brew install shellcheck actionlint uv</pre></div>
     <div class="code"><div class="code-title">Debian / Ubuntu / WSL</div><pre><span class="cm"># actionlint has no apt package: grab the release binary</span>
-sudo apt install shellcheck python3.12-venv
+sudo apt install shellcheck
 bash &lt;(curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
 sudo mv actionlint /usr/local/bin/
-python3.12 -m venv .venv &amp;&amp; source .venv/bin/activate
-pip install yamllint==1.35.1 ign-lint==0.6.1
+curl -LsSf https://astral.sh/uv/install.sh | sh   <span class="cm"># then open a new terminal</span></pre></div>
+    <div class="code"><div class="code-title">Both: uv downloads Python 3.12 if you don't have it</div><pre>uv venv --python 3.12 .venv &amp;&amp; source .venv/bin/activate
+uv pip install yamllint==1.35.1 ign-lint==0.6.1
 python -V                    <span class="cm"># Python 3.12.x, same as CI</span></pre></div>
   </div>
 </section>

@@ -35,27 +35,26 @@ scripts/setup.sh        # boots one Ignition gateway, waits for RUNNING, prints 
 > **Port 8088 taken by something else?** Set `GATEWAY_PORT=8090` (any free port) in `.env`
 > and re-run `scripts/setup.sh`; it prints the matching URL.
 
-Install the linters, pinned, in a Python 3.12 venv (the version CI uses):
+Install the linters, pinned, in a Python 3.12 venv (the version CI uses). `uv` creates it and
+downloads Python 3.12 if your machine doesn't have it (Ubuntu 26.04 ships 3.14, which ign-lint
+doesn't support yet):
 
 ```bash
-# macOS: Apple's python3 is 3.9, so install 3.12 alongside the linters
-brew install shellcheck actionlint python@3.12
-python3.12 -m venv .venv && source .venv/bin/activate
-pip install yamllint==1.35.1 ign-lint==0.6.1
-python -V                    # Python 3.12.x, same as CI
+# macOS
+brew install shellcheck actionlint uv
 
 # Debian/Ubuntu/WSL: actionlint has no apt package, so grab the release binary
-sudo apt install shellcheck python3.12-venv
+sudo apt install shellcheck
 bash <(curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
 sudo mv actionlint /usr/local/bin/
-python3.12 -m venv .venv && source .venv/bin/activate
-pip install yamllint==1.35.1 ign-lint==0.6.1
+curl -LsSf https://astral.sh/uv/install.sh | sh     # then open a new terminal
+
+# both
+uv venv --python 3.12 .venv && source .venv/bin/activate
+uv pip install yamllint==1.35.1 ign-lint==0.6.1
 python -V                    # Python 3.12.x, same as CI
 ```
 
-> **`python3.12: command not found`?** Ubuntu 24.04 (what `wsl --install -d Ubuntu` gives you)
-> ships it. On Ubuntu 22.04 or older, add it first:
-> `sudo add-apt-repository ppa:deadsnakes/ppa && sudo apt install python3.12 python3.12-venv`.
 > In a new terminal, re-activate with `source .venv/bin/activate`.
 
 > **No CI on your PRs?** `course-setup.sh` enabled Actions on your fork and pointed `gh` at

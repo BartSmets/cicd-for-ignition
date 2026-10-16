@@ -743,15 +743,16 @@ a{color:var(--primary-deep)}
   <div class="body">
     <div class="work c11">
       <div class="code"><div class="code-title">Install once, pinned, in a Python 3.12 venv</div><pre><span class="cm"># macOS</span>
-brew install shellcheck actionlint python@3.12
+brew install shellcheck actionlint uv
 
 <span class="cm"># Debian / Ubuntu / WSL</span>
-sudo apt install shellcheck python3.12-venv
+sudo apt install shellcheck
+curl -LsSf https://astral.sh/uv/install.sh | sh
 <span class="cm"># + actionlint's release binary (see the assignment)</span>
 
 <span class="cm"># both: the same Python 3.12 as CI</span>
-python3.12 -m venv .venv &amp;&amp; source .venv/bin/activate
-pip install yamllint==1.35.1 ign-lint==0.6.1</pre></div>
+uv venv --python 3.12 .venv &amp;&amp; source .venv/bin/activate
+uv pip install yamllint==1.35.1 ign-lint==0.6.1</pre></div>
       <div class="code"><div class="code-title">Run every check</div><pre>yamllint -c .yamllint.yml .
 shellcheck scripts/*.sh
 actionlint -config-file .github/actionlint.yaml \
