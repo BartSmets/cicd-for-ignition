@@ -39,6 +39,18 @@ scripts/setup.sh
 - Permission errors on Windows: the clone must live in your Linux home (`~/...`), never under `/mnt/c`. See [`wsl-setup.md`](./wsl-setup.md).
 - Still stuck: `scripts/teardown.sh --volumes` and `scripts/setup.sh` give you a fresh gateway (your project files are in the repo, not in the volume).
 
+## Designer save fails: `PushException: I/O error during prepare: ... .tmp` (Linux / WSL)
+
+The gateway runs as uid 2003 with your group added, so it can only write folders that are group
+writable. A folder git created after `scripts/setup.sh` (a pull or branch switch that brings in a
+new project or view) arrives as `755`, and saving into it fails. The course repo's git hooks fix
+this after every checkout, pull and rebase. If you pulled before you had those hooks, or a save
+still fails, run this once from anywhere in the clone and save again:
+
+```bash
+"$(git rev-parse --show-toplevel)/scripts/fix-bind-mount-perms.sh"
+```
+
 ## My silo-detail page disappeared
 
 The gateway serves whatever branch is checked out: `projects/` is bind-mounted,

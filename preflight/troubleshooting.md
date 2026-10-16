@@ -488,6 +488,11 @@ that combination, so when this check fails, something on your machine blocks it 
   Linux home (the preflight checks this separately).
 - **Anything else:** paste `preflight/preflight-report.txt` in `#preflight-help`.
 
+Folders git creates **later** (a pull or branch switch that adds a project or view) arrive as `755`
+again; the course repo's git hooks (post-checkout, post-merge, post-rewrite) re-apply the group
+permissions, and `scripts/fix-bind-mount-perms.sh` does the same by hand. Without it a Designer save
+into such a folder fails with `PushException: I/O error during prepare: ... .tmp`.
+
 ## "chmod g+s (setgid) is not permitted on directories in …"
 
 A **warning, not a failure**. The labs make their mounted folders setgid so that files the gateway

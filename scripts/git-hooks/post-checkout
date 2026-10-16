@@ -18,6 +18,9 @@ if [ "$branch_switch" = "1" ] && [ -n "$prev" ] && [ "$prev" != "000000000000000
     [ -n "$changed" ] || exit 0
 fi
 
+# Folders the checkout created must stay writable for the gateways (Linux/WSL).
+"$top/scripts/fix-bind-mount-perms.sh" || true
+
 for lab_dir in "$top"/labs/*/; do
     lab="labs/$(basename "$lab_dir")"
     [ -x "$lab_dir/scripts/git-hooks/post-checkout" ] || continue

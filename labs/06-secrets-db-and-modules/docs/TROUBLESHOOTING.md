@@ -52,6 +52,18 @@ turns CONNECTED within a minute.
   manifest that gateway boots with: `services/modules.json` for local,
   `gateways/<test|production>/modules.json` (written by the deploy) for the others.
 
+## Designer save fails: `PushException: I/O error during prepare: ... .tmp` (Linux / WSL)
+
+The gateway runs as uid 2003 with your group added, so it can only write folders that are group
+writable. A folder git created after `scripts/setup.sh` (a pull or branch switch that brings in a
+new project or view) arrives as `755`, and saving into it fails. The course repo's git hooks fix
+this after every checkout, pull and rebase. If you pulled before you had those hooks, or a save
+still fails, run this once from anywhere in the clone and save again:
+
+```bash
+"$(git rev-parse --show-toplevel)/scripts/fix-bind-mount-perms.sh"
+```
+
 ## `git status` shows lots of `resource.json` changes
 
 Ignition rewrites the `resource.json` manifests on every interaction, usually touching nothing

@@ -63,6 +63,18 @@ error there, the image was built without that `RUN`: put it back and rebuild.
   gateway in your browser to see what it asks for. Running the image with plain `docker run`? See
   [Gateway stuck in `RUNNING / COMMISSIONING`](#gateway-stuck-in-running--commissioning-stand-alone-run).
 
+## Designer save fails: `PushException: I/O error during prepare: ... .tmp` (Linux / WSL)
+
+The gateway runs as uid 2003 with your group added, so it can only write folders that are group
+writable. A folder git created after `scripts/setup.sh` (a pull or branch switch that brings in a
+new project or view) arrives as `755`, and saving into it fails. The course repo's git hooks fix
+this after every checkout, pull and rebase. If you pulled before you had those hooks, or a save
+still fails, run this once from anywhere in the clone and save again:
+
+```bash
+"$(git rev-parse --show-toplevel)/scripts/fix-bind-mount-perms.sh"
+```
+
 ## `docker build` / `scripts/build-image.sh` fails
 
 - **`invalid reference format` with `ghcr.io/<your-github-user>/…` in the tag.** A stale `.env` still
