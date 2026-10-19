@@ -39,7 +39,7 @@ Two things the deploy part needs:
   echo '{"approval_policy":"all_external_contributors"}' | gh api -X PUT repos/<you>/cicd-for-ignition/actions/permissions/fork-pr-contributor-approval --input -
   ```
   Stop the runner when the course is over (`docker compose down` in this folder).
-- **The runner URL and PAT in `.env`.** The course setup wrote `RUNNER_REPO_URL` (your fork) and `RUNNER_GITHUB_PAT` (your `repo`-scope token) into this lab's `.env`. `scripts/setup.sh` warns if either is missing; Part 2.1 has the fix.
+- **The runner URL and PAT in `.env`.** The course setup wrote `RUNNER_REPO_URL` (your fork) and `RUNNER_GITHUB_PAT` (your fine-grained token, with *Administration: Read and write* on your fork) into this lab's `.env`. `scripts/setup.sh` warns if either is missing; Part 2.1 has the fix.
 
 `scripts/setup.sh` also generated an API key per gateway into `.env` (`IGNITION_API_KEY_LOCAL` / `_TEST` / `_PRODUCTION`) and installed the matching token on each gateway. Nothing key-related is in git.
 
@@ -249,7 +249,7 @@ docker compose logs --tail 50 github-runner   # look for "Listening for Jobs"
 In your fork on GitHub, *Settings → Actions → Runners* should show the runner online with the `self-hosted, lab04` labels. If it's not there:
 
 - `RUNNER_REPO_URL` in `.env` must point at your fork (not the upstream).
-- `RUNNER_GITHUB_PAT` in `.env` must be a real `repo`-scope PAT, not the placeholder — a bad token shows up as a **401** in `docker compose logs github-runner`. Fix it, then `docker compose up -d --force-recreate github-runner`.
+- `RUNNER_GITHUB_PAT` in `.env` must be a real fine-grained PAT with *Administration: Read and write* on your fork, not the placeholder: a bad token shows up as a **401** (a missing permission as a **403**) in `docker compose logs github-runner`. Fix it, then `docker compose up -d --force-recreate github-runner`.
 - Restart it: `docker compose restart github-runner`.
 
 ### Part 2.2 — GitHub environments + secrets (10 min)

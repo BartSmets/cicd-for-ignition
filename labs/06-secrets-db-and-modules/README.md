@@ -23,7 +23,7 @@ The offline copy is the same deck: open it from your clone if the link doesn't l
 ## Prerequisites
 
 - Your fork of the course repo (`cicd-for-ignition`, set up once: see the [course hub](../../README.md)). The warm-up, Parts 1C-1D and 2B deploy through its Actions.
-- Your Lab 04 Personal Access Token (`repo` scope) in `.env` as `RUNNER_GITHUB_PAT`: the bundled runner uses it to register against your fork. It never leaves `.env`.
+- Your Lab 04 fine-grained Personal Access Token (Administration: Read and write on your fork) in `.env` as `RUNNER_GITHUB_PAT`: the bundled runner uses it to register against your fork. It never leaves `.env`.
 - The [GitHub CLI](https://cli.github.com/) (`gh`), authenticated (`gh auth status`), with `gh repo set-default <you>/cicd-for-ignition` done once
 - **≥ 8 GB free RAM for Docker** — three Ignition gateways (1 GB heap each, capped at 1.5 GB), plus TimescaleDB, the runner, and the usual Docker Desktop overhead
 - _Background:_ [Lab 04](../04-ignition-file-based-deploy/) — this lab reuses its stack and deploy mechanics; the config-scope overlays (`local-development`/`test`/`production`) it shipped silently become load-bearing here
@@ -136,7 +136,7 @@ GitHub only runs workflows from the repo root, so this lab's three live in the c
 
 Both deploy targets need:
 
-- The bundled self-hosted runner (`github-runner` service in `docker-compose.yaml`) registered against your fork with the `lab06` label — it auto-registers using the `repo`-scope PAT in `RUNNER_GITHUB_PAT` (see `.env`; reuse your Lab 04 token).
+- The bundled self-hosted runner (`github-runner` service in `docker-compose.yaml`) registered against your fork with the `lab06` label — it auto-registers using the fine-grained PAT in `RUNNER_GITHUB_PAT` (see `.env`; reuse your Lab 04 token).
 - A GitHub **environment** per target with the right secrets + variables:
 
 | Scope | Name | Type | Purpose |

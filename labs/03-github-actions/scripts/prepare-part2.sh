@@ -12,7 +12,7 @@
 #      root) for you to flesh out
 #
 # It does NOT write the real steps: the TODOs in the skeleton are yours to fill
-# in across Part 2, steps 0-2 (the same numbers as exercises/lab.md and the
+# in during Part 2, step 0 (the same numbers as exercises/lab.md and the
 # assignment slides). Every action is announced as it happens.
 #
 # Re-running is safe: if the answer is already set aside, it won't clobber anything.
@@ -56,20 +56,18 @@ fi
 # --- action 1 of 2: set the answer aside ---
 say "Action 1 of 2: set the shipped answer aside"
 note "Running: ${B}git mv $WORKFLOW_SHOWN $REFERENCE_SHOWN${R}"
-note "Keeps the finished workflow as a reference you'll check against in Part 2, step 4,"
+note "Keeps the finished workflow as a reference you'll check against in Part 2, step 2,"
 note "while taking it out of .github/workflows/ so GitHub no longer runs it."
 git mv "$WORKFLOW" "$REFERENCE"
 
 # --- action 2 of 2: write the starter skeleton ---
 say "Action 2 of 2: write a starter skeleton to $WORKFLOW_SHOWN"
 note "A bare two-job skeleton (lint + validate) with TODOs: the real steps are"
-note "yours to type across Part 2, steps 0-2. Nothing here does the exercise for you."
+note "yours to type in Part 2, step 0. Nothing here does the exercise for you."
 cat > "$WORKFLOW" <<'YAML'
 name: Lab 03 · CI
 
 # Monorepo scoping: only changes to this lab (or this workflow) trigger it.
-# TODO (step 1): narrow `paths:` so docs-only PRs are skipped, plus a
-# `push: branches: [main]` backstop. See the assignment.
 on:
   pull_request:
     paths:
@@ -97,7 +95,6 @@ jobs:
       #                (pip install yamllint==1.35.1 ign-lint==0.6.1)
       # TODO (step 0): run each linter: yamllint, actionlint, shellcheck, ign-lint
       #                (ign-lint from the repo root, as in Part 1)
-      # TODO (step 2): add `docker compose config -q` as the final lint step
 
   validate:
     runs-on: ubuntu-latest
@@ -109,4 +106,4 @@ YAML
 say "Done."
 note "Answer key : $REFERENCE_SHOWN"
 note "Your file  : $WORKFLOW_SHOWN  (repo root; starter skeleton, flesh out the TODOs)"
-note "Next: commit, then fill in the jobs (Part 2, step 0) and work through steps 1-4."
+note "Next: commit, then fill in the jobs (Part 2, step 0) and work through steps 1-2."

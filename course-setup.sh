@@ -23,8 +23,8 @@ WARNINGS=0; FAILURES=0
 step() { echo; echo "── $* ──────────────────────────────────────────"; }
 
 echo "CI/CD for Ignition: course setup"
-echo "Step 4 asks for a GitHub classic Personal Access Token with the 'repo' scope"
-echo "(github.com/settings/tokens → Generate new token (classic)). Have it ready, or"
+echo "Step 4 asks for a GitHub fine-grained Personal Access Token for your fork with"
+echo "Administration: Read and write (github.com/settings/personal-access-tokens/new). Have it ready, or"
 echo "press Enter at the prompt and add it to labs/04-*/.env and labs/06-*/.env later."
 
 # ---- 1. Preflight -------------------------------------------------------------
@@ -122,9 +122,9 @@ fi
 # ---- 4. Lab .env files --------------------------------------------------------
 step "4/4 Lab .env files"
 # Labs 04 and 06 bundle a self-hosted runner that registers against your fork
-# with a classic PAT (repo scope). One token serves both labs.
+# with a fine-grained PAT (Administration: Read and write on the fork). One token
+# serves both labs.
 RUNNER_LABS="labs/04-ignition-file-based-deploy labs/06-secrets-db-and-modules"
-PLACEHOLDER_PAT="ghp_replace-me-with-a-pat-that-has-repo-scope"
 
 set_env_var() {  # file key value
     local file="$1" key="$2" value="$3" tmp
@@ -145,16 +145,18 @@ for lab in $RUNNER_LABS; do
         set_env_var "$env_file" RUNNER_REPO_URL "https://github.com/$fork_slug"
     fi
     current_pat="$(sed -n 's/^RUNNER_GITHUB_PAT=//p' "$env_file")"
-    if [ -n "$current_pat" ] && [ "$current_pat" != "$PLACEHOLDER_PAT" ]; then
+    if [ -n "$current_pat" ] && ! printf '%s' "$current_pat" | grep -q 'replace-me'; then
         [ -z "$pat" ] && pat="$current_pat"
     fi
 done
 
 if [ -z "$pat" ] && [ -t 0 ]; then
     echo
-    echo "Labs 04 and 06 need a GitHub Personal Access Token (classic, 'repo' scope)"
-    echo "so their bundled runner can register against your fork."
-    echo "Create one at https://github.com/settings/tokens → Generate new token (classic)."
+    echo "Labs 04 and 06 need a GitHub fine-grained Personal Access Token so their"
+    echo "bundled runner can register against your fork. Create one at"
+    echo "https://github.com/settings/personal-access-tokens/new"
+    echo "  Repository access: Only select repositories → <you>/cicd-for-ignition"
+    echo "  Repository permissions: Administration → Read and write"
     read -r -s -p "Paste it now, or press Enter to skip: " pat
     echo
 fi

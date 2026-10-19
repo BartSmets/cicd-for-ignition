@@ -17,7 +17,7 @@ Work in **WSL2 (Windows), Linux or macOS**. On Windows, keep the clone in your L
 Have these ready before you start:
 
 - The [GitHub CLI](https://cli.github.com/), logged in with the `workflow` scope: `gh auth login -s workflow`.
-- A GitHub **classic Personal Access Token with the `repo` scope** ([github.com/settings/tokens](https://github.com/settings/tokens) → *Generate new token (classic)*). The course setup asks for it once; the self-hosted runners of Labs 04 and 06 use it to register on your fork.
+- A GitHub **fine-grained Personal Access Token** ([github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)): *Only select repositories* → your fork `<you>/cicd-for-ignition`, and one repository permission, **Administration: Read and write**. The course setup asks for it once; the self-hosted runners of Labs 04 and 06 use it to register on your fork.
 
 1. **Fork and clone** the course repo:
    ```bash

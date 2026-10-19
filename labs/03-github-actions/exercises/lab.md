@@ -13,17 +13,18 @@ a required gate on every PR, then a look at *where* CI runs when GitHub-hosted i
 ## What you'll do
 
 - **Part 1: Linters as your safety net:** yamllint, shellcheck, actionlint, **ign-lint**, `scripts/validate.sh`
-- **Part 2: GitHub Actions:** build `lab03-ci.yml`, path filters, a ruleset that requires it
+- **Part 2: GitHub Actions:** build `lab03-ci.yml` and a ruleset that requires it
 - **Part 3: Self-hosted runners:** a discussion and an optional hands-on; the real thing comes in Labs 04 and 06
 
 ## Setup
 
-You'll need Docker (Compose V2) and Python 3.12. From this lab's folder in your clone,
-stop the Lab 02 gateway (both labs use port 8088), copy the env file and boot the gateway:
+You'll need Docker (Compose V2) and Python 3.12. Open your clone in VS Code and a terminal
+in it (**Terminal → New Terminal**, it starts at the root of your clone). Run every command of
+this lab from that terminal, in the lab folder. Stop the Lab 02 gateway (both labs use port
+8088), copy the env file and boot the gateway:
 
 ```bash
-cd ~/mustry-academy/cicd-for-ignition/labs/03-github-actions
-code .
+cd labs/03-github-actions        # from the root of your clone
 
 (cd ../02-branching-and-prs && scripts/teardown.sh)   # Lab 02's gateway holds port 8088
 
@@ -135,11 +136,13 @@ Hunt every planted issue and fix them all. (The step numbers match the assignmen
 5. Re-run every linter until each is silent and `scripts/validate.sh` exits 0.
 6. Open `.yamllint.yml` and read the comment on `line-length: disable`: a finding configured
    away rather than fixed, with the reason written down. Nothing to change here.
-7. Commit with `-A`: the seeded `lab03-example.yml` is a new, untracked file that
-   `git commit -am` would leave behind.
+7. Don't commit: the planted bugs were never committed, so there is nothing to commit.
+   Reset the tree to the committed state:
 
    ```bash
-   git add -A && git commit -m "fix: part 1 linter findings"
+   git restore .
+   rm -f ../../.github/workflows/lab03-example.yml
+   git status        # nothing to commit, working tree clean
    ```
 
 > **No delete-cheats.** Don't silence ign-lint by deleting the Clock, the Kiln binding or
@@ -175,9 +178,9 @@ The lab ships `.pre-commit-config.yaml` with all four linters as hooks.
 
 ## Part 2: GitHub Actions: workflows, jobs, required checks
 
-**Goal:** write the workflow yourself (PR trigger, least-privilege permissions, path
-filters), wire in the Part 1 linters, and make it a *required check* no one can merge past.
-Start from a clean tree (Part 1 fixes committed).
+**Goal:** write the workflow yourself (PR trigger, least-privilege permissions), wire in the
+Part 1 linters, and make it a *required check* no one can merge past. Start from a clean
+tree (Part 1 reset).
 
 ```
 workflow  ──contains──▶  jobs  ──contains──▶  steps  ──run──▶  actions or shell commands
@@ -196,7 +199,7 @@ Two facts about this repo shape every workflow below:
 ### We-do (step 0): build the workflow
 
 The repo ships the finished workflow. `scripts/prepare-part2.sh` moves it to
-`.github/ci-reference.yml` in the lab folder (your answer key for step 4) and writes a bare
+`.github/ci-reference.yml` in the lab folder (your answer key for step 2) and writes a bare
 two-job skeleton (`lint` and `validate`, each just `checkout` plus TODOs) to
 `.github/workflows/lab03-ci.yml` at the repo root:
 
@@ -238,7 +241,7 @@ jobs:
 
 Watch it run on a test PR: push the same commit as a branch, open the PR, watch it, and
 close it **unmerged**. Merging it would put a merge commit on GitHub's `main` that your local
-`main` lacks, and step 2's `git push origin main` would be rejected.
+`main` lacks, and step 1's `git push origin main` would be rejected.
 
 ```bash
 git add -A && git commit -m "ci: validate job"            # on your local main
@@ -280,64 +283,25 @@ What the We-do also shows:
 - **Secrets vs variables**: secrets are encrypted and masked (`***`) in logs; variables are
   plain text. The instructor adds an `EXAMPLE_SECRET` and shows it masked:
   `gh secret set EXAMPLE_SECRET --body "hunter2" -R "$(gh repo set-default --view)"`.
-- **Job ids are check names**: the ruleset in step 3a requires `lint` and `validate` by
+- **Job ids are check names**: the ruleset in step 1a requires `lint` and `validate` by
   name. Rename a job, or give it a `name:`, and the required check waits forever.
 - **`timeout-minutes`** on every job: a hung job otherwise runs for up to 6 hours.
 
 ### You do
 
-Make the workflow yours. (Step 0 was the We-do above; steps 1-4 follow, with 3a-3d inside
-step 3.)
+Make the workflow yours. (Step 0 was the We-do above; steps 1-2 follow, with 1a-1d inside
+step 1.)
 
-**Step 1: path filters.** Narrow `paths:` from "anything in this lab" to the files the
-checks actually read, so the workflow skips docs-only PRs. Add a `push` trigger on `main`,
-scoped to the lab the same way. Include every config the checks read: `.yamllint.yml`,
-`rule_config.json`, `.config/` and the lab's `.github/`.
+**Step 1: protect `main`.**
 
-```yaml
-on:
-  pull_request:
-    paths:
-      - "labs/03-github-actions/projects/**"
-      - "labs/03-github-actions/scripts/**"
-      - "labs/03-github-actions/docker-compose.yml"
-      - ".github/workflows/lab03-*.yml"
-      - "labs/03-github-actions/.yamllint.yml"
-      - "labs/03-github-actions/rule_config.json"
-      - "labs/03-github-actions/.config/**"
-      - "labs/03-github-actions/.github/**"
-  push:
-    branches: [main]
-    paths:
-      - "labs/03-github-actions/**"
-      - ".github/workflows/lab03-*.yml"
-```
-
-**Step 2: the Compose check, then a README-only PR.** Add a final step to the `lint` job:
-
-```yaml
-      - run: docker compose config -q
-```
-
-Commit and push to `main` (it isn't protected yet). The push runs `lint` and `validate`
-once, so both names show up as suggestions when step 3a asks for the required checks. Then
-branch off, touch **only** `labs/03-github-actions/README.md` and open a PR. The checks
-panel stays **empty**, not even a *Skipped* entry: a path-filtered workflow never starts.
-Close that PR afterwards.
+First put your finished workflow on `main` (it isn't protected yet):
 
 ```bash
 git add -A && git commit -m "ci: lab03 workflow"
-git push origin main                  # runs lint + validate
-git switch -c docs/readme-only        # edit README.md only, then:
-git commit -am "docs: readme tweak"
-git push -u origin docs/readme-only
-gh pr create --fill                   # checks panel stays empty: no workflow started
-gh pr close docs/readme-only --delete-branch && git switch main
+git push origin main
 ```
 
-**Step 3: protect `main`.**
-
-**3a: Create a ruleset.** On github.com, open your fork's **Settings → Rules → Rulesets →
+**1a: Create a ruleset.** On github.com, open your fork's **Settings → Rules → Rulesets →
 New ruleset → New branch ruleset** and fill it in exactly like this:
 
 - **Ruleset name:** `protect-main`
@@ -357,7 +321,7 @@ Click **Create**.
 > the ruleset is on, PRs of other labs wait for `lint` and `validate` too. Settings → Rules
 > → Rulesets → `protect-main` → Delete ruleset.
 
-**3b: A direct push is rejected.** Commit straight to `main` and push. GitHub rejects it,
+**1b: A direct push is rejected.** Commit straight to `main` and push. GitHub rejects it,
 even for you as admin: `Changes must be made through a pull request.` and `2 of 2 required
 status checks are expected.` Then drop the rejected commit.
 
@@ -368,7 +332,7 @@ git push                              # → rejected: GH013 Repository rule viol
 git reset --hard origin/main          # drop the rejected commit
 ```
 
-**3c: A green PR merges.** Make a **real** change on a branch (an empty commit starts no
+**1c: A green PR merges.** Make a **real** change on a branch (an empty commit starts no
 checks): reword the Overview's `Subtitle` text in its `view.json`. Open a PR, wait for
 `lint` and `validate` to go green, and merge.
 
@@ -382,10 +346,7 @@ sleep 15 && gh pr checks --watch && gh pr merge --merge --delete-branch   # chec
 git switch main && git pull
 ```
 
-Then open another README-only PR: no workflow starts, so the required checks never report
-and the PR waits on *Expected* forever. Stretch 2 unblocks it; close the PR for now.
-
-**3d: A red PR is blocked.** On a branch, set the Clock's poll to `now(250)` by hand,
+**1d: A red PR is blocked.** On a branch, set the Clock's poll to `now(250)` by hand,
 commit and open a PR. `lint` goes red and `gh pr merge` refuses with `the base branch policy
 prohibits the merge`. Pre-commit hook installed (Stretch 1)? Commit with `--no-verify`.
 Don't re-run `scripts/seed.sh` for this: it plants all seven bugs.
@@ -407,50 +368,17 @@ sleep 15 && gh pr checks --watch && gh pr merge --merge --delete-branch
 git switch main && git pull
 ```
 
-**Step 4: compare with the reference.** Your workflow should match
-`.github/ci-reference.yml` structurally: same triggers, jobs and step order. Step `name:`
-labels and comments may differ.
+**Step 2: compare with the reference.** Your workflow should match
+`.github/ci-reference.yml` structurally: same jobs and step order. Step `name:` labels and
+comments may differ. The reference goes further in three places: its `paths:` list only the
+files the checks read (so docs-only PRs start no checks), it also runs on every push to
+`main`, and `lint` ends with `docker compose config -q`.
 
 ```bash
 git diff --no-index .github/ci-reference.yml ../../.github/workflows/lab03-ci.yml
 ```
 
-### Stretch 2 `[OPTIONAL]`: unblock README-only PRs with the no-op twin
-
-Add a second workflow, `.github/workflows/lab03-ci-noop.yml` at the repo root, with the
-opposite path filter and jobs named exactly `lint` and `validate` that just `echo`. A later
-`!` pattern removes files an earlier pattern matched, so the twin runs only when a changed
-file is in this lab *and* outside the real CI's filter:
-
-```yaml
-name: Lab 03 · CI (no-op twin)
-on:
-  pull_request:
-    paths:
-      - "labs/03-github-actions/**"                # this lab's files...
-      - "!labs/03-github-actions/projects/**"      # ...minus everything lab03-ci.yml checks
-      - "!labs/03-github-actions/scripts/**"
-      - "!labs/03-github-actions/docker-compose.yml"
-      - "!labs/03-github-actions/.yamllint.yml"
-      - "!labs/03-github-actions/rule_config.json"
-      - "!labs/03-github-actions/.config/**"
-      - "!labs/03-github-actions/.github/**"
-permissions: {}
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "No lint-relevant files changed."
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "No validate-relevant files changed."
-```
-
-Merge it to `main` through a PR, then open a README-only PR: `lint` and `validate` report
-green within seconds and the merge unlocks.
-
-### Stretch 3 `[OPTIONAL]`: a Run button and a masked secret
+### Stretch 2 `[OPTIONAL]`: a Run button and a masked secret
 
 - **The manual Run button.** Add `workflow_dispatch:` to your `on:` block and merge it to
   `main` through a PR. The Actions tab grows a *Run workflow* button.
@@ -532,10 +460,10 @@ You built a CI safety net for an Ignition project:
 - **Local linters** (yamllint, shellcheck, actionlint, **ign-lint**, `scripts/validate.sh`),
   each catching a class of bug before it ships.
 - **A GitHub Actions workflow** that runs them on every PR, with least-privilege
-  permissions and path filters.
+  permissions.
 - **A ruleset on `main`** that turns "please run the linters" into "you cannot merge until
   they pass."
 - **Self-hosted runners:** when you need one, and the rule that keeps it safe.
 
-**Before Lab 04:** delete the `protect-main` ruleset on your fork (Part 2, step 3a), and
+**Before Lab 04:** delete the `protect-main` ruleset on your fork (Part 2, step 1a), and
 skim [`docs/self-hosted-runners.md`](../docs/self-hosted-runners.md).

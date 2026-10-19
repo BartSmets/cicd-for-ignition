@@ -39,10 +39,10 @@ The offline copy is the same deck: open it from your clone if the link doesn't l
 
 ## Quick start
 
-From this lab's folder in your clone:
+With your clone open in VS Code, from its terminal:
 
 ```bash
-cd ~/mustry-academy/cicd-for-ignition/labs/03-github-actions
+cd labs/03-github-actions        # from the root of your clone
 (cd ../02-branching-and-prs && scripts/teardown.sh)   # Lab 02's gateway holds port 8088
 cp .env.example .env
 scripts/setup.sh        # boots one Ignition gateway, waits for RUNNING, prints the URL + login
@@ -69,7 +69,7 @@ The whole lab is one continuous workshop in [`exercises/lab.md`](./exercises/lab
 | Part | Topic |
 |---|---|
 | 1 | Linters as your safety net (yamllint, shellcheck, actionlint, **ign-lint**, `validate.sh`) |
-| 2 | GitHub Actions: build `lab03-ci.yml`, path filters, a ruleset that requires it |
+| 2 | GitHub Actions: build `lab03-ci.yml` and a ruleset that requires it |
 | 3 | Self-hosted runners: a discussion and an optional hands-on |
 
 Part 1 starts from a deliberately broken state seeded by [`scripts/seed.sh`](./scripts/seed.sh).

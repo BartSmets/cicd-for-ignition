@@ -135,7 +135,7 @@ pf_persist_lab_gid
 # ---- Runner PAT check (registers the bundled github-runner) ----------------
 # The github-runner container auto-registers against your fork using the
 # GitHub Personal Access Token in RUNNER_GITHUB_PAT (see .env) — reuse the same
-# `repo`-scope PAT you created in Lab 04. If it's still the placeholder, the
+# fine-grained PAT you created for Lab 04. If it's still the placeholder, the
 # runner container will restart-loop with a 401 in its logs; the gateways still
 # come up fine, so this is only a heads-up.
 runner_pat_reminder() {
@@ -146,8 +146,8 @@ runner_pat_reminder() {
         || [ -z "$repo_url" ] || printf '%s' "$repo_url" | grep -q '<your-github-user>'; then
         echo -e "${YELLOW}Runner not configured yet — the lab06-runner container will restart-loop until you:${NC}"
         echo "  1. Point RUNNER_REPO_URL in .env at your fork."
-        echo "  2. Set RUNNER_GITHUB_PAT in .env to your Lab 04 repo-scope PAT"
-        echo "     (or make one at github.com/settings/tokens → classic → tick 'repo')."
+        echo "  2. Set RUNNER_GITHUB_PAT in .env to your Lab 04 fine-grained PAT (or make one"
+        echo "     at github.com/settings/personal-access-tokens/new with Administration: Read and write)."
         echo "  Then re-run scripts/setup.sh. The gateways work without this; only CI needs the runner."
         echo ""
     fi

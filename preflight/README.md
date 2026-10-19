@@ -6,7 +6,7 @@ The preflight script checks that you have all the tools required for the course 
 
 ## Quick start
 
-You need the [GitHub CLI](https://cli.github.com/) logged in (`gh auth login -s workflow`). The `workflow` scope lets you push GitHub Actions files from Lab 03 on; the preflight checks for it. Have a GitHub **classic Personal Access Token with the `repo` scope** ready too ([github.com/settings/tokens](https://github.com/settings/tokens) → *Generate new token (classic)*): `./course-setup.sh` asks for it once, and the Labs 04 and 06 runners use it to register on your fork.
+You need the [GitHub CLI](https://cli.github.com/) logged in (`gh auth login -s workflow`). The `workflow` scope lets you push GitHub Actions files from Lab 03 on; the preflight checks for it. Have a GitHub **fine-grained Personal Access Token** ready too ([github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new): *Only select repositories* → your fork, repository permission **Administration: Read and write**): `./course-setup.sh` asks for it once, and the Labs 04 and 06 runners use it to register on your fork.
 
 ```bash
 mkdir -p ~/mustry-academy && cd ~/mustry-academy     # Windows: this must be your LINUX home

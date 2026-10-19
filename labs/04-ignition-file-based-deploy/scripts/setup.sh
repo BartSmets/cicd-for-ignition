@@ -129,8 +129,8 @@ runner_pat_reminder() {
         || [ -z "$repo_url" ] || printf '%s' "$repo_url" | grep -q '<your-github-user>'; then
         echo -e "${YELLOW}Runner not configured yet — the lab04-runner container will restart-loop until you:${NC}"
         echo "  1. Point RUNNER_REPO_URL in .env at your fork (https://github.com/<you>/cicd-for-ignition)."
-        echo "  2. Set RUNNER_GITHUB_PAT in .env to a repo-scope PAT"
-        echo "     (github.com/settings/tokens → Generate new token (classic) → tick 'repo')."
+        echo "  2. Set RUNNER_GITHUB_PAT in .env to a fine-grained PAT for your fork with"
+        echo "     Administration: Read and write (github.com/settings/personal-access-tokens/new)."
         echo "  Then re-run scripts/setup.sh. The gateways work without this; only CI needs the runner."
         echo ""
     fi

@@ -88,12 +88,14 @@ git update-index --no-skip-worktree <path>
 
 - Container up? `docker compose ps github-runner` and `docker logs lab06-runner` (look for
   *"Listening for Jobs"*).
-- **Restart loop with a *401* in the logs?** The runner authenticates with the `repo`-scope PAT in
-  `RUNNER_GITHUB_PAT` (`.env`) — a 401 means it's still the placeholder or an invalid/expired token.
+- **Restart loop with a *401* or *403* in the logs?** The runner authenticates with the fine-grained
+  PAT in `RUNNER_GITHUB_PAT` (`.env`). A 401 means it's still the placeholder or an invalid/expired
+  token; a 403 means the token lacks *Administration: Read and write* on your fork.
   Fix it, then `docker compose up -d --force-recreate github-runner`.
 - `RUNNER_REPO_URL` in `.env` must point at **your fork**, not the upstream.
-- `RUNNER_GITHUB_PAT` in `.env` must be a real GitHub Personal Access Token with `repo` scope
-  (reuse the one you created in Lab 04, or make one at github.com/settings/tokens → classic → tick `repo`).
+- `RUNNER_GITHUB_PAT` in `.env` must be a real fine-grained Personal Access Token (reuse the one
+  from Lab 04, or make one at github.com/settings/personal-access-tokens/new → Only select repositories → your fork →
+  Repository permissions: Administration → Read and write).
 - In your fork: *Settings → Actions → Runners* should list it online with the `self-hosted, lab06`
   labels.
 - Don't add `EPHEMERAL` to the runner's environment in `docker-compose.yaml` — the image treats

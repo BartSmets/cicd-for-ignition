@@ -298,7 +298,8 @@ services:
 
   # --- self-hosted GitHub Actions runner -------------------------------------
   # Auto-registers against the repo set in RUNNER_REPO_URL using a GitHub
-  # Personal Access Token (RUNNER_GITHUB_PAT, must have `repo` scope). The
+  # fine-grained Personal Access Token (RUNNER_GITHUB_PAT, Administration: Read
+  # and write on the fork). The
   # image uses that PAT to fetch its own short-lived registration token, so
   # you never mint one by hand. This is the first lab where you create the
   # PAT; Lab 06 reuses the same token.
