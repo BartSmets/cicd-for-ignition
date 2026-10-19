@@ -504,10 +504,15 @@ a{color:var(--primary-deep)}
 .dod .checks>li{font-size:var(--text-base)}
 .cols2.pick{grid-template-columns:1fr 1.6fr;align-items:center}
 .compare.wipe{grid-template-columns:1fr 1.4fr;grid-auto-flow:row}
+.form{display:grid;grid-template-columns:auto 1fr;column-gap:1.75rem}
+.form>div{padding:.45rem 0;border-bottom:1px solid var(--line-2);font-size:var(--text-base)}
+.form>.k{color:var(--muted);font-weight:600}
+.form>.v{color:var(--ink-strong);font-weight:600}
+.form>.v small{font-weight:400;color:var(--muted)}
 /* small screens: this deck's grids collapse to one column */
 @media screen and (max-width:820px),screen and (max-height:520px){
   .cols2.pick,.compare.wipe{grid-template-columns:1fr}
-  .work,.notefields{grid-template-columns:1fr}
+  .work,.notefields,.form{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -733,7 +738,7 @@ cat .deployignore</pre></div>
     <div class="work">
       <ol class="steps">
         <li><b>Verify the runner</b> (part of the compose stack). In your fork, <i>Settings → Actions → Runners</i> shows it <b>online</b> with labels <code>self-hosted, lab04</code>.</li>
-        <li>Not there? <code>RUNNER_REPO_URL</code> points at <b>your fork</b> · <code>RUNNER_GITHUB_PAT</code> is a real <code>repo</code>-scope PAT (a bad one shows a <b>401</b> in the logs) · then <code style="white-space:normal">docker compose up -d --force-recreate github-runner</code>.</li>
+        <li>Not there? <code>RUNNER_REPO_URL</code> points at <b>your fork</b> · <code>RUNNER_GITHUB_PAT</code> is a real fine-grained PAT with the rights on the right (a bad one shows a <b>401</b> or <b>403</b> in the logs) · then <code style="white-space:normal">docker compose up -d --force-recreate github-runner</code>.</li>
         <li><b>On GitHub, in your fork:</b> environment <code>lab04-gateway-test</code> (<i>Settings → Environments → New environment</i>) with secret <code>IGNITION_API_KEY</code> = <code>IGNITION_API_KEY_TEST</code> from <code>.env</code> (:8089).</li>
         <li>Repeat: <code>lab04-gateway-production</code> with <code>IGNITION_API_KEY_PRODUCTION</code> (:8090). Leave <code>IGNITION_URL</code> / <code>IGNITION_CONTAINER</code> as is.</li>
       </ol>
@@ -742,6 +747,12 @@ cat .deployignore</pre></div>
 docker compose ps github-runner
 docker compose logs --tail 50 github-runner
 <span class="cm"># look for "Listening for Jobs"</span></pre></div>
+        <div class="form">
+          <div class="k">Runner PAT</div><div class="v">Fine-grained: <i>Settings › Developer settings › Fine-grained tokens</i></div>
+          <div class="k">Repository access</div><div class="v">Only select repositories › <code>&lt;you&gt;/cicd-for-ignition</code></div>
+          <div class="k">Permission</div><div class="v"><b>Administration: Read and write</b> <small>(Metadata: Read-only comes with it)</small></div>
+          <div class="k">Why</div><div class="v">The runner uses it to fetch its own registration token</div>
+        </div>
       </div>
     </div>
   </div>

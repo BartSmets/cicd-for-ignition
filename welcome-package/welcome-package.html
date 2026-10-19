@@ -885,8 +885,9 @@
     with our preflight check, which validates every tool,
     pulls the course images (Ignition&nbsp;8.3.8, TimescaleDB, and the GitHub runner),
     checks ports and bind mounts, and starts a test gateway. Most of the wait is image pulls.
-    Have a GitHub <strong>classic personal access token with the <span class="mono">repo</span> scope</strong>
-    ready: the setup asks for it once, for the self-hosted runners of Labs 04 and 06.
+    Have a GitHub <strong>fine-grained personal access token</strong> for your fork ready, with
+    one repository permission: <span class="mono">Administration: Read and write</span>.
+    The setup asks for it once, for the self-hosted runners of Labs 04 and 06.
   </p>
 
   <div class="preflight-block">

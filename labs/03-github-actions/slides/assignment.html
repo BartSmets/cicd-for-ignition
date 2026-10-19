@@ -555,7 +555,7 @@ a{color:var(--primary-deep)}
     <ol class="track">
       <li><small>Setup</small><b>Gateway and linters</b><span>The lab gateway running, the linters installed in a venv</span></li>
       <li class="now"><small>Part 1 · solo</small><b>Linters as your safety net</b><span><code>scripts/seed.sh</code> breaks the project; hunt and fix every finding<br><b>Gate:</b> every linter silent, <code>validate.sh</code> exits 0</span></li>
-      <li><small>Part 2 · solo · your repo</small><b>Make CI the gatekeeper</b><span>Finish <code>lab03-ci.yml</code>, then a ruleset on <code>main</code><br><b>Gate:</b> docs-only PR runs no checks, red PR blocked</span></li>
+      <li><small>Part 2 · solo · your repo</small><b>Make CI the gatekeeper</b><span>Finish <code>lab03-ci.yml</code>, then a ruleset on <code>main</code><br><b>Gate:</b> direct push rejected, red PR blocked</span></li>
       <li><small>Part 3 · together</small><b>Self-hosted runners</b><span>A discussion, then an optional hands-on<br><b>Bring:</b> one concrete deploy of yours</span></li>
     </ol>
   </div>
@@ -568,14 +568,14 @@ a{color:var(--primary-deep)}
   <div class="body">
     <div class="work">
       <ol class="steps alt">
-        <li><b>Go to the lab folder</b> in your clone and open it in VS Code.</li>
+        <li><b>Open your clone in VS Code</b> and a terminal in it (<b>Terminal › New Terminal</b>). Run every command of this lab from that terminal, in the lab folder.</li>
         <li><b>Stop the Lab 02 gateway:</b> both labs use port 8088.</li>
         <li><b>Copy the env file</b> and run <code>scripts/setup.sh</code>. It waits for RUNNING and prints the URL and login.</li>
         <li><b>Open the gateway</b> and log in with the <code>.env</code> credentials.</li>
       </ol>
       <div class="side">
-        <div class="code"><pre>cd ~/mustry-academy/cicd-for-ignition/labs/03-github-actions
-code .
+        <div class="code"><pre><span class="cm"># VS Code terminal, at the root of your clone</span>
+cd labs/03-github-actions
 
 (cd ../02-branching-and-prs &amp;&amp; scripts/teardown.sh)
 
@@ -642,18 +642,20 @@ git restore . &amp;&amp; rm -f ../../.github/workflows/lab03-example.yml</pre></
 <!-- PART 1 · 4-7 -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">PART 1 · 4-7</span><h2 class="title">Fix every finding, read the documented mute, commit</h2></div>
+  <div class="sechead"><span class="num">PART 1 · 4-7</span><h2 class="title">Fix every finding, read the documented mute, reset the tree</h2></div>
   <div class="body">
     <div class="work">
       <ol class="steps" style="counter-reset:step 3">
         <li><b>Fix every finding.</b> Record <i>what was flagged</i>, <i>why your fix is correct</i>, <i>which production bug it catches</i>. The seeded <code>lab03-example.yml</code>: bump it to <code>actions/checkout@v7</code>, don't delete it.</li>
         <li><b>Re-run every linter</b> until each is silent and <code>scripts/validate.sh</code> exits 0.</li>
         <li><b>Read a finding configured away, not fixed:</b> the comment on <code>line-length: disable</code> in <code>.yamllint.yml</code>. Compose has legitimately long <code>environment:</code> lines; the reason is written down so a reviewer sees judgment. Nothing to change.</li>
-        <li><b>Commit with <code>-A</code>:</b> the seeded workflow is a new, untracked file that <code>commit -am</code> would leave behind.</li>
+        <li><b>Don't commit:</b> the planted bugs were never committed, so there is nothing to commit. Reset the tree; <code>git status</code> shows it clean.</li>
       </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># 7: commit everything, the new file included</span>
-git add -A &amp;&amp; git commit -m <span class="cmd2">"fix: part 1 linter findings"</span></pre></div>
+        <div class="code"><pre><span class="cm"># 7: back to the committed state</span>
+git restore .
+rm -f ../../.github/workflows/lab03-example.yml
+git status   <span class="cm"># nothing to commit, working tree clean</span></pre></div>
       </div>
     </div>
   </div>
@@ -667,9 +669,8 @@ git add -A &amp;&amp; git commit -m <span class="cmd2">"fix: part 1 linter findi
     <h2 class="divider-title">Part 2, solo in your fork: build <code>lab03-ci.yml</code> and <em>require it on main</em></h2>
     <ol class="flow nonum" style="max-width:76rem">
       <li><b>Step 0 · Build</b><span>the skeleton, then the <code>validate</code> and <code>lint</code> jobs</span></li>
-      <li><b>Steps 1-2 · Refine</b><span>path filters, a run on every push to <code>main</code>, the Compose check</span></li>
-      <li class="on"><b>Step 3 · Protect</b><span>a ruleset on <code>main</code>: direct pushes rejected, red PRs blocked</span></li>
-      <li><b>Step 4 · Compare</b><span>against the reference you set aside</span></li>
+      <li class="on"><b>Step 1 · Protect</b><span>a ruleset on <code>main</code>: direct pushes rejected, red PRs blocked</span></li>
+      <li><b>Step 2 · Compare</b><span>against the reference you set aside</span></li>
     </ol>
   </div>
 </section>
@@ -682,7 +683,7 @@ git add -A &amp;&amp; git commit -m <span class="cmd2">"fix: part 1 linter findi
     <div class="work">
       <div class="side">
         <ol class="steps" style="counter-reset:step -1">
-          <li><b>Run <code>scripts/prepare-part2.sh</code>.</b> It moves the shipped workflow to <code>.github/ci-reference.yml</code> (your answer key for step 4) and writes a bare skeleton to <code>.github/workflows/lab03-ci.yml</code> at the <b>repo root</b>, the only place GitHub reads workflows.</li>
+          <li><b>Run <code>scripts/prepare-part2.sh</code>.</b> It moves the shipped workflow to <code>.github/ci-reference.yml</code> (your answer key for step 2) and writes a bare skeleton to <code>.github/workflows/lab03-ci.yml</code> at the <b>repo root</b>, the only place GitHub reads workflows.</li>
           <li data-n="0"><b>Commit</b>, then fill in the TODOs yourself: don't copy the reference.</li>
         </ol>
         <div class="code wrap"><pre>scripts/prepare-part2.sh
@@ -695,7 +696,7 @@ git commit -m <span class="cmd2">"chore: set aside the reference workflow"</span
       <div class="code xs"><div class="code-title">.github/workflows/lab03-ci.yml · the skeleton</div><pre>name: Lab 03 · CI
 on:
   pull_request:
-    paths:           <span class="cm"># TODO (step 1): narrow + push backstop</span>
+    paths:
       - <span class="cmd2">"labs/03-github-actions/**"</span>
       - <span class="cmd2">".github/workflows/lab03-*.yml"</span>
 permissions:
@@ -710,7 +711,6 @@ jobs:
       - uses: actions/checkout@v7
       <span class="cm"># TODO (step 0): set up Python 3.12, install the pinned tools</span>
       <span class="cm"># TODO (step 0): run each linter</span>
-      <span class="cm"># TODO (step 2): docker compose config -q as the final step</span>
   validate:
     runs-on: ubuntu-latest
     steps:
@@ -732,7 +732,7 @@ jobs:
           <li data-n="0"><b>Commit on your local <code>main</code></b>, push the same commit as a throwaway branch, open a PR and watch the checks.</li>
           <li data-n="0"><b>Read the logs</b> on the PR's <b>Checks</b> tab: each step is its own collapsible block. Then <b>close the PR unmerged</b>.</li>
         </ol>
-        <div class="aside warn"><span class="label">Why close it unmerged</span>Merging would put a merge commit on GitHub's <code>main</code> that your local <code>main</code> lacks: step 2's <code>git push origin main</code> would be rejected as non-fast-forward.</div>
+        <div class="aside warn"><span class="label">Why close it unmerged</span>Merging would put a merge commit on GitHub's <code>main</code> that your local <code>main</code> lacks: step 1's <code>git push origin main</code> would be rejected as non-fast-forward.</div>
       </div>
       <div class="side">
         <div class="code"><pre>jobs:
@@ -786,75 +786,16 @@ gh pr close ci/first-run --delete-branch   <span class="cm"># close it unmerged<
         <li><b>actionlint is a <code>uses:</code> step:</b> it isn't installed on <code>ubuntu-latest</code>, so <code>run: actionlint</code> fails with <i>command not found</i>. <code>uses:</code> steps ignore <code>working-directory</code>.</li>
         <li><b>A step-level <code>working-directory: .</code></b> overrides the default for that step only: ign-lint runs from the repo root.</li>
         <li><b><code>timeout-minutes</code> on every job:</b> a hung job otherwise bills for up to 6 hours. Too tight and a slow apt mirror flakes the check.</li>
-        <li class="warn"><b>Job ids are check names:</b> the ruleset in step 3 matches <code>lint</code> and <code>validate</code> by name. Rename a job and the required check waits forever.</li>
+        <li class="warn"><b>Job ids are check names:</b> the ruleset in step 1 matches <code>lint</code> and <code>validate</code> by name. Rename a job and the required check waits forever.</li>
       </ul>
     </div>
   </div>
 </section>
 
-<!-- PART 2 · 1 · PATH FILTERS -->
+<!-- PART 2 · 1A · RULESET -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART 2 · 1</span><h2 class="title">Run CI only when a file the checks read changes, and on every push to <code>main</code></h2></div>
-  <div class="body">
-    <div class="work">
-      <div class="side">
-        <ol class="steps">
-          <li><b>Narrow <code>paths:</code></b> from "anything in this lab" to the files the checks actually read, so docs-only PRs are skipped.</li>
-          <li data-n="1"><b>Add a <code>push</code> backstop</b> on <code>main</code>, scoped to the lab the same way.</li>
-        </ol>
-        <div class="aside warn"><span class="label">Filter discipline</span>Patterns are always <b>repo-root-relative</b>; <code>working-directory</code> doesn't change that. Include every config the checks read: <code>.yamllint.yml</code>, <code>rule_config.json</code>, <code>.config/</code> and the lab's <code>.github/</code>.</div>
-      </div>
-      <div class="code"><pre>on:
-  pull_request:
-    paths:
-      - <span class="cmd2">"labs/03-github-actions/projects/**"</span>
-      - <span class="cmd2">"labs/03-github-actions/scripts/**"</span>
-      - <span class="cmd2">"labs/03-github-actions/docker-compose.yml"</span>
-      - <span class="cmd2">".github/workflows/lab03-*.yml"</span>
-      - <span class="cmd2">"labs/03-github-actions/.yamllint.yml"</span>
-      - <span class="cmd2">"labs/03-github-actions/rule_config.json"</span>
-      - <span class="cmd2">"labs/03-github-actions/.config/**"</span>
-      - <span class="cmd2">"labs/03-github-actions/.github/**"</span>
-  push:
-    branches: [main]
-    paths:
-      - <span class="cmd2">"labs/03-github-actions/**"</span>
-      - <span class="cmd2">".github/workflows/lab03-*.yml"</span></pre></div>
-    </div>
-  </div>
-</section>
-
-<!-- PART 2 · 2 · COMPOSE + PROVE THE FILTER -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART 2 · 2</span><h2 class="title">Add the Compose check, push to <code>main</code>, and see a README-only PR start no checks</h2></div>
-  <div class="body">
-    <div class="work">
-      <ol class="steps" style="counter-reset:step 1">
-        <li><b>Add <code>docker compose config -q</code></b> as the final <code>lint</code> step.</li>
-        <li data-n="2"><b>Commit and push to <code>main</code></b> (not protected yet). The push runs <code>lint</code> and <code>validate</code> once, so both names show up as suggestions in step 3a.</li>
-        <li data-n="2"><b>Open a README-only PR:</b> branch off, touch <b>only</b> <code>labs/03-github-actions/README.md</code>, open a PR. The checks panel stays <b>empty</b>, not even a <i>Skipped</i> entry. Then close the PR.</li>
-      </ol>
-      <div class="code"><pre><span class="cm"># lint job, final step</span>
-      - run: docker compose config -q
-
-git add -A &amp;&amp; git commit -m <span class="cmd2">"ci: lab03 workflow"</span>
-git push origin main         <span class="cm"># runs lint + validate</span>
-git switch -c docs/readme-only
-<span class="cm"># edit README.md only, then:</span>
-git commit -am <span class="cmd2">"docs: readme tweak"</span>
-git push -u origin docs/readme-only
-gh pr create --fill          <span class="cm"># checks panel stays empty</span>
-gh pr close docs/readme-only --delete-branch &amp;&amp; git switch main</pre></div>
-    </div>
-  </div>
-</section>
-
-<!-- PART 2 · 3A · RULESET -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART 2 · 3a</span><h2 class="title">Protect <code>main</code> with a ruleset</h2></div>
+  <div class="sechead"><span class="num p2">PART 2 · 1a</span><h2 class="title">Push your workflow to <code>main</code>, then protect <code>main</code> with a ruleset</h2></div>
   <div class="body">
     <div class="cols2">
       <div class="stack" style="gap:1.25rem">
@@ -875,32 +816,34 @@ gh pr close docs/readme-only --delete-branch &amp;&amp; git switch main</pre></d
         <p class="t-sm muted">Then click <b>Create</b>.</p>
       </div>
       <div class="stack" style="gap:1.5rem">
+        <div class="code"><pre><span class="cm"># first: your finished workflow on main (not protected yet)</span>
+git add -A &amp;&amp; git commit -m <span class="cmd2">"ci: lab03 workflow"</span>
+git push origin main</pre></div>
         <div class="aside bad"><span class="label">Delete it when you finish Lab 03</span>Every lab shares your fork's <code>main</code>: while the ruleset is on, PRs of other labs wait for <code>lint</code> and <code>validate</code> too. Settings › Rules › Rulesets › <code>protect-main</code> › Delete ruleset.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- PART 2 · 3B-3C · BOTH ROUTES -->
+<!-- PART 2 · 1B-1C · BOTH ROUTES -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART 2 · 3b-3c</span><h2 class="title">A direct push to <code>main</code> is rejected; a green PR merges</h2></div>
+  <div class="sechead"><span class="num p2">PART 2 · 1b-1c</span><h2 class="title">A direct push to <code>main</code> is rejected; a green PR merges</h2></div>
   <div class="body">
     <div class="work">
       <div class="side">
         <ol class="steps">
-          <li data-n="3b"><b>Push straight to <code>main</code>:</b> GitHub rejects it, even for you as admin. Then drop the rejected commit.</li>
-          <li data-n="3c"><b>Merge through a PR:</b> a <b>real</b> change on a branch (reword the Overview's <code>Subtitle</code> text in its <code>view.json</code>), green <code>lint</code> and <code>validate</code>, merge. An empty commit starts no checks.</li>
-          <li data-n="3c"><b>Then open another README-only PR:</b> no checks start, so it waits on <i>Expected</i> forever. Stretch 2 unblocks it; close it for now.</li>
+          <li data-n="1b"><b>Push straight to <code>main</code>:</b> GitHub rejects it, even for you as admin. Then drop the rejected commit.</li>
+          <li data-n="1c"><b>Merge through a PR:</b> a <b>real</b> change on a branch (reword the Overview's <code>Subtitle</code> text in its <code>view.json</code>), green <code>lint</code> and <code>validate</code>, merge. An empty commit starts no checks.</li>
         </ol>
       </div>
-      <div class="code"><pre><span class="cm"># 3b · direct push: rejected</span>
+      <div class="code"><pre><span class="cm"># 1b · direct push: rejected</span>
 git switch main
 git commit --allow-empty -m <span class="cmd2">"test: direct to main"</span>
 git push                     <span class="red"># rejected: GH013 Repository rule violations</span>
 git reset --hard origin/main <span class="cm"># drop the rejected commit</span>
 
-<span class="cm"># 3c · PR, green, merge</span>
+<span class="cm"># 1c · PR, green, merge</span>
 git switch -c fix/proper-route
 <span class="cm"># reword the Overview Subtitle's text in its view.json, then:</span>
 git commit -am <span class="cmd2">"feat: reword overview subtitle"</span>
@@ -913,20 +856,20 @@ git switch main &amp;&amp; git pull</pre></div>
   </div>
 </section>
 
-<!-- PART 2 · 3D-4 · BREAK IT, COMPARE -->
+<!-- PART 2 · 1D-2 · BREAK IT, COMPARE -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART 2 · 3d-4</span><h2 class="title">See a red PR blocked, fix it, then compare your workflow with the reference</h2></div>
+  <div class="sechead"><span class="num p2">PART 2 · 1d-2</span><h2 class="title">See a red PR blocked, fix it, then compare your workflow with the reference</h2></div>
   <div class="body">
     <div class="work">
       <div class="side">
         <ol class="steps">
-          <li data-n="3d"><b>Break it:</b> on a branch, set the Clock's poll to <code>now(250)</code> by hand, commit, open a PR. <code>lint</code> goes red and <code>gh pr merge</code> refuses. Pre-commit hook installed? Commit with <code>--no-verify</code>.</li>
-          <li data-n="3d"><b>Fix it</b> with <code>now(1500)</code>, not the exact original value: a PR with no net change starts no checks. Don't re-run <code>scripts/seed.sh</code> for this.</li>
-          <li data-n="4"><b>Compare:</b> your workflow should match the reference structurally: same triggers, jobs and step order.</li>
+          <li data-n="1d"><b>Break it:</b> on a branch, set the Clock's poll to <code>now(250)</code> by hand, commit, open a PR. <code>lint</code> goes red and <code>gh pr merge</code> refuses. Pre-commit hook installed? Commit with <code>--no-verify</code>.</li>
+          <li data-n="1d"><b>Fix it</b> with <code>now(1500)</code>, not the exact original value: a PR with no net change starts no checks. Don't re-run <code>scripts/seed.sh</code> for this.</li>
+          <li data-n="2"><b>Compare:</b> same jobs and step order as the reference. The reference also narrows <code>paths:</code>, runs on every push to <code>main</code> and ends <code>lint</code> with <code>docker compose config -q</code>.</li>
         </ol>
       </div>
-      <div class="code"><pre><span class="cm"># 3d · break it on purpose, then fix it</span>
+      <div class="code"><pre><span class="cm"># 1d · break it on purpose, then fix it</span>
 git switch -c fix/regression
 <span class="cm"># edit the Clock binding → now(250), then:</span>
 <span class="cm"># (pre-commit hook installed? add --no-verify)</span>
@@ -939,7 +882,7 @@ git commit -am <span class="cmd2">"fix: poll the clock at 1500 ms"</span> &amp;&
 sleep 15 &amp;&amp; gh pr checks --watch &amp;&amp; gh pr merge --merge --delete-branch
 git switch main &amp;&amp; git pull
 
-<span class="cm"># 4 · diff your workflow against the reference</span>
+<span class="cm"># 2 · diff your workflow against the reference</span>
 git diff --no-index \
   .github/ci-reference.yml ../../.github/workflows/lab03-ci.yml</pre></div>
     </div>
@@ -1041,47 +984,10 @@ git commit -am <span class="cmd2">"test: should be blocked"</span>
   </div>
 </section>
 
-<!-- STRETCH 2 · NO-OP TWIN -->
+<!-- STRETCH 2 · EXTRAS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num opt">OPTIONAL · 2</span><h2 class="title">Stretch 2: unblock README-only PRs with the no-op twin workflow</h2></div>
-  <div class="body">
-    <div class="work">
-      <ol class="steps alt">
-        <li><b>Add <code>.github/workflows/lab03-ci-noop.yml</code></b> at the repo root: the opposite path filter, jobs named exactly <code>lint</code> and <code>validate</code>.</li>
-        <li><b>Merge it to <code>main</code></b> through a PR.</li>
-        <li><b>Open a README-only PR:</b> <code>lint</code> and <code>validate</code> go green within seconds and the merge unlocks.</li>
-      </ol>
-      <div class="code xs"><pre>name: Lab 03 · CI (no-op twin)
-on:
-  pull_request:
-    paths:
-      - <span class="cmd2">"labs/03-github-actions/**"</span>
-      - <span class="cmd2">"!labs/03-github-actions/projects/**"</span>
-      - <span class="cmd2">"!labs/03-github-actions/scripts/**"</span>
-      - <span class="cmd2">"!labs/03-github-actions/docker-compose.yml"</span>
-      - <span class="cmd2">"!labs/03-github-actions/.yamllint.yml"</span>
-      - <span class="cmd2">"!labs/03-github-actions/rule_config.json"</span>
-      - <span class="cmd2">"!labs/03-github-actions/.config/**"</span>
-      - <span class="cmd2">"!labs/03-github-actions/.github/**"</span>
-permissions: {}
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "No lint-relevant files changed."
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "No validate-relevant files changed."</pre></div>
-    </div>
-  </div>
-</section>
-
-<!-- STRETCH 3 · EXTRAS -->
-<section class="slide">
-  <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num opt">OPTIONAL · 3</span><h2 class="title">Stretch 3: a Run button and a masked secret</h2></div>
+  <div class="sechead"><span class="num opt">OPTIONAL · 2</span><h2 class="title">Stretch 2: a Run button and a masked secret</h2></div>
   <div class="body">
     <div class="work">
       <ol class="steps">
@@ -1109,7 +1015,7 @@ gh secret set EXAMPLE_SECRET --body <span class="cmd2">"hunter2"</span> \
     <h2 class="divider-title">Lab 03 done: a red PR can no longer reach <em>main</em></h2>
     <ul class="checks" style="max-width:66rem">
       <li>You hunted <b>seven planted bugs</b> with five tools and can say which linter catches which class of bug, the Ignition-specific ones included.</li>
-      <li>Your repo runs a <b>two-job workflow</b> with least privilege and path filters, and a <b>ruleset on <code>main</code></b> rejected your direct push and blocked a red PR.</li>
+      <li>Your repo runs a <b>two-job workflow</b> with least privilege, and a <b>ruleset on <code>main</code></b> rejected your direct push and blocked a red PR.</li>
       <li>Bring to the wrap-up: <b>which linter would have caught your team's last real bug</b>, and one ign-lint rule you'd call overreach.</li>
     </ul>
     <div class="aside" style="max-width:66rem"><span class="label">Before Lab 04</span><b>Delete the <code>protect-main</code> ruleset</b> on your fork (every lab shares <code>main</code>) and skim <code>docs/self-hosted-runners.md</code>. Lab 04 opens up the Ignition file structure and deploys project files to a gateway, on the CI you just built.</div>
