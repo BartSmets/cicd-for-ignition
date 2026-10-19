@@ -507,7 +507,7 @@ a{color:var(--primary-deep)}
 .compare.lg .dots>li{font-size:var(--text-lg)}
 .flow.lg>li>span{font-size:var(--text-lg)}
 
-/* the secrets ladder: rung 0 at the bottom, climbing up */
+/* where a secret can live: hardcoded at the bottom, safest on top */
 .ladder{display:flex;flex-direction:column-reverse}
 .rung{display:grid;grid-template-columns:3.25rem minmax(0,1.15fr) minmax(0,1fr);gap:1.75rem;align-items:center;padding:1rem 0;border-bottom:1px solid var(--line-2)}
 .ladder>.rung:last-child{border-top:1px solid var(--line-2)}
@@ -588,13 +588,8 @@ a{color:var(--primary-deep)}
 <!-- 01 · WHAT THIS LAB ADDS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">01</span><h2 class="title">What this lab adds to the Lab 04 pipeline: secrets, the database schema, modules and JARs</h2></div>
+  <div class="sechead"><span class="num">01</span><h2 class="title">What this lab adds: secrets, the database schema, modules and JARs</h2></div>
   <div class="body">
-    <ol class="flow">
-      <li><b>Pull request</b><span><code>lab06-ci.yml</code> validates</span></li>
-      <li><b>Merge to <code>main</code></b><span><code>lab06-deploy.yml</code> deploys test</span></li>
-      <li><b><code>lab06-v*</code> tag</b><span><code>lab06-release.yml</code> runs the same deploy on production</span></li>
-    </ol>
     <div class="compare">
       <div class="bad"><span class="kicker">Part 1</span><h3>Secrets</h3><p>Database passwords and API keys configure the gateway, but <b>can't be committed</b>.</p></div>
       <div class="blue"><span class="kicker">Part 2</span><h3>Database schema</h3><p>Tables live in a Docker volume: <b>nothing versions or deploys them</b> yet.</p></div>
@@ -655,24 +650,24 @@ git log -p | grep ak_live
   </p></div>
 </section>
 
-<!-- 04 · THE SECRETS LADDER (interactive) -->
+<!-- 04 · WHERE A SECRET CAN LIVE (interactive) -->
 <section class="slide" data-ctrl="reveal">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">04</span><h2 class="title">The secrets ladder: four places a secret can live, each leaking less than the one below</h2></div>
+  <div class="sechead"><span class="num">04</span><h2 class="title">Four places a secret can live, and what each one leaks</h2></div>
   <div class="body">
     <div class="ladder">
       <div class="rung r0 reveal" data-step="1"><span class="rn">0</span><div class="rt"><b>Hardcoded in the repo</b><span>plaintext in <code>docker-compose.yaml</code> or committed config</span></div><div class="leak"><b>Leaks into:</b> Git history, every clone, every fork. Never acceptable.</div></div>
       <div class="rung r1 reveal" data-step="2"><span class="rn">1</span><div class="rt"><b>Env vars via <code>.env</code> and Compose interpolation</b><span>what labs 02 to 05 already do</span></div><div class="leak"><b class="ok">Out of Git.</b> <b>Still leaks into:</b> <code>docker inspect</code>, <code>compose config</code>, the process env.</div></div>
       <div class="rung r2 reveal" data-step="3"><span class="rn">2</span><div class="rt"><b>File-based secrets</b><span>files mounted read-only at <code>/run/secrets/&lt;name&gt;</code></span></div><div class="leak"><b class="ok">Not in inspect, not in the process env.</b> Each environment fills its own file.</div></div>
-      <div class="rung r3 reveal" data-step="4"><span class="rn">3</span><div class="rt"><b>Ignition 8.3 secret providers</b><span>gateway config <b>references</b> a secret instead of containing it</span></div><div class="leak"><b class="ok">The same config works on every gateway.</b> This lab ends on rungs 2 and 3 together.</div></div>
+      <div class="rung r2 reveal" data-step="4"><span class="rn">2</span><div class="rt"><b>Ignition 8.3 secret providers</b><span>gateway config <b>references</b> a secret instead of containing it</span></div><div class="leak"><b class="ok">The same config works on every gateway.</b> Just as safe as a secret file. This lab uses both together.</div></div>
     </div>
   </div>
   <div class="controls"><p class="step-note">
-    <span data-at="0">Each rung fixes the leak of the one below it.</span>
-    <span data-at="1"><b>Rung 0, hardcoded.</b> In the repo, in history, in every fork.</span>
-    <span data-at="2"><b>Rung 1, <code>.env</code> plus interpolation.</b> Out of Git, still visible to <code>docker inspect</code>.</span>
-    <span data-at="3"><b>Rung 2, file-based secrets.</b> A file, not an env var, filled per environment.</span>
-    <span data-at="4"><b>Rung 3, secret providers.</b> Config stores a <b>reference</b> that a provider resolves from those files.</span>
+    <span data-at="0">Where a secret can live, from leaking most to leaking least.</span>
+    <span data-at="1"><b>Hardcoded.</b> In the repo, in history, in every fork.</span>
+    <span data-at="2"><b><code>.env</code> plus interpolation.</b> Out of Git, still visible to <code>docker inspect</code>.</span>
+    <span data-at="3"><b>File-based secrets.</b> A file, not an env var, filled per environment.</span>
+    <span data-at="4"><b>Secret providers.</b> Just as safe: config stores a <b>reference</b> that a provider resolves from those files.</span>
   </p></div>
 </section>
 
@@ -683,7 +678,7 @@ git log -p | grep ak_live
   <div class="body">
     <div class="cols2">
       <div class="stack">
-        <div class="col-head">Rung 1: env var</div>
+        <div class="col-head">Env var</div>
         <div class="code sm"><pre><span class="cm"># docker-compose.yaml</span>
 services:
   timescaledb:
@@ -695,7 +690,7 @@ docker inspect lab06-timescaledb | grep PASSWORD
 <span class="cm">  # the value, in plaintext</span></pre></div>
       </div>
       <div class="stack">
-        <div class="col-head">Rung 2: secret file</div>
+        <div class="col-head">Secret file</div>
         <div class="code sm"><pre><span class="cm"># docker-compose.yaml</span>
 secrets:
   postgres_password:
@@ -769,7 +764,7 @@ docker inspect lab06-timescaledb | grep PASSWORD
 <!-- 08 · FILE-TYPE PROVIDER -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">08</span><h2 class="title">Create a file-type secret provider and point the connection's password at it</h2></div>
+  <div class="sechead"><span class="num">08</span><h2 class="title">File-type secrets provider</h2></div>
   <div class="body">
     <ol class="flow lg">
       <li><b>Provider <code>LabSecrets</code></b><span>type <b>File</b>: it holds paths, never values</span></li>
@@ -1168,12 +1163,12 @@ docker restart lab06-gateway-local-development
   <div class="glow ambient" aria-hidden="true"></div>
   <header class="topbar"><img class="logo" src="logos/OriginalLight.png" alt="Mustry Solutions"></header>
   <div class="divider-body">
-    <h2 class="divider-title" style="max-width:26ch">Next: move a secret up the ladder, ship a schema change, and deploy three modules</h2>
+    <h2 class="divider-title" style="max-width:26ch">Next: move a password into a secret file, ship a DB-migration, and deploy third-party modules</h2>
     <div class="cols2" style="max-width:78rem">
       <div><div class="col-head">We-do</div>
         <ul class="dots">
           <li>A leaked key, live in a scratch repo</li>
-          <li>One credential climbing the ladder: <code>.env</code>, secret file, referenced secret</li>
+          <li>One credential moving from <code>.env</code> to a secret file and a referenced secret</li>
           <li>A migration as an up/down pair, applied with <code>migrate up</code></li>
           <li>A production pipeline doing all of it, with one flaw to spot</li>
         </ul>
