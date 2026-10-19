@@ -23,4 +23,4 @@ ARG IMAGE_SOURCE=https://github.com/Mustry-Academy/cicd-for-ignition
 LABEL org.opencontainers.image.revision="${GIT_SHA}" \
       org.opencontainers.image.source="${IMAGE_SOURCE}" \
       org.opencontainers.image.title="cicd-lab-05-ignition" \
-      org.opencontainers.image.description="Ignition 8.3 gateway with baked-in project, config, and modules"
+      org.opencontainers.image.description="Ignition 8.3 gateway with its project, config, and modules"

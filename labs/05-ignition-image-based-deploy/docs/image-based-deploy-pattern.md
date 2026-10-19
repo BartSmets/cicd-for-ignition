@@ -13,7 +13,7 @@ Reference reading for part 2 of the lab. The pattern in five steps, build-once/p
 └──────────┘    └────────┘    └─────────┘    └────────┘    └─────────────┘
 ```
 
-1. **Build** the image from the `Dockerfile`, baking projects/config/modules into layers.
+1. **Build** the image from the `Dockerfile`, putting projects/config/modules into layers.
 2. **Tag** it `:sha-<short>` (immutable) and a moving pointer (`:test` or `:production`).
 3. **Push** to the registry (GHCR).
 4. **Pull** the image on the machine that runs the target gateway.
@@ -65,7 +65,7 @@ Both deliver the same files to the same paths and achieve the same result. Once 
 | Deploy | Copy files into the running gateway, then scan | Recreate the container from a new image |
 | Time to deploy | Seconds (copy + scan) | Minutes (the gateway boots) |
 | Gateway restart | None for project and config changes | Every deploy is a fresh gateway |
-| Module changes | Ship `modules.json`, then restart the gateway | Baked into the image |
+| Module changes | Ship `modules.json`, then restart the gateway | Built into the image |
 | Rollback | Re-run the pipeline on an older tag | Run the previous tag |
 | Promotion | Copy the same commit to each environment | Re-tag the tested image |
 | What you maintain | Copy, wipe and spare lists, `.deployignore` | The Dockerfile and `.dockerignore` |

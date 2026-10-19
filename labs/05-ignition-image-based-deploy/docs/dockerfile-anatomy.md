@@ -4,16 +4,16 @@ Reference reading for part 1 of the lab. What the gateway image is made of, wher
 
 ## What goes in the image
 
-The [`Dockerfile`](../Dockerfile) bakes the *deployable state* of a gateway on top of the official Ignition base image:
+The [`Dockerfile`](../Dockerfile) puts the *deployable state* of a gateway into an image, on top of the official Ignition base image:
 
 | Build input | Lands at | Why it's in the image |
 |---|---|---|
-| `third-party-modules/*.modl` | `/third-party-modules/` | The gateway loads them via `-Dignition.gateway.externalModulesFolder`. Baking them = the module binaries ship with the artifact. |
+| `third-party-modules/*.modl` | `/third-party-modules/` | The gateway loads them via `-Dignition.gateway.externalModulesFolder`. Putting them in the image = the module binaries ship with the artifact. |
 | `services/modules.json` | `data/modules.json` | Which modules turn on at boot. The gateway reads it when it starts, and every image deploy starts a fresh gateway. The local gateway reads the same file through its bind mount, so local, test and production start the same modules. |
-| `services/config/` | `data/config/` | Gateway-level config (DB connections, tag providers). Scanned at startup. The scan-API token is not baked: a published image must never carry credentials, so deploys reinstall it into the container (`scripts/install-api-token.sh`). A `RUN sed` right after this `COPY` re-arms the OPC UA module's one-time flag, so each gateway creates its own `opcua-module` login (the user source every OPC tag reads through) at first boot. |
+| `services/config/` | `data/config/` | Gateway-level config (DB connections, tag providers). Scanned at startup. The scan-API token is not in the image: a published image must never carry credentials, so deploys reinstall it into the container (`scripts/install-api-token.sh`). A `RUN sed` right after this `COPY` re-arms the OPC UA module's one-time flag, so each gateway creates its own `opcua-module` login (the user source every OPC tag reads through) at first boot. |
 | `projects/` | `data/projects/` | Project content (Perspective views, scripts, tags). Scanned at startup. |
 
-Everything else in the repo (docs, scripts, `.github/`, `.env`) is kept out by [`.dockerignore`](../.dockerignore). So is anything that belongs to **one** gateway rather than the artifact: the internal identity (`user-source/default/` holds an admin password hash; baking it would ship one gateway's login to every gateway running the image), per-instance keystores/UUIDs (`config/local/`, `config/resources/local/`), and `security-properties` (it names the internal user source, which isn't in the image; commissioning creates a fresh `default` identity from the container's `GATEWAY_ADMIN_*` env vars instead).
+Everything else in the repo (docs, scripts, `.github/`, `.env`) is kept out by [`.dockerignore`](../.dockerignore). So is anything that belongs to **one** gateway rather than the artifact: the internal identity (`user-source/default/` holds an admin password hash; putting it in the image would ship one gateway's login to every gateway running the image), per-instance keystores/UUIDs (`config/local/`, `config/resources/local/`), and `security-properties` (it names the internal user source, which isn't in the image; commissioning creates a fresh `default` identity from the container's `GATEWAY_ADMIN_*` env vars instead).
 
 ## The base image
 
@@ -43,7 +43,7 @@ Editing a Perspective view busts only the last layer. If you put `projects/` fir
 
 > A changed layer rebuilds **all layers after it**, so what changes most goes last.
 
-`--chown=2003:0` makes the baked files belong to the image's own `ignition` user. The gateway does not run as root; root-owned files make it FAULT at boot.
+`--chown=2003:0` makes the copied files belong to the image's own `ignition` user. The gateway does not run as root; root-owned files make it FAULT at boot.
 
 ## Tagging strategy
 
@@ -77,7 +77,7 @@ That's how you answer "what commit is production actually running?" months later
 
 ## Startup behaviour
 
-On first boot the container has the baked `data/projects` and `data/config` but no internal gateway database yet, so the IA entrypoint **commissions** the gateway: it applies the admin credentials from the env vars and scans the baked content. With `GATEWAY_RESTORE_DISABLED=true` it won't try to restore a backup. A fresh container comes up already serving your project: no manual scan, no `docker cp`.
+On first boot the container has the `data/projects` and `data/config` but no internal gateway database yet, so the IA entrypoint **commissions** the gateway: it applies the admin credentials from the env vars and scans the content in the image. With `GATEWAY_RESTORE_DISABLED=true` it won't try to restore a backup. A fresh container comes up already serving your project: no manual scan, no `docker cp`.
 
 Test and production have **no persistent data volume** (see `docker-compose.yaml`), so every deploy re-commissions from the image. The container is disposable; durable data lives in TimescaleDB.
 
@@ -85,7 +85,7 @@ Test and production have **no persistent data volume** (see `docker-compose.yaml
 
 The **build context** is what Docker hands the builder before running the Dockerfile: the lab folder minus what `.dockerignore` lists. The image only gets what the `COPY` lines select from it.
 
-- **Secrets:** `.env` is excluded, so credentials can't be baked into a published image, even if a future `COPY` is careless.
+- **Secrets:** `.env` is excluded, so credentials can't end up in a published image, even if a future `COPY` is careless.
 - **Lab material:** `.git/`, `docs/`, `exercises/`, `scripts/` never reach the build.
 - **One gateway's state:** the internal identity, keystores, `.resources/` blob stores and `*.idb` databases stay out.
 - **Everything in a copied folder ships:** `COPY projects/` copies everything in `projects/`, unless `.dockerignore` excludes it.

@@ -2,7 +2,7 @@
 
 Day 3 of the [CI/CD for Ignition Masterclass](../../README.md).
 
-> Bake an Ignition gateway's project, config **and modules** into a versioned Docker image, deploy it by recreating the container from that image, and roll back by running the previous build's tag. You build and deploy on your own machine; the CI workflows build the same image on GitHub, publish it to your fork's registry and promote the tested image to production on a tag, without a rebuild.
+> Build an Ignition gateway's project, config **and modules** into a versioned Docker image, deploy it by recreating the container from that image, and roll back by running the previous build's tag. You build and deploy on your own machine; the CI workflows build the same image on GitHub, publish it to your fork's registry and promote the tested image to production on a tag, without a rebuild.
 
 This is the companion to [Lab 04 (file-based deploy)](../04-ignition-file-based-deploy/). There you copied files into a *running* gateway and triggered a hot scan. Here the same files become layers in an image, and a deploy replaces the whole container. Both achieve the same result: file-based keeps the gateway alive (no restarts, a fast inner loop) but you own the copy-and-delete logic; image-based gives you a frozen, versioned artifact with no copy scripts, but every deploy boots a fresh gateway.
 
@@ -14,7 +14,7 @@ This is the companion to [Lab 04 (file-based deploy)](../04-ignition-file-based-
 |---|---|---|
 | Unit of deploy | Files on disk | A versioned image |
 | Mechanism | `docker cp` + hot scan | Recreate the container from a new image |
-| Modules | Ship `modules.json`, then restart the gateway | Baked into the image |
+| Modules | Ship `modules.json`, then restart the gateway | Built into the image |
 | Rollback | Re-run the pipeline on an older tag | Run the previous tag |
 | Promotion | Copy the same commit to each environment | Re-tag the tested image |
 | Gateway | Long-lived: runtime state stays | Disposable: a fresh gateway on every deploy |
@@ -71,7 +71,7 @@ Login with the credentials from `.env` (`GATEWAY_ADMIN_USERNAME_LOCAL/_TEST/_PRO
 
 The lab is one exercise in two ordered parts, see [`exercises/lab.md`](./exercises/lab.md):
 
-1. **Build the gateway image:** bake projects, config and modules into a self-contained image.
+1. **Build the gateway image:** put projects, config and modules into a self-contained image.
 2. **Deploy the image:** recreate the test gateway from it, ship a change end-to-end, roll back.
 
 Reference reading sits alongside: [`docs/dockerfile-anatomy.md`](./docs/dockerfile-anatomy.md) (part 1) and [`docs/image-based-deploy-pattern.md`](./docs/image-based-deploy-pattern.md) (part 2).
@@ -81,7 +81,7 @@ Reference reading sits alongside: [`docs/dockerfile-anatomy.md`](./docs/dockerfi
 ```
 labs/05-ignition-image-based-deploy/
 ├── README.md
-├── Dockerfile                          ← bakes projects + config + modules into the gateway image
+├── Dockerfile                          ← puts projects + config + modules into the gateway image
 ├── .dockerignore                       ← what NOT to send to the build context (the image-based .deployignore)
 ├── docker-compose.yaml                 ← three gateways + TimescaleDB
 ├── .env.example                        ← setup.sh copies it to .env
@@ -98,7 +98,7 @@ labs/05-ignition-image-based-deploy/
 ├── scripts/
 │   ├── setup.sh                        ← bootstraps the whole stack
 │   ├── teardown.sh                     ← stop the stack (with --volumes to wipe)
-│   ├── generate-api-keys.sh            ← per-gateway scan-API keys into .env (never committed, never baked; run by setup.sh)
+│   ├── generate-api-keys.sh            ← per-gateway scan-API keys into .env (never committed, never in the image; run by setup.sh)
 │   ├── install-api-token.sh            ← put a gateway's token into its container after a deploy (run by deploy-image.sh)
 │   ├── build-image.sh                  ← local mirror of the CI build (build + tag)
 │   ├── deploy-image.sh                 ← the deploy one-liner plus a wait + API-token reinstall (recreate a gateway from an image)
@@ -108,12 +108,12 @@ labs/05-ignition-image-based-deploy/
 │   ├── clean-ignition-resource-churn.sh ← undo volatile-only resource.json rewrites (dry-run / --apply)
 │   ├── git-diff/                       ← textconv normalizer that hides volatile metadata in diffs
 │   └── git-hooks/                      ← this lab's hooks, run by the repo-root dispatchers (skip-worktree, churn cleanup)
-├── projects/                           ← project content (baked into the image; bind-mounted into `local`)
+├── projects/                           ← project content (built into the image; bind-mounted into `local`)
 │   └── example-project/                ← a real Perspective project (views, templates)
 ├── services/
-│   ├── config/                         ← gateway-level config (baked into the image)
-│   └── modules.json                    ← module enablement for all three gateways (bind-mounted into `local`, baked into the image)
-└── third-party-modules/                ← bundled .modl binaries (baked into the image)
+│   ├── config/                         ← gateway-level config (built into the image)
+│   └── modules.json                    ← module enablement for all three gateways (bind-mounted into `local`, built into the image)
+└── third-party-modules/                ← bundled .modl binaries (built into the image)
 ```
 
 The workflows live at the course repo root (GitHub only runs workflows from there): [`.github/workflows/lab05-*.yml`](../../.github/workflows/).
@@ -123,7 +123,7 @@ The workflows live at the course repo root (GitHub only runs workflows from ther
 Three Ignition 8.3 gateways + one TimescaleDB, simulating local → test → production:
 
 - **`ignition-local`** bind-mounts `./projects/`, `./services/config/` and `./services/modules.json`, exactly like Lab 04. This is where you **author** content. The image you ship is *built from these same files*.
-- **`ignition-test`** runs whatever image `IGNITION_TEST_IMAGE` points at (default: the base Ignition image, an empty gateway). It has **no bind mounts and no persistent data volume**: the container filesystem *is* the artifact. You deploy by setting `IGNITION_TEST_IMAGE` to a built tag and running `docker compose up -d ignition-test`, which recreates the container. Which modules run is decided by the image's baked `modules.json`, the same `services/modules.json` the local gateway reads, so all three gateways start the same modules. Before your first deploy, the plain base image has no `modules.json`; `docker-compose.yaml` then hands the gateway the list `services/modules.json` enables (`LAB_MODULES_ENABLED`, which `scripts/setup.sh` writes into `.env`), so even the empty gateway doesn't start every module Ignition ships.
+- **`ignition-test`** runs whatever image `IGNITION_TEST_IMAGE` points at (default: the base Ignition image, an empty gateway). It has **no bind mounts and no persistent data volume**: the container filesystem *is* the artifact. You deploy by setting `IGNITION_TEST_IMAGE` to a built tag and running `docker compose up -d ignition-test`, which recreates the container. Which modules run is decided by the `modules.json` in the image, the same `services/modules.json` the local gateway reads, so all three gateways start the same modules. Before your first deploy, the plain base image has no `modules.json`; `docker-compose.yaml` then hands the gateway the list `services/modules.json` enables (`LAB_MODULES_ENABLED`, which `scripts/setup.sh` writes into `.env`), so even the empty gateway doesn't start every module Ignition ships.
 - **`ignition-production`** is the same shape, fed by `IGNITION_PRODUCTION_IMAGE` with the *promoted* image (the same one the test gateway tested).
 
 The single TimescaleDB hosts `ignition_local_development`/`ignition_test`/`ignition_production`. **Historian data lives in TimescaleDB, not in the gateway image**, so recreating the test/production container on every deploy keeps it.

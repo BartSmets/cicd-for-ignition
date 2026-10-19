@@ -544,7 +544,7 @@ echo "  Databases: ignition_local_development, ignition_test, ignition_productio
 echo "  Username: ${ACTUAL_PG_USER:-ignition}  Password: ${ACTUAL_PG_PASS:-(see .env)}"
 echo ""
 echo "API keys (unique to this clone, generated into .env — never committed,"
-echo "never baked into an image):"
+echo "never put into an image):"
 echo "  IGNITION_API_KEY_LOCAL / _TEST / _PRODUCTION — one per gateway;"
 echo "  scripts/trigger-scan.sh picks the right one from its argument"
 echo "  (local | test | production). Deploys to"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # build-image.sh — the LOCAL mirror of the CI build step.
 #
-# Builds the gateway image from the Dockerfile, baking in projects/, config,
+# Builds the gateway image from the Dockerfile, putting in projects/, config,
 # modules.json, and third-party-modules. Tags it two ways, exactly like CI:
 #   <repo>:sha-<short>   immutable, traceable to the commit
 #   <repo>:local         a moving "latest local build" pointer
@@ -14,7 +14,7 @@
 #
 # Usage:
 #   scripts/build-image.sh                 # build, tag :sha-<short> and :local
-#   scripts/build-image.sh --tag test       # also tag :test
+#   scripts/build-image.sh --tag v1.2       # also tag :v1.2
 #   IGNITION_IMAGE_REPO=ghcr.io/me/x scripts/build-image.sh
 #
 # The repo base comes from IGNITION_IMAGE_REPO (env or .env); without it, images
@@ -74,18 +74,21 @@ docker build \
   "${TAGS[@]}" \
   .
 
+# The commands below use the version tag when one was given.
+SHOW_TAG="${EXTRA_TAG:-sha-${SHA}}"
+
 echo ""
-echo -e "${GREEN}Built.${NC} Inspect the baked layers with:"
-echo "  docker history ${REPO}:sha-${SHA}"
+echo -e "${GREEN}Built.${NC} Inspect the layers with:"
+echo "  docker history ${REPO}:${SHOW_TAG}"
 echo ""
 echo "Run it stand-alone (no bind mounts: proves the image is self-contained):"
 echo "  docker run -d --rm --name demo -p 9088:8088 \\"
 echo "    -e ACCEPT_IGNITION_EULA=Y -e IGNITION_EDITION=standard \\"
 echo "    -e GATEWAY_ADMIN_USERNAME=admin -e GATEWAY_ADMIN_PASSWORD=password \\"
-echo "    ${REPO}:sha-${SHA} \\"
+echo "    ${REPO}:${SHOW_TAG} \\"
 echo "    -n demo -- -Dignition.allowunsignedmodules=true \\"
 echo "    -Dignition.gateway.externalModulesFolder=/third-party-modules"
 echo "  docker logs -f demo     # then open http://localhost:9088"
 echo ""
 echo "Or deploy it to the test gateway (compose recreates the container):"
-echo "  IGNITION_TEST_IMAGE=${REPO}:sha-${SHA} docker compose up -d ignition-test"
+echo "  IGNITION_TEST_IMAGE=${REPO}:${SHOW_TAG} docker compose up -d ignition-test"

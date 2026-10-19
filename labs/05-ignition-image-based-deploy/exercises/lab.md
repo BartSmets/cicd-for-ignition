@@ -2,7 +2,7 @@
 
 **Duration:** ~2 hours 15 minutes after the teaching, in two parts
 
-1. **Build the gateway image** (~70 min): bake project, config **and modules** into immutable Docker layers, prove the image is self-contained, learn to read the layer cache, then bake a change of your own and keep a stray file out with `.dockerignore`.
+1. **Build the gateway image** (~70 min): put project, config **and modules** into immutable Docker layers, prove the image is self-contained, learn to read the layer cache, then put a change of your own into it and keep a stray file out with `.dockerignore`.
 2. **Deploy the image** (~65 min): deploy to the test gateway by recreating the container, ship a change end-to-end, and roll back by running the previous build's tag.
 
 The second part deploys exactly the image you build in the first. Do them in order.
@@ -11,11 +11,11 @@ The second part deploys exactly the image you build in the first. Do them in ord
 
 You should leave this lab able to:
 
-- Explain what an *image-based* gateway is: project, config, **and modules** baked into immutable Docker layers, versus files copied into a running gateway (Lab 04).
+- Explain what an *image-based* gateway is: project, config, **and modules** built into immutable Docker layers, versus files copied into a running gateway (Lab 04).
 - Read the [`Dockerfile`](../Dockerfile) and say what each `COPY` puts where, and why the layer order is what it is.
 - Read [`.dockerignore`](../.dockerignore) and explain why each pattern keeps the build context lean and secrets out of the image.
-- Build the image, tag it `:sha-<short>` + `:local`, and run it **with no bind mounts**, proving the image is self-contained.
-- Inspect the baked layers with `docker history` and trace a running container back to its commit.
+- Build the image, tag it with a version such as `:v1.2`, and run it **with no bind mounts**, proving the image is self-contained.
+- Inspect the layers with `docker history` and trace a running container back to its commit.
 - Deploy an image-based gateway by **recreating the container** from a new image: no `docker cp`, no scan call.
 - Ship a change end-to-end by hand: edit → commit → rebuild → redeploy, and explain that this loop is exactly what a deploy pipeline automates.
 - Roll a gateway back by **running the previous build's immutable tag**, and explain why versioned artifacts make that cheap.
@@ -54,7 +54,7 @@ Both approaches deliver the same files to the same paths and achieve the same re
 
 ### Walk the Dockerfile
 
-Open [`Dockerfile`](../Dockerfile). Four `COPY` lines bake the deployable state, and two small `RUN` lines do work at build time (`…` is `/usr/local/bin/ignition`):
+Open [`Dockerfile`](../Dockerfile). Four `COPY` lines put the deployable state into the image, and two small `RUN` lines do work at build time (`…` is `/usr/local/bin/ignition`):
 
 ```dockerfile
 FROM inductiveautomation/ignition:${IGNITION_VERSION}
@@ -72,8 +72,8 @@ Four things to call out on the board:
 
 1. **Where files land.** `data/projects/` and `data/config/` are the same paths Lab 04's `docker cp` targeted: Ignition scans them at startup. The difference is *when*: Lab 04 copied at deploy time into a running gateway; here they're present from the first boot. `data/modules.json` is the same `services/modules.json` the local gateway reads through its bind mount: one module list, so local, test and production start the same modules.
 2. **Layer order = cache strategy.** Docker caches each layer keyed on its inputs. Order from least- to most-frequently-changed, so editing a Perspective view (bottom layer) doesn't bust the modules layer and the 5-second `RUN` above it. Rebuilds stay fast.
-3. **`--chown=2003:0`.** The gateway runs as the image's own `ignition` user (uid 2003), not root. A plain `COPY` bakes files root-owned and the gateway FAULTs at boot because it cannot write under `config/`. Ownership is part of what you bake.
-4. **The OPC UA `RUN`.** Every tag reads through the OPC UA server's loopback connection, which logs in with an `opcua-module` user source. That user source holds a password hash, so it is never committed or baked. The module only creates it when its one-time flag says it hasn't yet; the `sed` re-arms that flag in the image, so every gateway built from it creates its own login at first boot. Without it, the gateway logs `User Source "opcua-module" not found` and every OPC tag reads bad.
+3. **`--chown=2003:0`.** The gateway runs as the image's own `ignition` user (uid 2003), not root. A plain `COPY` leaves files root-owned and the gateway FAULTs at boot because it cannot write under `config/`. Ownership is part of what you bake.
+4. **The OPC UA `RUN`.** Every tag reads through the OPC UA server's loopback connection, which logs in with an `opcua-module` user source. That user source holds a password hash, so it is never committed or put in the image. The module only creates it when its one-time flag says it hasn't yet; the `sed` re-arms that flag in the image, so every gateway built from it creates its own login at first boot. Without it, the gateway logs `User Source "opcua-module" not found` and every OPC tag reads bad.
 
 ### Walk the .dockerignore
 
@@ -81,13 +81,13 @@ Open [`.dockerignore`](../.dockerignore). It's the image-based analogue of Lab 0
 
 - **Smaller/faster builds:** `docs/`, `exercises/`, `slides/` and the gateway's own `.resources/` blob stores are megabytes Docker would otherwise upload and checksum.
 - **Cleaner image:** even though our `Dockerfile` only `COPY`s four things, a stray `COPY . .` in a future edit would drag in everything not ignored. And `COPY projects/` copies **everything** in that folder, so anything you leave there ships unless `.dockerignore` excludes it. Defence in depth.
-- **No leaked secrets:** `.env` is excluded so credentials can never be baked into a published artifact. This is the line that matters most.
+- **No leaked secrets:** `.env` is excluded so credentials can never end up in a published artifact. This is the line that matters most.
 
 ### Build it and run it standalone
 
 ```bash
-scripts/build-image.sh          # builds, tags :sha-<short> and :local
-docker history cicd-lab-05-ignition:local   # see the baked layers, newest on top
+scripts/build-image.sh          # builds and tags :local
+docker history cicd-lab-05-ignition:local   # see the layers, newest on top
 ```
 
 Now run the image **with no bind mounts** on a spare port: this is the proof that the image carries everything. `scripts/build-image.sh` prints this exact command at the end of every build:
@@ -106,7 +106,7 @@ docker logs -f demo
 # then open http://localhost:9088 → the example-project is there
 ```
 
-No `./projects` mount, no scan call: the project showed up because it's *inside the image*. The `-d` runs it detached, so Ctrl-C only leaves the logs; stop the gateway with `docker stop demo` (the `--rm` cleans it up). The last argument tells the gateway where the baked third-party modules live; leave it out and those modules never load (the log says `Error adding historian`, because the TimescaleDB historian is one of them).
+No `./projects` mount, no scan call: the project showed up because it's *inside the image*. The `-d` runs it detached, so Ctrl-C only leaves the logs; stop the gateway with `docker stop demo` (the `--rm` cleans it up). The last argument tells the gateway where the third-party modules in the image live; leave it out and those modules never load (the log says `Error adding historian`, because the TimescaleDB historian is one of them).
 
 ## We-do (20 min)
 
@@ -119,9 +119,6 @@ Together, build and dissect the image.
    git rev-parse --short HEAD
    ```
    That label is how you trace any running container back to the commit it was built from.
-   If you build with uncommitted changes in this lab, `build-image.sh` tags the image
-   `:sha-<short>-dirty` and stamps the same value in the label: the image holds bytes no
-   commit has, so it must not pass for that commit.
 
 2. **Prove the layer cache.** Build once (done). First, a trap: `touch` a project file and rebuild:
    ```bash
@@ -133,7 +130,7 @@ Together, build and dissect the image.
    printf '\n' >> projects/example-project/project.json   # any content change works
    scripts/build-image.sh
    ```
-   The modules/config layers stay `CACHED`; only the `projects/` layer (and anything after it) rebuilds. The tag now ends in `-dirty`. Then drop a new file into `third-party-modules/` and rebuild:
+   The modules/config layers stay `CACHED`; only the `projects/` layer (and anything after it) rebuilds. Then drop a new file into `third-party-modules/` and rebuild:
    ```bash
    echo test > third-party-modules/dummy.txt   # a new file IS a content change
    scripts/build-image.sh
@@ -144,8 +141,7 @@ Together, build and dissect the image.
    ```bash
    rm third-party-modules/dummy.txt && git checkout -- projects/ && scripts/build-image.sh
    ```
-   The tag must read `sha-<short>` without `-dirty`. Otherwise the dummy file and the stray
-   newline ship in every later build, and Part 2 deploys an image no commit describes.
+   Otherwise the dummy file and the stray newline end up in every later build.
 
 3. **Explore the image, not the repo.** Open the image in Docker Desktop (*Images →
    `cicd-lab-05-ignition` → Files*), or whatever image browser you prefer, and find all four
@@ -166,14 +162,14 @@ itself, using the commands from the we-do. Work on a branch off an up-to-date `m
 
 ```bash
 git switch main && git pull
-git switch -c feature/bake-a-change
+git switch -c feature/image-change
 ```
 
-### Part 1.1: Bake a config change (10 min)
+### Part 1.1: Put a config change into the image (10 min)
 
 1. Open `services/config/resources/core/ignition/system-properties/config.json` and replace the
    text of `"homepageNotes"` with a note of your own, e.g.
-   `"homepageNotes": "Baked into the gateway image. Deployed by replacing the container."`.
+   `"homepageNotes": "Built into the gateway image. Deployed by replacing the container."`.
    That is the note a logged-in user sees on the gateway's Home page.
 2. Rebuild with `scripts/build-image.sh`. Which layers rebuilt, and which stayed `CACHED`? Why
    did the `projects/` layer rebuild although you never touched a project?
@@ -183,14 +179,12 @@ git switch -c feature/bake-a-change
      /usr/local/bin/ignition/data/config/resources/core/ignition/system-properties/config.json
    ```
 
-### Part 1.2: Keep a stray file out of the image (10 min)
+### Part 1.2: Keep a project export out of the image (10 min)
 
-`COPY projects/` copies everything in that folder. Someone leaves a gateway backup lying
-around in it:
+`COPY projects/` copies everything in that folder. Someone exported a project from the
+gateway and saved the export in it:
 
-1. Simulate it: `echo "pretend this is a 1 GB gateway backup" > projects/old-backup.gwbk`.
-   (A real `.gwbk` holds the gateway's internal database, user passwords included: the last
-   thing you want in a published image.)
+1. Simulate it: `echo "pretend this is a project export" > projects/example-project-export.zip`.
 2. Rebuild, then find it in the image:
    ```bash
    scripts/build-image.sh
@@ -200,40 +194,42 @@ around in it:
    It's there.
 3. Add a pattern for it to `.dockerignore`, with a one-line comment that says why:
    ```
-   # Gateway backups hold the internal DB (user passwords included): never bake one
-   **/*.gwbk
+   # Project exports are copies of a project: keep them out of the image
+   **/*.zip
    ```
    Rebuild and run the same `find`: the file is gone from the image, although it's still on
    your disk.
-4. Delete the stray file (`rm projects/old-backup.gwbk`), check `git status` shows only your
-   two edits, and ship them the GitHub flow way: commit, push, open a PR into your fork's
-   `main`, let `lab05-ci.yml` go green, merge on GitHub, then pull `main` and rebuild:
+4. Delete the file (`rm projects/example-project-export.zip`), check `git status` shows only
+   your two edits, then commit and push:
    ```bash
    git add .dockerignore services/config/resources/core/ignition/system-properties/config.json
-   git commit -m "Bake a homepage note and keep gateway backups out of the image"
-   git push -u origin feature/bake-a-change
-   gh pr create --fill
-   sleep 15 && gh pr checks --watch && gh pr merge --merge   # checks take a few seconds to register
-   git switch main && git pull
-   scripts/build-image.sh
+   git commit -m "Add a homepage note and keep project exports out of the image"
+   git push -u origin feature/image-change
    ```
-   The new tag reads `sha-<short>` without `-dirty`, and `<short>` is the merge commit
-   GitHub just made: that clean image is the one you deploy in Part 2. On your fork the
-   merge also fires `lab05-deploy.yml`, which builds the same commit on a GitHub-hosted
-   runner and pushes it to your GHCR. You don't need that image today (the stretch uses
-   it); a red or missing run there doesn't block this lab.
+   On GitHub, open a pull request into your fork's `main`, wait until `lab05-ci.yml` is
+   green and merge it. Then pull `main`:
+   ```bash
+   git switch main && git pull
+   ```
+5. Build version `v1.2` from `main`. That is the image you deploy in Part 2:
+   ```bash
+   scripts/build-image.sh --tag v1.2
+   ```
+   On your fork the merge also fired `lab05-deploy.yml`, which builds the same commit on a
+   GitHub-hosted runner and pushes it to your GHCR. You don't need that image today (the
+   stretch uses it); a red or missing run there doesn't block this lab.
 
 ## Definition of done (part 1)
 
 You're finished with part 1 when:
 
-- [ ] `scripts/build-image.sh` builds the image and tags it `:sha-<short>` + `:local`.
+- [ ] `scripts/build-image.sh` builds the image and tags it `:local`.
 - [ ] You ran the image **with no bind mounts** and saw `example-project` load, proving it's self-contained.
 - [ ] You can explain the Dockerfile's layer order in terms of cache busting.
-- [ ] You can trace a built image back to its commit via the `revision` label, and say what a `-dirty` tag means.
+- [ ] You can trace a built image back to its commit via the `revision` label.
 - [ ] Your homepage note is in the image, proven with `docker run --entrypoint`.
-- [ ] `.dockerignore` keeps `*.gwbk` out of the image, proven with `find` before and after.
-- [ ] Your latest build is tagged `sha-<short>` without `-dirty`.
+- [ ] `.dockerignore` keeps `*.zip` project exports out of the image, proven with `find` before and after.
+- [ ] You built `v1.2` from `main` after your PR was merged.
 
 ## Stretch challenge `[OPTIONAL]`
 
@@ -260,7 +256,7 @@ role of the registry.
 
 ## Pre-flight
 
-Part 1 finished: you have a clean build tagged `:sha-<short>` + `:local`, and
+Part 1 finished: you have built `v1.2`, and
 `scripts/setup.sh` has the stack up (local gateway :8088, test gateway :8089,
 TimescaleDB).
 
@@ -269,8 +265,8 @@ TimescaleDB).
 Watch on the instructor's screen; you type the same commands yourself in Part 2.1. The
 instructor deploys a Part 1 image to the test gateway once and points out:
 
-1. **Before:** which commit does test run? It runs the plain base image (an empty gateway),
-   so the revision label is Inductive Automation's own, not one of your commits.
+1. **Before:** which image does test run? `docker compose ps ignition-test` shows the plain
+   base image: an empty gateway.
 2. **The deploy is one command:** `IGNITION_TEST_IMAGE=<image> docker compose up -d ignition-test`.
    `docker-compose.yaml` reads the variable into the test service's `image:`
    (`image: "${IGNITION_TEST_IMAGE:-inductiveautomation/ignition:8.3.8}"`, the base image
@@ -281,74 +277,83 @@ instructor deploys a Part 1 image to the test gateway once and points out:
 
 ## You do (40 min)
 
-### Part 2.1: Deploy your image to test, command by command (10 min)
+### Part 2.1: Deploy `v1.2` to test (10 min)
 
-1. Find your clean tag: `docker images cicd-lab-05-ignition` (or the last lines of your
-   latest `scripts/build-image.sh` run, which print the deploy command). Write the
-   `:sha-<short>` down: you'll need it again in Part 2.3.
-2. **Before:** which commit is test running?
+1. `docker images cicd-lab-05-ignition` lists your `v1.2`.
+2. **Before:** which image is test running?
    ```bash
-   docker inspect -f '{{ index .Config.Labels "org.opencontainers.image.revision" }}' lab05-ignition-test
+   docker compose ps ignition-test
    ```
-   A long hash that is none of your commits: that's the base image, an empty gateway.
+   The `IMAGE` column shows `inductiveautomation/ignition:8.3.8`: the base image, an empty
+   gateway.
 3. Check the historian's database before the deploy:
    ```bash
    docker exec lab05-timescaledb psql -U ignition -d ignition_test -c '\dt'
    ```
    The first check shows no tables (`Did not find any relations`); they appear after the
    first deploy and survive every later one.
-4. **Deploy:** the immutable tag, never the moving `:local`:
+4. **Deploy** `v1.2`:
    ```bash
-   IGNITION_TEST_IMAGE=cicd-lab-05-ignition:sha-<short> docker compose up -d ignition-test
+   IGNITION_TEST_IMAGE=cicd-lab-05-ignition:v1.2 docker compose up -d ignition-test
    ```
 5. **Wait for RUNNING:** `curl -s localhost:8089/StatusPing` until it prints `{"state":"RUNNING"}`.
    `{"state":"RUNNING","details":"COMMISSIONING"}` means it is still commissioning: keep waiting.
-6. **Verify:** run the `docker inspect` from step 2 again: it now prints your short sha.
-   Open http://localhost:8089/app/home/perspective/session-launcher and launch
-   example-project: the baked project is live. Log in at http://localhost:8089: the Home page
-   shows the note you baked in Part 1.1. No copy, no scan: the container was **replaced**.
+6. **Verify:** run `docker compose ps ignition-test` again: it now shows
+   `cicd-lab-05-ignition:v1.2`. Open http://localhost:8089/app/home/perspective/session-launcher
+   and launch example-project: the project from the image is live. Log in at
+   http://localhost:8089: the Home page shows your Part 1.1 note. No copy, no scan: the
+   container was **replaced**.
 7. Run the `psql` line again: the historian's tables are there now.
 
-### Part 2.2: Ship a change end-to-end (15 min)
+### Part 2.2: Change a view, build `v1.3` and deploy it (15 min)
 
-The full loop a pipeline automates. **Commit before you build** so each build
-gets its own immutable `:sha` tag: the one you wrote down in Part 2.1 is your
-rollback point in Part 2.3.
+The full loop a pipeline automates.
 
-1. Edit a Perspective view under `projects/example-project/com.inductiveautomation.perspective/views/`: make it visibly different (a title text in `pages/overview/view.json` works well).
-2. Ship it the GitHub flow way, as in Part 1.2: feature branch, PR, merge on GitHub, pull:
+1. Make a branch off an up-to-date `main`:
    ```bash
+   git switch main && git pull
    git switch -c feature/tweak-view
-   git status                     # only your view should show up
+   ```
+2. Change the view in the Designer, on the local gateway (:8088): open *Perspective → Views →
+   pages → overview*, select the **Title** label in the header, change its text and
+   **File → Save All**. The local gateway writes the change into `projects/`.
+3. Commit and push:
+   ```bash
+   git status                     # only your view shows up
    git add projects/ && git commit -m "Change overview title"
    git push -u origin feature/tweak-view
-   gh pr create --fill
-   sleep 15 && gh pr checks --watch && gh pr merge --merge
+   ```
+   On GitHub, open a pull request into your fork's `main`, wait until it is green and merge
+   it. Then pull `main`:
+   ```bash
    git switch main && git pull
    ```
-3. Rebuild + redeploy, with the new tag `build-image.sh` prints:
+4. Build `v1.3` and deploy it:
    ```bash
-   scripts/build-image.sh
-   IGNITION_TEST_IMAGE=cicd-lab-05-ignition:sha-<new-short> docker compose up -d ignition-test
+   scripts/build-image.sh --tag v1.3
+   IGNITION_TEST_IMAGE=cicd-lab-05-ignition:v1.3 docker compose up -d ignition-test
    ```
-4. Verify at :8089: your change is live, and the revision label shows the new sha. `docker images` now shows **two** clean `:sha-…` tags: two deployable versions, both still on your machine.
+5. Verify at :8089: your title is live, and `docker compose ps ignition-test` shows `v1.3`.
+   `docker images` now shows **`v1.2` and `v1.3`**: two deployable versions, both still on
+   your machine.
 
-### Part 2.3: Roll back to the previous build (10 min)
+### Part 2.3: Roll back to `v1.2` (10 min)
 
-1. Pretend Part 2.2's change broke something on test. You need the previous version back, now.
-2. Deploy the **old** tag you wrote down in Part 2.1: the same command, older name:
+1. Pretend `v1.3` broke something on test. You need the previous version back, now.
+2. Deploy `v1.2`: the same command, the older version:
    ```bash
-   IGNITION_TEST_IMAGE=cicd-lab-05-ignition:sha-<the-old-short-sha> docker compose up -d ignition-test
+   IGNITION_TEST_IMAGE=cicd-lab-05-ignition:v1.2 docker compose up -d ignition-test
    ```
-3. Verify at :8089: the view is back to its previous state, and the revision label shows the old sha.
+3. Verify at :8089: the title is back to its previous text, and `docker compose ps
+   ignition-test` shows `v1.2`.
 4. Count the irreversible steps you just took. (Zero: both versions still exist, and you can flip between them as often as you like.)
 
 ## Definition of done (part 2)
 
-- [ ] The test gateway (:8089) runs **your** image, proven with the revision label (`docker inspect`).
-- [ ] You shipped a view change end-to-end: edit → commit → rebuild → redeploy → visible on test.
-- [ ] Your image store holds **two immutable `:sha` tags** without `-dirty`, one per build, each traceable to its commit via the revision label.
-- [ ] You rolled test back to the older tag and verified the old view is live again.
+- [ ] The test gateway (:8089) runs **your** image, shown by `docker compose ps ignition-test`.
+- [ ] You shipped a view change as `v1.3`: Designer → PR → build → deploy → visible on test.
+- [ ] Your image store holds **`v1.2` and `v1.3`**.
+- [ ] You rolled test back to `v1.2` and verified the old title is live again.
 - [ ] You checked that the historian's tables appeared with the first deploy and survived the later ones (`psql … -c '\dt'`), and can say why.
 - [ ] You can name the two steps a production pipeline adds between your build and your run (push + pull).
 
@@ -410,12 +415,12 @@ Three directions, pick by appetite:
 2. **Go deeper on the image:** do layer forensics with `docker history --no-trunc`,
    or read the no-push `docker build` job that `lab05-ci.yml` runs on every PR:
    what would a broken Dockerfile look like in the PR's checks?
-3. **A first taste of Lab 06:** bake more kinds of cargo, the way the
+3. **A first taste of Lab 06:** put more kinds of cargo in the image, the way the
    production image from the teaching does:
    - **A module:** the SFC module ships with the base image but `services/modules.json`
      keeps it off. Set `com.inductiveautomation.sfc` to `"onStartup": "enabled"`, rebuild,
      deploy to test, and find it running under *Platform → Modules*: test runs whatever
-     modules the baked `modules.json` enables. The local gateway reads the same file through its bind mount: restart
+     modules the `modules.json` in the image enables. The local gateway reads the same file through its bind mount: restart
      it (`docker compose restart ignition-local`, modules only load at boot) and SFC runs
      there too. It also writes SFC's default settings under
      `services/config/resources/core/com.inductiveautomation.sfc/`: commit them together

@@ -85,14 +85,14 @@ gateway as you, so it can write everything in your working tree. Then save again
   this lab's folder. Look for large files in the lab folder (`du -sh *`) and add what the gateway
   doesn't need to `.dockerignore`.
 - **Image builds but is missing a file.** It's almost always `.dockerignore` excluding something you
-  meant to bake. Verify with `docker run --rm --entrypoint find <image> /usr/local/bin/ignition/data/projects`
+  meant to put in the image. Verify with `docker run --rm --entrypoint find <image> /usr/local/bin/ignition/data/projects`
   (the `--entrypoint` is required — the IA image otherwise treats trailing args as gateway arguments).
 
 ## Gateway FAULTs: "unable to create resource dir … /.resources"
 
-The baked files are owned by a user the gateway cannot write as. The gateway runs as its own
+The files in the image are owned by a user the gateway cannot write as. The gateway runs as its own
 `ignition` user (uid 2003) and must create runtime directories under `data/config/` at boot; a
-plain `COPY` in a Dockerfile bakes files as **root**, so that fails.
+plain `COPY` in a Dockerfile writes files as **root**, so that fails.
 
 The fix belongs in the build, not the run: every `COPY` in this lab's `Dockerfile` uses
 `--chown=2003:0`. If you hit this after editing the Dockerfile, check you did not drop a `--chown`.
@@ -114,7 +114,7 @@ stand-alone-run gotcha.
 
 ## Stand-alone run logs `Error adding historian`
 
-The third-party modules (the TimescaleDB historian among them) are baked into `/third-party-modules`,
+The third-party modules (the TimescaleDB historian among them) are built into the image at `/third-party-modules`,
 but the gateway only loads them when told where they are. Add
 `-Dignition.gateway.externalModulesFolder=/third-party-modules` after the `--`, like the command
 `scripts/build-image.sh` prints. The compose services already pass it.
@@ -125,7 +125,7 @@ but the gateway only loads them when told where they are. Add
 boot:
 
 - **Local** reads the file through its bind mount. Restart it: `docker compose restart ignition-local`.
-- **Test/production** read the copy baked into the image. Commit, rebuild and deploy the new image.
+- **Test/production** read the copy inside the image. Commit, rebuild and deploy the new image.
 - **Test/production before their first deploy** run the plain base image, which has no
   `modules.json`. They start the list `scripts/setup.sh` recorded in `.env` as
   `LAB_MODULES_ENABLED`; re-run `scripts/setup.sh` after you change `modules.json`. Without that

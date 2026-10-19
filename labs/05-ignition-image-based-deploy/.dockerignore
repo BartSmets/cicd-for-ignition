@@ -18,7 +18,7 @@
 .gitignore
 .gitattributes
 
-# Secrets and local env (NEVER bake these into a published image)
+# Secrets and local env (NEVER put these into a published image)
 .env
 .env.example
 
@@ -42,15 +42,15 @@ Dockerfile
 # Database bootstrap (runs in the TimescaleDB sidecar, not the gateway image)
 db-init/
 
-# Per-instance identity — belongs to ONE gateway, never bake it into a shared
+# Per-instance identity — belongs to ONE gateway, never put it into a shared
 # image. Same rule as Lab 04's .deployignore, excluded BY NAME:
 #   - config/local + config/resources/local: UUID, gateway-network keystore,
 #     OPC-UA keystores, machine-local system props
 #   - the INTERNAL identity trio: users.json carries the LOCAL gateway's admin
-#     password hash; baking it ships your admin login to every gateway running
+#     password hash; putting it in the image ships your admin login to every gateway running
 #     the image — instant lockout. Identity resources you add yourself
 #     (database/AD user sources, SAML/OIDC providers) hold no password data
-#     and ARE baked like any other config.
+#     and DO go into the image like any other config.
 #   - user-source/opcua-module is the OPC UA module's own login (it holds a
 #     password hash too). The Dockerfile re-arms the module's one-time flag so
 #     every image gateway creates a fresh one at first boot.
@@ -64,8 +64,8 @@ services/config/resources/core/ignition/user-source/opcua-module/
 services/config/resources/core/ignition/identity-provider/default/
 
 # The scan-API token: generated per clone (scripts/generate-api-keys.sh), one
-# key PER GATEWAY, never committed — and never baked: the image is a published
-# artifact shared test→production, so a baked token would (a) publish the
+# key PER GATEWAY, never committed — and never in the image: the image is a published
+# artifact shared test→production, so a token in the image would (a) publish the
 # local gateway's auth config and (b) make one key open every gateway running
 # the image. Deploys reinstall the target gateway's own token into the fresh
 # container instead (scripts/install-api-token.sh, run by deploy-image.sh).
@@ -78,20 +78,20 @@ services/config/resources/core/ignition/api-token/
 # and rewrites the file to point at it. Keep the file out of the image and
 # commissioning instead creates the clean `default` identity from the
 # container's GATEWAY_ADMIN_* env vars — the same end state Lab 04's test/production
-# gateways reach. (A production image CAN bake it when systemAuthProfile
+# gateways reach. (A production image CAN include it when systemAuthProfile
 # names a deployable user source, e.g. an AD/database one, instead of the
 # gateway-owned internal one.)
 services/config/resources/core/ignition/security-properties/
 
 # Per-instance keystores and secrets. The actual keystore files are gitignored
 # (regenerated per gateway), so they're never in the build context — these
-# patterns are belt-and-suspenders so a stray keystore can't get baked into a
+# patterns are belt-and-suspenders so a stray keystore can't end up in a
 # shared image.
 **/keystore/*.jks
 **/keystore/*.p12
 **/*.idb
 
-# Ignition operational state + content-addressed blob noise — never bake these
+# Ignition operational state + content-addressed blob noise — never put these in the image
 **/.resources/
 **/migration-log-*.md
 **/data/db/
