@@ -290,9 +290,8 @@ services:
   # gateway can point at its own database, plus the read-only `reporting`
   # login used by the TimescaleDB_Reports gateway connection.
   #
-  # Both passwords below are plain environment variables — the rung-1 leak
-  # Part 1A of the lab starts from (`docker inspect lab06-timescaledb | grep
-  # PASSWORD`). The db-init script also understands REPORTING_PASSWORD_FILE,
+  # Both passwords below are plain environment variables, visible in
+  # `docker inspect`. Part 1A of the lab moves them into secret files. The db-init script also understands REPORTING_PASSWORD_FILE,
   # so the same _FILE convention as POSTGRES_PASSWORD_FILE works once you
   # move to file-based secrets.
   timescaledb:

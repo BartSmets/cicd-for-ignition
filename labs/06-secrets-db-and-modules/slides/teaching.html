@@ -784,17 +784,16 @@ docker inspect lab06-timescaledb | grep PASSWORD
   </div>
 </section>
 
-<!-- 09 · CORE COLLECTION + PER-MODE PASSWORDS + SWEEP -->
+<!-- 09 · CORE COLLECTION + PER-MODE PASSWORDS -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">09</span><h2 class="title">Save the provider in core, re-point every deployment mode, then sweep for embedded secrets</h2></div>
+  <div class="sechead"><span class="num">09</span><h2 class="title">Keep the provider in core and re-point the password in every deployment mode</h2></div>
   <div class="body">
     <div class="cols2">
       <div class="stack" style="gap:1.5rem">
         <ul class="checks">
-          <li class="no"><b>The UI saves into the active mode.</b> Local runs <code>local-development</code>, which never deploys: move the provider to <code>core</code>.</li>
-          <li class="no"><b>Every override has its own password.</b> Re-point it in each mode. <b>Create Override</b> adds a mode to a connection.</li>
-          <li class="no"><b>Any committed resource can embed a secret.</b> Ask git, re-point what you own.</li>
+          <li class="warn"><b>The provider belongs in <code>core</code>.</b> <code>local-development</code> never deploys: check where it landed with <code>git status</code>.</li>
+          <li class="warn"><b>Every override has its own password.</b> Re-point it in each mode. <b>Create Override</b> adds a mode to a connection.</li>
         </ul>
         <div>
           <div class="col-head">What test resolves</div>
@@ -809,10 +808,7 @@ resources/<span class="grn">core</span>/ignition/secret-provider/LabSecrets/
 resources/core/.../TimescaleDB/config.json        <span class="cm"># Referenced</span>
 resources/test/.../TimescaleDB/config.json        <span class="cm"># Referenced too:</span>
 resources/production/.../TimescaleDB/config.json  <span class="cm"># each override</span>
-resources/local-development/.../TimescaleDB/...   <span class="cm"># has its own field</span>
-
-<span class="cm"># sweep: which committed config still embeds a secret?</span>
-git grep -l '"Embedded"' -- services/config</pre></div>
+resources/local-development/.../TimescaleDB/...   <span class="cm"># has its own field</span></pre></div>
     </div>
   </div>
 </section>

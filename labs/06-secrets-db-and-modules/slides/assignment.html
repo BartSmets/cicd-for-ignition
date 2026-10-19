@@ -974,7 +974,7 @@ docker logs lab06-gateway-local-development 2&gt;&amp;1 \
       <li>On the local gateway (<code>http://localhost:8088</code>): <b>Services › Historians › TimescaleDB Historian › Edit</b>.</li>
       <li>Set the password to <b>Referenced</b>: provider <code>LabSecrets</code>, secret <code>POSTGRES_PASSWORD</code>. <b>Save</b>: the historian stays Running.</li>
       <li>The historian has its own settings in every deployment mode: do the same for <b>core</b>, <b>local-development</b>, <b>test</b> and <b>production</b>.</li>
-      <li><code>git status</code> shows the four historian <code>config.json</code> files changed.</li>
+      <li><code>git status</code> shows the four historian folders changed.</li>
     </ol>
   </div>
 </section>
@@ -986,9 +986,9 @@ docker logs lab06-gateway-local-development 2&gt;&amp;1 \
   <div class="body">
     <div class="work">
       <ol class="steps">
-        <li data-n="5"><b>Ship them:</b> PR, merge, deploy run. The manifest changed, so the deploy <b>restarts</b> test and ships its secret files again. On <code>http://localhost:8089</code>: all three <b>Running</b>, connections Valid, and in <i>Services, Historians</i> the <b>TimescaleDB Historian</b> Running. <code>Error adding historian</code>? Part 3 · 2 missed a deployment mode.</li>
+        <li data-n="5"><b>Ship them:</b> PR, merge, deploy run. The manifest changed, so the deploy <b>restarts</b> test and ships its secret files again. On <code>http://localhost:8089</code>: all three <b>Running</b>, connections Valid, and in <i>Services, Historians</i> the <b>TimescaleDB Historian</b> Running. Not Running there? Part 3 · 2 missed a deployment mode.</li>
         <li data-n="6"><b>Release it</b> with the tag. On production (<code>:8090</code>): three modules and the historian <b>Running</b>, both connections <b>Valid</b>, the <code>ignition_production</code> ledger at 2.</li>
-        <li data-n="7"><b>Negative test</b>, last, on your local gateway: strip one module's derived lines <b>and</b> its <code>ACCEPT_MODULE_*</code> entries, wipe the local volume, boot: it stops at <code>"details":"COMMISSIONING"</code>. Then recover with the recipe in <code>exercises/lab.md</code>.</li>
+        <li data-n="7"><b>Negative test</b>, last, on your local gateway: strip one module's derived lines <b>and</b> its <code>ACCEPT_MODULE_*</code> entries (both before you boot), wipe the local volume, boot: it stops at <code>"details":"COMMISSIONING"</code>. Then recover with the recipe in <code>exercises/lab.md</code>.</li>
       </ol>
       <div class="code md"><pre><span class="cm"># 6: release modules + Part 2's migration to production</span>
 git switch main &amp;&amp; git pull
@@ -1032,7 +1032,7 @@ git tag lab06-v1.1.0 &amp;&amp; git push origin lab06-v1.1.0</pre></div>
     <div class="work">
       <ol class="steps alt">
         <li data-n="S2"><b>Expand-contract rename.</b> Rename a column with two migrations (<code>0003</code> add and backfill, <code>0004</code> drop) and a screen change in between, so no deploy ever breaks a live query.</li>
-        <li data-n="S3"><b>Secret scanner in CI.</b> Add a <code>gitleaks</code> job to <code>lab06-ci.yml</code>. With <code>fetch-depth: 0</code> it scans <b>every commit of the PR</b>. Test it with a fake-key PR: red. Close it without merging.</li>
+        <li data-n="S3"><b>Secret scanner in CI.</b> Add a <code>gitleaks</code> job to <code>lab06-ci.yml</code>. With <code>fetch-depth: 0</code> it scans <b>every commit of the PR</b>. Test it with a PR that adds a random fake key: red. Close it without merging.</li>
       </ol>
       <div class="code"><pre><span class="cm"># S3: a new job in lab06-ci.yml</span>
 gitleaks:
@@ -1046,7 +1046,11 @@ gitleaks:
         fetch-depth: <span class="cmd2">0</span>
     - uses: gitleaks/gitleaks-action@v3
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</pre></div>
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+<span class="cm"># S3: a random fake key (obvious fakes are ignored)</span>
+echo "reporting_api_key = \"$(openssl rand -hex 20)\"" \
+  &gt; projects/fake-key.txt</pre></div>
     </div>
   </div>
 </section>

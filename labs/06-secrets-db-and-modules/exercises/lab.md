@@ -26,7 +26,7 @@ You should leave this lab able to:
 
 - Sort configuration into **public / per-environment / secret**, and say where each kind lives
 - Explain why a secret that has ever been pushed is **burned** — the fix is *rotate*, not *delete*
-- Climb the secrets ladder: `.env` + Compose interpolation → **file-based secrets** (`/run/secrets/`) → Ignition 8.3 secret providers (embedded vs **referenced**)
+- Move a password from `.env` + Compose interpolation → **file-based secrets** (`/run/secrets/`) → Ignition 8.3 secret providers (embedded vs **referenced**)
 - Wire the whole path: **GitHub secret → secret file written by the deploy workflow → file-type secret provider → referenced secret in gateway config** (the production pattern)
 - Explain why `db-init/` is bootstrap, not deployment
 - Write a schema change as a **golang-migrate up/down pair** (`0002_name.up.sql` / `.down.sql`, like our file-based production repo), apply it with `migrate up`, and read the `schema_migrations` ledger
@@ -71,9 +71,9 @@ The workflows live at the course repo's root, not in this folder:
 2. `git log -p` / GitHub UI: the key is still perfectly readable in history.
 3. The real-world response: **rotate the credential**, then (optionally) scrub history — and why scrubbing alone is never enough on a shared remote.
 
-### Demo 2 — the secrets ladder, on the image-based production repo (on screen)
+### Demo 2 — where a secret can live, on the image-based production repo (on screen)
 
-1. The `.env` → Compose interpolation rung and where it leaks: `docker inspect`, `docker compose config`, process env.
+1. `.env` → Compose interpolation and where it leaks: `docker inspect`, `docker compose config`, process env.
 2. The production setup live: `secrets/` with committed dummy values for local test, a file-type secret provider, a DB connection whose password is `{"type": "Referenced", "data": {"providerName": "PlantSecrets", "secretName": "MSSQL_PASSWORD"}}`, and the `${ENV:NAME}` placeholders in the core collection that the boot script renders to files (umask + chmod **before** the value lands).
 3. The infra handoff doc: the table of env vars the infra team fills per environment.
 
@@ -324,12 +324,12 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
   provider `LabSecrets` and secret `POSTGRES_PASSWORD`, and **Save**. The
   historian has its own settings in every deployment mode: do the same for
   **core**, **local-development**, **test** and **production**. `git status`
-  then shows the four historian `config.json` files changed; commit them with
+  then shows the four historian folders changed; commit them with
   the module changes.
 
   **Step 6: ship them.** PR → merge → deploy run. Because the module manifest changed, the deploy **restarts** the gateway: modules only load at boot, unlike projects and config, which reload hot. The same run ships test's secret files again, so its connections turn Valid.
 
-  Then open *Services → Historians* on test: the **TimescaleDB Historian** provider is **Running**. You never configured it on test: its config waited in the repo for its module, and since step 5b its password is a **reference** (`LabSecrets` / `POSTGRES_PASSWORD`) that each gateway resolves from its own secret file. Missed a deployment mode in step 5b? Test shows `Error adding historian: TimescaleDB Historian`: the embedded ciphertext only decrypts on your local gateway, so a forgotten embedded secret surfaces here, one part later.
+  Then open *Services → Historians* on test: the **TimescaleDB Historian** provider is **Running**. You never configured it on test: its config waited in the repo for its module, and since step 5b its password is a **reference** (`LabSecrets` / `POSTGRES_PASSWORD`) that each gateway resolves from its own secret file. Not Running there after the run? Step 5b missed a deployment mode: the embedded ciphertext only decrypts on your local gateway. (The gateway log shows one `Error adding historian` during the module restart in every run: the restart happens before the new config ships, and the historian starts a few seconds later.)
 
   **Step 7: release it.** Production still runs `lab06-v1.0.0`, and since step 4 its connections are Faulted:
 
@@ -349,7 +349,8 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
   same containers and volumes). Delete Periscope's two derived lines **and** drop
   `com.mussonindustrial.embr.periscope` from `ACCEPT_MODULE_LICENSES` /
   `ACCEPT_MODULE_CERTS` — leaving it in `GATEWAY_MODULES_ENABLED` — then wipe the
-  local gateway's volume and boot it:
+  local gateway's volume and boot it. Make both edits before you boot: a boot with
+  only one of them writes the derived lines straight back.
 
   ```bash
   docker compose rm -sf gateway-local-development
@@ -396,7 +397,13 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
 ### Stretch (optional)
 - **S1.** The internal secret provider, and where it breaks: create an **internal secret provider** on the local gateway, store `REPORTING_PASSWORD` in it (the gateway encrypts it and keeps the ciphertext in its own config) and point `TimescaleDB_Reports` at it in core **and** in the test override from 1C (it overrides the password field, so a core-only change never reaches test). Locally it stays Valid; ship it and test faults: the ciphertext only decrypts on the gateway that created it. Then revert to the referenced secret from Part 1.
 - **S2.** Expand-contract rename: `0003` add + backfill, screen switch, `0004` drop.
-- **S3.** Add a `gitleaks` job to `lab06-ci.yml`; test it with a fake-key PR (red), then close the PR without merging. With `fetch-depth: 0` gitleaks scans **every commit in the PR**, so a key added in one commit and deleted in the next still fails:
+- **S3.** Add a `gitleaks` job to `lab06-ci.yml`; test it with a fake-key PR (red), then close the PR without merging. Make the fake key random: gitleaks ignores obvious fakes like `1234abcd` or AWS's `EXAMPLE` keys. This one is caught:
+
+  ```bash
+  echo "reporting_api_key = \"$(openssl rand -hex 20)\"" > projects/fake-key.txt
+  ```
+
+  With `fetch-depth: 0` gitleaks scans **every commit in the PR**, so a key added in one commit and deleted in the next still fails:
 
   ```yaml
   gitleaks:

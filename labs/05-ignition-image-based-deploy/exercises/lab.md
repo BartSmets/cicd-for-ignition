@@ -31,9 +31,11 @@ your `main`, so there are no merge conflicts:
 git fetch https://github.com/Mustry-Academy/cicd-for-ignition.git main && git checkout -f -B main FETCH_HEAD && git push -f origin main
 ```
 
-Then bring the stack up from this lab's folder:
+Then stop the previous lab's stack (every Docker lab uses the same ports) and bring this one
+up from this lab's folder:
 
 ```bash
+(cd ../04-ignition-file-based-deploy && docker compose down)
 scripts/setup.sh    # safe to re-run: it keeps test/production on the image they run
 ```
 
@@ -100,7 +102,7 @@ scripts/build-image.sh          # builds and tags :local
 docker history cicd-lab-05-ignition:local   # see the layers, newest on top
 ```
 
-Now run the image **with no bind mounts** on a spare port: this is the proof that the image carries everything. `scripts/build-image.sh` prints this exact command at the end of every build:
+Now run the image **with no bind mounts** on a spare port: this is the proof that the image carries everything. `scripts/build-image.sh` prints the same command at the end of every build (with the build's own tag instead of `:local`):
 
 ```bash
 docker run -d --rm --name demo -p 9088:8088 \
@@ -289,7 +291,7 @@ instructor deploys a Part 1 image to the test gateway once and points out:
 
 ### Part 2.1: Deploy `v1.2` to test (10 min)
 
-1. `docker images cicd-lab-05-ignition` lists your `v1.2`.
+1. `docker images cicd-lab-05-ignition` lists `v1.2` among the other tags.
 2. **Before:** which image is test running?
    ```bash
    docker compose ps ignition-test

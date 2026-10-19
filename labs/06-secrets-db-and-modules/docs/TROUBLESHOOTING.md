@@ -202,6 +202,9 @@ The TimescaleDB Historian provider only starts once Part 3 installs its module,
 so a problem with its password stays hidden until then. Read the lines just
 above and below the error in `docker logs lab06-gateway-test`:
 
+- Just once, during the deploy's module restart, and a few seconds later
+  `Historian 'TimescaleDB Historian' started`: harmless. The restart runs
+  before the new config ships; the historian starts as soon as it does.
 - `Failed to resolve password secret` ... `Unable to decrypt ciphertext`: the
   provider still has its seeded **embedded** password, which only your local
   gateway can decrypt. Re-point the historian's password to `LabSecrets` /

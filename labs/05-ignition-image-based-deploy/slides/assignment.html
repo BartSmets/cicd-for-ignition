@@ -570,8 +570,9 @@ a{color:var(--primary-deep)}
 git fetch https://github.com/Mustry-Academy/cicd-for-ignition.git main \
   &amp;&amp; git checkout -f -B main FETCH_HEAD &amp;&amp; git push -f origin main
 
-<span class="cm"># 2: this lab's folder</span>
+<span class="cm"># 2: this lab's folder, previous stack down</span>
 cd ~/mustry-academy/cicd-for-ignition/labs/05-ignition-image-based-deploy
+(cd ../04-ignition-file-based-deploy &amp;&amp; docker compose down)
 
 <span class="cm"># 3: open VS Code, then bring the stack up</span>
 code .
@@ -632,8 +633,8 @@ rm third-party-modules/dummy.txt &amp;&amp; git checkout -- projects/ &amp;&amp;
   <div class="body">
     <div class="work dense">
       <ol class="steps alt">
-        <li>Run the image on a spare port with <b>no bind mounts</b>: <code>build-image.sh</code> printed this exact command.</li>
-        <li>Follow the boot with <code>docker logs -f demo</code>. At <i>"Starting project: example-project"</i>, open <code>http://localhost:9088</code>: <b>example-project is there</b>, with no <code>./projects</code> mount and no scan call. Ctrl-C only leaves the logs.</li>
+        <li>Run the image on a spare port with <b>no bind mounts</b>: <code>build-image.sh</code> printed the same command.</li>
+        <li>Follow the boot with <code>docker logs -f demo</code>. When the log shows <i>"Starting project: example-project"</i>, wait a few seconds, then open <code>http://localhost:9088</code>: <b>example-project is there</b>, with no <code>./projects</code> mount and no scan call. Ctrl-C only leaves the logs.</li>
         <li><b>Read the image, not the repo.</b> In Docker Desktop (<i>Images, cicd-lab-05-ignition, Files</i>) or with <code>--entrypoint find</code>: <code>projects/</code>, <code>config/</code> and <code>modules.json</code> under <code>/usr/local/bin/ignition/data/</code>, plus <code>/third-party-modules</code>. Not there: <code>README.md</code>, <code>docs/</code>, <code>.env</code>.</li>
         <li>Stop the demo gateway: <code>--rm</code> removes it.</li>
       </ol>
@@ -763,7 +764,7 @@ scripts/build-image.sh --tag v1.2</pre></div>
   <div class="body">
     <div class="work dense">
       <ol class="steps">
-        <li><code>docker images</code> lists your <b><code>v1.2</code></b>.</li>
+        <li><code>docker images</code> lists <b><code>v1.2</code></b> among the other tags.</li>
         <li><b>Before:</b> which image does test run? The base image: an empty gateway. The historian's database: <i>Did not find any relations</i>.</li>
         <li><b>Deploy</b> <code>v1.2</code>. Poll <code>/StatusPing</code> until it prints <code>{"state":"RUNNING"}</code>; RUNNING with COMMISSIONING is not done yet. Give it a few minutes.</li>
         <li><b>Verify:</b> test now runs <code>cicd-lab-05-ignition:v1.2</code>. Launch <b>example-project</b> from <code>:8089/app/home/perspective/session-launcher</code>; log in at <code>:8089</code>: the Home page shows your Part 1.1 note.</li>

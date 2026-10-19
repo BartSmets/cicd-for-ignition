@@ -35,22 +35,22 @@ config and getting committed "just to make it work".
    PATs with `repo` scope only; GitHub *environment* secrets
    (`lab06-gateway-test` / `lab06-gateway-production`) instead of repo-wide ones.
 
-## 3. The ladder
+## 3. Where a secret can live
 
-From "works on my machine" to "portable across gateways". Each rung fixes the
-previous rung's leak.
+From "works on my machine" to "portable across gateways". Each option fixes the
+leak of the one before; options 2 and 3 are equally safe and this lab uses both.
 
-### Rung 0 — hardcoded (never)
+### 0. Hardcoded (never)
 Plaintext in `docker-compose.yaml` or a committed config file. Leaks into: Git
 history, every clone, every fork.
 
-### Rung 1 — environment variables via `.env` + Compose interpolation
+### 1. Environment variables via `.env` + Compose interpolation
 What labs 02–06 do: `POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-ignition}"` with
 the real value in a gitignored `.env`. Good: out of Git. Still leaks into:
 `docker inspect`, `docker compose config`, the container's process environment
 (visible to anything that can read `/proc/1/environ` or trigger a debug dump).
 
-### Rung 2 — file-based secrets (files under `/run/secrets/`)
+### 2. File-based secrets (files under `/run/secrets/`)
 A top-level `secrets:` block in Compose, backed by files in the gitignored
 `secrets/` directory, mounted read-only at `/run/secrets/<name>` inside the
 container. Good: not in `docker inspect`, not in the process env. Works with
@@ -69,7 +69,7 @@ just works); on deployed environments, the infra team or the deploy workflow —
 `deploy.yml` step can materialize GitHub secrets into these files
 (`umask 177` + `printf '%s'`) right before `compose up`.
 
-### Rung 3 — Ignition 8.3 secret providers (the native answer)
+### 3. Ignition 8.3 secret providers (the native answer)
 Ignition 8.3 added first-class **secrets management**: gateway config no longer
 needs to store secret values inline. Two flavours matter for CI/CD:
 
