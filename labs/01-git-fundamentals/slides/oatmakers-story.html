@@ -393,11 +393,14 @@ a{color:var(--primary-deep)}
 /* ---- HUD: progress, pager, hint, motion toggle -------------------------- */
 .hud{position:fixed;left:0;right:0;bottom:0;height:4px;background:hsl(var(--neutral-0) / .1);z-index:50}
 .hud>.bar{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--soft));transition:width var(--duration-slow) var(--ease-out)}
-.pager{position:fixed;right:1.25rem;bottom:.9rem;z-index:50;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--faint)}
+.corner{position:fixed;right:1.25rem;bottom:.7rem;z-index:51;display:flex;align-items:center;gap:.9rem}
+.pager{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--faint)}
 .hint{position:fixed;left:9rem;bottom:.95rem;z-index:50;font-size:var(--text-xs);color:var(--faint);transition:opacity var(--duration-slower)}
-.motion-toggle{position:fixed;left:1.25rem;bottom:.7rem;z-index:51;font-family:var(--font-sans);font-size:var(--text-xs);font-weight:600;color:var(--muted);background:hsl(var(--neutral-0) / .6);border:1px solid var(--line-2);border-radius:var(--radius-sm);padding:.2rem .55rem;cursor:pointer}
+.motion-toggle{position:fixed;left:1.25rem;bottom:.7rem;z-index:51}
+.motion-toggle,.fs-toggle{font-family:var(--font-sans);font-size:var(--text-xs);font-weight:600;color:var(--muted);background:hsl(var(--neutral-0) / .6);border:1px solid var(--line-2);border-radius:var(--radius-sm);padding:.2rem .55rem;cursor:pointer}
+.fs-toggle[hidden]{display:none}
 .on-dark .pager,.pager.on-dark,.hint.on-dark{color:hsl(var(--neutral-0) / .55)}
-.motion-toggle.on-dark{color:hsl(var(--neutral-200));background:hsl(var(--neutral-950) / .35);border-color:hsl(var(--neutral-0) / .22)}
+.motion-toggle.on-dark,.fs-toggle.on-dark{color:hsl(var(--neutral-200));background:hsl(var(--neutral-950) / .35);border-color:hsl(var(--neutral-0) / .22)}
 .motion-toggle:disabled{opacity:.6;cursor:default}
 
 /* ---- cover dot field: verbatim from mustry-cockpit src/server/quotations/original-cover-motion.ts
@@ -479,7 +482,7 @@ a{color:var(--primary-deep)}
   .deck{height:auto;overflow:visible;scroll-snap-type:none}
   .slide{width:1600px;height:900px;break-after:page;page-break-after:always;break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .slide:last-child{break-after:auto;page-break-after:auto}
-  .hud,.pager,.hint,.controls,.motion-toggle{display:none!important}
+  .hud,.pager,.hint,.controls,.motion-toggle,.corner{display:none!important}
   .reveal,.vshow,.vpop,.vdraw{opacity:1!important}
   .reveal,.vpop{transform:none!important}
   .glow{display:none}
@@ -853,6 +856,12 @@ svg text.lname:not([fill]){fill:var(--muted)}
   const motionBtn = make('button', 'motion-toggle');
   motionBtn.type = 'button';
   motionBtn.setAttribute('data-motion', '');
+  // Bottom right: the pager, then the full-screen button.
+  const corner = make('div', 'corner');
+  const fsBtn = document.createElement('button');
+  fsBtn.className = 'fs-toggle';
+  fsBtn.type = 'button';
+  corner.append(pager, fsBtn);
 
   /* ---- position ------------------------------------------------------- */
   function curIndex() {
@@ -872,7 +881,7 @@ svg text.lname:not([fill]){fill:var(--muted)}
     bar.style.width = (slides.length > 1 ? i / (slides.length - 1) * 100 : 0) + '%';
     pager.textContent = pad(i + 1) + ' / ' + pad(slides.length);
     const dark = slides[i].classList.contains('dark');
-    [pager, hint, motionBtn].forEach(n => n.classList.toggle('on-dark', dark));
+    [pager, hint, motionBtn, fsBtn].forEach(n => n.classList.toggle('on-dark', dark));
     try { localStorage.setItem(POS_KEY, String(i)); } catch (e) {}
     if (i !== lastIdx) {
       if (slides[lastIdx]) slides[lastIdx].classList.remove('is-active');
@@ -954,12 +963,29 @@ svg text.lname:not([fill]){fill:var(--muted)}
       // Left/right only step the current slide's build; they never change slides.
       case 'ArrowRight': e.preventDefault(); if (b) b.go(1); break;
       case 'ArrowLeft': e.preventDefault(); if (b) b.go(-1); break;
+      case 'f': case 'F': if (!e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); toggleFullscreen(); } break;
     }
   });
   let frame = 0;
   deck.addEventListener('scroll', () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); }, { passive: true });
   window.addEventListener('resize', () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); });
   setTimeout(() => { hint.style.opacity = '0'; }, 5000);
+
+  /* ---- full screen: the button and the F key --------------------------- */
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  function toggleFullscreen() {
+    if (fsEl()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    else (root.requestFullscreen || root.webkitRequestFullscreen).call(root);
+  }
+  function fsLabel() { fsBtn.textContent = fsEl() ? 'Exit full screen' : 'Full screen'; }
+  if (document.fullscreenEnabled || document.webkitFullscreenEnabled) {
+    fsBtn.addEventListener('click', () => { toggleFullscreen(); fsBtn.blur(); });
+    document.addEventListener('fullscreenchange', fsLabel);
+    document.addEventListener('webkitfullscreenchange', fsLabel);
+    fsLabel();
+  } else {
+    fsBtn.hidden = true;
+  }
 
   /* ---- motion: pause control, hidden tab, visibility (Cockpit presentation.ts) */
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
