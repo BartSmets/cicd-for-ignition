@@ -568,23 +568,29 @@ a{color:var(--primary-deep)}
   <div class="body">
     <div class="work">
       <ol class="steps alt">
+        <li><b>Get the latest course version</b> (from any folder of your clone): it replaces your <code>main</code>, here and on your fork, so no merge conflicts.</li>
         <li><b>Go to this lab's folder</b> in your clone and open it in VS Code.</li>
         <li><b>Require approval for outside PRs:</b> <i>Settings → Actions → General</i> → <b>Approval for running fork pull request workflows from contributors</b> → <b>Require approval for all external contributors</b> → Save. Your fork is public and this lab's runner holds the Docker socket.</li>
         <li><b>Start the stack:</b> three gateways, TimescaleDB and the runner. <code>setup.sh</code> warns if <code>.env</code> has no runner URL or PAT yet.</li>
       </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># 1: this lab's folder</span>
+        <div class="code"><pre><span class="cm"># 1: latest course version on main, here and on your fork</span>
+<span class="cm">#    (replaces your main: no merge conflicts)</span>
+git fetch https://github.com/Mustry-Academy/cicd-for-ignition.git main \
+  &amp;&amp; git checkout -f -B main FETCH_HEAD &amp;&amp; git push -f origin main
+
+<span class="cm"># 2: this lab's folder</span>
 cd ~/mustry-academy/cicd-for-ignition
 cd labs/04-ignition-file-based-deploy
 code .
 
-<span class="cm"># 2: the same setting from the CLI</span>
+<span class="cm"># 3: the same setting from the CLI</span>
 R=<span class="cmd2">&lt;you&gt;</span>/cicd-for-ignition
 echo '{"approval_policy":"all_external_contributors"}' \
   | gh api -X PUT --input - \
     repos/$R/actions/permissions/fork-pr-contributor-approval
 
-<span class="cm"># 3: start the stack</span>
+<span class="cm"># 4: start the stack</span>
 scripts/setup.sh</pre></div>
       </div>
     </div>

@@ -33,7 +33,7 @@ Because this is the first class, the instructor opens with the bigger picture fr
 3. **How the series fits together.** 7 labs over four days: 01 Git fundamentals and 02 Branching and pull requests (Day 1), 03 GitHub Actions and 04 Ignition file-based deploy (Day 2), 05 Ignition image-based deploy (Day 3), 06 Secrets, database migrations, modules & JARs and 07 Deployments in a multi-gateway architecture (Day 4). Each lab has its own folder, so you always get a fresh start, even if you could not finish the previous lab. In Lab 07 the whole group works on one shared repo and deploys to a real production gateway.
 4. **Your fork.** A fork is your own copy of the course repo on GitHub (`<you>/cicd-for-ignition`); your clone of it lives in `~/mustry-academy/cicd-for-ignition`. You made both before Day 1 (step 1 of the [course README](../../../README.md)). In your fork you commit, branch and push freely.
 5. **Where you run the commands.** In the terminal on macOS or Linux, or in a WSL2 terminal on Windows, with the clone in your Linux home. Not in PowerShell or Git Bash, and never under `/mnt/c/`.
-6. **How the labs work.** Each lab follows the same rhythm: **Teaching**, **We-do** (instructor live-codes), **You-do** (breakout rooms), then a **debrief**, with optional stretch challenges if you finish early. Interrupt us anytime; company-specific questions at the end of the day. Notes you take in `NOTES.local.md` are gitignored and yours to keep.
+6. **How the labs work.** Each lab follows the same rhythm: **Teaching**, **We-do** (instructor live-codes), **You-do** (breakout rooms), then a **debrief**, with optional stretch challenges if you finish early. Interrupt us anytime; company-specific questions at the end of the day.
 7. **Breakout rooms.** Everyone shares their screen at the same time; Sam and Jasper move between the rooms and look over your shoulder.
 8. **AI agents.** AI can probably one-shot these labs. Do them as much as possible without it: you get the fundamentals in your fingers, and then you steer AI much better when you build this out for yourself.
 9. **The Oatmakers story.** We walk through [`slides/oatmakers-story.html`](https://share.mustrysolutions.com/f50d9d30-81b9-48ae-819d-1614674534f0) ([offline copy](../slides/oatmakers-story.html)): one fictional client (Oatmakers, eight Ignition sites, zero CI/CD) whose troubles set the stage for the whole series. Each day the map heals a little more.
@@ -78,7 +78,7 @@ combine changes with others. Reference reading: [`docs/why-version-control.md`](
   | `git reset --hard <commit>` | to `<commit>` | discarded, uncommitted edits too: no undo |
 
   Committed to the wrong branch? `git reset --soft HEAD~1`, then `git switch -c feature/x` and `git commit`.
-- **`.gitignore`** lists the files Git leaves alone. This lab's [`.gitignore`](../.gitignore) ignores `.venv/`, the Python caches (`__pycache__/`, `.pytest_cache/`) and `NOTES.local.md`. `git status` lists **untracked** files; **ignored** files don't show up.
+- **`.gitignore`** lists the files Git leaves alone. This lab's [`.gitignore`](../.gitignore) ignores `.venv/` and the Python caches (`__pycache__/`, `.pytest_cache/`). `git status` lists **untracked** files; **ignored** files don't show up.
 
 ### The commands you use in the We-do and You-do
 
@@ -126,18 +126,25 @@ The instructor live-codes, narrating the object graph at every step.
 ## You-do (breakout rooms) (60 min)
 
 Break into rooms. **Share your screen** so Sam and Jasper can look over your shoulder.
-Write your answers in `NOTES.local.md` (gitignored).
 
 We start with a short **guided warm-up together**, then you go solo through two phases on the same
 clone. **Do Phase 1 first**: its gate (`scripts/verify-lab.sh`) checks that `HEAD` is your focused
 commit, and Phase 2's merges and resets break that check.
 
-> **Lab 01 stays on your machine: never push or Sync `main` in this lab.** Lab 02 starts by
-> resetting `main` to your fork.
+> **Lab 01 stays on your machine: after the first command below, never push or Sync `main`
+> in this lab.** Lab 02 starts by putting the latest course version back on `main`.
 
 ### Warm-up (together)
 
 **Part 0: open your fork's Lab 01 folder in VS Code.**
+
+**First, get the latest course version.** From any folder of your clone, this puts the
+latest course version on your `main`, locally and on your fork. It replaces whatever was on
+your `main`, so there are no merge conflicts:
+
+```bash
+git fetch https://github.com/Mustry-Academy/cicd-for-ignition.git main && git checkout -f -B main FETCH_HEAD && git push -f origin main
+```
 
 ```bash
 cd ~/mustry-academy/cicd-for-ignition/labs/01-git-fundamentals   # no clone yet? course README, step 1
@@ -201,7 +208,7 @@ git branch -D we-do-greeting-polish
 4. Put one **unrelated** commit directly on `main`: `git switch main`, append a line to `docs/why-version-control.md` (a file neither Phase 1 nor the seed touches) and `git commit -am "chore: unrelated note on main"`. The branches have **diverged**: no fast-forward possible.
 5. `git merge feature/greeting-tweaks -m "Merge feature/greeting-tweaks"` records a **merge commit**.
 6. `git cat-file -p HEAD` lists **two `parent` lines**. `git log --graph --decorate --oneline --all` shows the diamond where the branches rejoin (at the top; the course repo's own history continues below it).
-7. **Sketch the graph in `NOTES.local.md`** and keep it for Part C.
+7. **Sketch the graph** and keep it for Part C.
 
 **Part C: rebase instead.**
 
@@ -213,7 +220,7 @@ git branch -D we-do-greeting-polish
 ### Done?
 
 - `scripts/verify-lab.sh` printed a green check before Phase 2.
-- Part B: `git cat-file -p HEAD` showed two parents, and the sketch is in `NOTES.local.md`.
+- Part B: `git cat-file -p HEAD` showed two parents, and you sketched the graph.
 - Part C: `git log --graph --decorate --oneline --all` shows the three feature commits in a straight line on `main`.
 - Nothing pushed: `main` on your fork is unchanged.
 

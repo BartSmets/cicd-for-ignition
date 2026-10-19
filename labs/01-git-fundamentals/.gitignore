@@ -7,9 +7,6 @@ Thumbs.db
 .idea/
 *.swp
 
-# Local notes
-NOTES.local.md
-
 # Python
 __pycache__/
 *.pyc

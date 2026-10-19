@@ -23,6 +23,16 @@ You should leave this lab able to:
 
 ## Pre-flight
 
+**First, get the latest course version.** From any folder of your clone, this puts the
+latest course version on your `main`, locally and on your fork. It replaces whatever was on
+your `main`, so there are no merge conflicts:
+
+```bash
+git fetch https://github.com/Mustry-Academy/cicd-for-ignition.git main && git checkout -f -B main FETCH_HEAD && git push -f origin main
+```
+
+Then bring the stack up from this lab's folder:
+
 ```bash
 scripts/setup.sh    # safe to re-run: it keeps test/production on the image they run
 ```

@@ -571,13 +571,19 @@ a{color:var(--primary-deep)}
   <div class="body">
     <div class="work">
       <ol class="steps alt">
+        <li><b>Get the latest course version</b> (from any folder of your clone): it replaces your <code>main</code>, here and on your fork, so no merge conflicts.</li>
         <li><b>Open your clone in VS Code</b> and a terminal in it (<b>Terminal › New Terminal</b>). Run every command of this lab from that terminal, in the lab folder.</li>
         <li><b>Stop the Lab 02 gateway:</b> both labs use port 8088.</li>
         <li><b>Copy the env file</b> and run <code>scripts/setup.sh</code>. It waits for RUNNING and prints the URL and login.</li>
         <li><b>Open the gateway</b> and log in with the <code>.env</code> credentials.</li>
       </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># VS Code terminal, at the root of your clone</span>
+        <div class="code"><pre><span class="cm"># latest course version on main, here and on your fork</span>
+<span class="cm">#    (replaces your main: no merge conflicts)</span>
+git fetch https://github.com/Mustry-Academy/cicd-for-ignition.git main \
+  &amp;&amp; git checkout -f -B main FETCH_HEAD &amp;&amp; git push -f origin main
+
+<span class="cm"># VS Code terminal, at the root of your clone</span>
 cd labs/03-github-actions
 
 (cd ../02-branching-and-prs &amp;&amp; scripts/teardown.sh)

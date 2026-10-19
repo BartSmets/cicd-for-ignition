@@ -524,11 +524,10 @@ a{color:var(--primary-deep)}
   <div class="body">
     <ul class="checks" style="max-width:68rem">
       <li><b>Share your screen</b> in your breakout room, so we can drop in where it's useful.</li>
-      <li><b>Write your answers in <code>NOTES.local.md</code>:</b> it is gitignored.</li>
       <li><b><code>exercises/lab.md</code> is the source of truth;</b> these slides summarise it. When they differ, follow <code>lab.md</code>.</li>
       <li><b>Pre-flight passed?</b> Your setup came from <code>./course-setup.sh</code>. Something off with git, gh or VS Code? Check <code>preflight/troubleshooting.md</code>.</li>
       <li><b>Stuck for a few minutes?</b> Say so in the room.</li>
-      <li class="warn"><b>Lab 01 stays on your machine: never push or Sync <code>main</code> in this lab.</b> Lab 02 starts by resetting <code>main</code> to your fork.</li>
+      <li class="warn"><b>Lab 01 stays on your machine: after the first setup command, never push or Sync <code>main</code> in this lab.</b> Lab 02 starts by putting the latest course version back on <code>main</code>.</li>
     </ul>
   </div>
 </section>
@@ -562,13 +561,19 @@ a{color:var(--primary-deep)}
   <div class="body">
     <div class="work">
       <ol class="steps alt">
+        <li><b>Get the latest course version</b> (from any folder of your clone): it replaces your <code>main</code>, here and on your fork, so no merge conflicts.</li>
         <li>Go to the Lab 01 folder of your clone. No clone yet? Course README, step 1.</li>
         <li><b>Check the remote:</b> <code>origin</code> shows <b>your username</b>. An <code>upstream</code> at <code>Mustry-Academy</code> is fine.</li>
         <li>Make VS Code the editor Git opens.</li>
         <li><b>Open VS Code</b> and work from its terminal (<code>Ctrl+`</code>).</li>
       </ol>
       <div class="side">
-        <div class="code"><pre>cd ~/mustry-academy/cicd-for-ignition/labs/01-git-fundamentals
+        <div class="code"><pre><span class="cm"># latest course version on main, here and on your fork</span>
+<span class="cm">#    (replaces your main: no merge conflicts)</span>
+git fetch https://github.com/Mustry-Academy/cicd-for-ignition.git main \
+  &amp;&amp; git checkout -f -B main FETCH_HEAD &amp;&amp; git push -f origin main
+
+cd ~/mustry-academy/cicd-for-ignition/labs/01-git-fundamentals
 git remote -v
 git config --global core.editor <span class="cmd2">"code --wait"</span>
 code .</pre></div>
@@ -751,7 +756,7 @@ git commit -m <span class="cmd2">"…"</span>         <span class="cm"># …×3<
                 <li data-n="4"><code>git switch main</code> and add one <b>unrelated</b> commit: a line in <code>docs/why-version-control.md</code>. The branches have <b>diverged</b>: no fast-forward possible.</li>
         <li data-n="5"><code>git merge feature/greeting-tweaks -m "…"</code> records a <b>merge commit</b>.</li>
         <li data-n="6"><code>git cat-file -p HEAD</code> lists <b>two parents</b>; <code>git log --graph</code> shows the diamond.</li>
-        <li data-n="7"><b>Sketch the graph</b> in <code>NOTES.local.md</code> and keep it for Part C.</li>
+        <li data-n="7"><b>Sketch the graph</b> and keep it for Part C.</li>
       </ol>
       <div class="side">
         <div class="code"><pre>git switch main
@@ -802,7 +807,7 @@ git log --graph --decorate --oneline --all</pre></div>
   <div class="body">
     <ul class="checks" style="max-width:68rem">
       <li><code>scripts/verify-lab.sh</code> printed a green check <b>before</b> Phase 2</li>
-      <li>Part B: <code>git cat-file -p HEAD</code> showed <b>two parents</b>, and the sketch is in <code>NOTES.local.md</code></li>
+      <li>Part B: <code>git cat-file -p HEAD</code> showed <b>two parents</b>, and you sketched the graph</li>
       <li>Part C: <code>git log --graph --decorate --oneline --all</code> shows the three feature commits in a <b>straight line</b> on <code>main</code></li>
       <li class="warn">Nothing pushed: <code>main</code> on your fork is unchanged</li>
     </ul>

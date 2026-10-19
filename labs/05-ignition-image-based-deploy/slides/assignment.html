@@ -560,14 +560,20 @@ a{color:var(--primary-deep)}
   <div class="body">
     <div class="work dense">
       <ol class="steps alt">
+        <li><b>Get the latest course version</b> (from any folder of your clone): it replaces your <code>main</code>, here and on your fork, so no merge conflicts.</li>
         <li><b>Stop the previous lab's stack</b> (<code>docker compose down</code> in its folder) and go to this lab's folder in your course clone.</li>
         <li><b>Bring the stack up:</b> <code>setup.sh</code> creates <code>.env</code> and starts local (:8088, bind-mounted), test (:8089) and production (:8090), plus TimescaleDB. Test and production stay empty until their first image deploy.</li>
       </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># 1: this lab's folder</span>
+        <div class="code"><pre><span class="cm"># 1: latest course version on main, here and on your fork</span>
+<span class="cm">#    (replaces your main: no merge conflicts)</span>
+git fetch https://github.com/Mustry-Academy/cicd-for-ignition.git main \
+  &amp;&amp; git checkout -f -B main FETCH_HEAD &amp;&amp; git push -f origin main
+
+<span class="cm"># 2: this lab's folder</span>
 cd ~/mustry-academy/cicd-for-ignition/labs/05-ignition-image-based-deploy
 
-<span class="cm"># 2: open VS Code, then bring the stack up</span>
+<span class="cm"># 3: open VS Code, then bring the stack up</span>
 code .
 scripts/setup.sh          <span class="cm"># 3 gateways + TimescaleDB</span></pre></div>
       </div>

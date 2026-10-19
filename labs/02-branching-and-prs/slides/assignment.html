@@ -554,20 +554,26 @@ a{color:var(--primary-deep)}
   <div class="body">
     <div class="work">
       <ol class="steps alt">
+        <li><b>Get the latest course version</b> (from any folder of your clone): it replaces your <code>main</code>, here and on your fork, so no merge conflicts.</li>
         <li><b>Go to the lab folder</b> in your fork: <code>~/mustry-academy/cicd-for-ignition/labs/02-branching-and-prs</code>.</li>
         <li><b>Check where <code>gh</code> opens PRs:</b> <code>gh repo set-default --view</code> must print <b>your fork</b>. If not, set it.</li>
         <li><b>Open VS Code</b> with <code>code .</code> and work from its terminal.</li>
       </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># 1: into this lab's folder in your fork</span>
+        <div class="code"><pre><span class="cm"># 1: latest course version on main, here and on your fork</span>
+<span class="cm">#    (replaces your main: no merge conflicts)</span>
+git fetch https://github.com/Mustry-Academy/cicd-for-ignition.git main \
+  &amp;&amp; git checkout -f -B main FETCH_HEAD &amp;&amp; git push -f origin main
+
+<span class="cm"># 2: into this lab's folder in your fork</span>
 cd ~/mustry-academy/cicd-for-ignition/labs/02-branching-and-prs
 
-<span class="cm"># 2: must print YOUR fork</span>
+<span class="cm"># 3: must print YOUR fork</span>
 gh repo set-default --view
 <span class="cm"># if not:</span>
 gh repo set-default &lt;your-username&gt;/cicd-for-ignition
 
-<span class="cm"># 3: open the lab folder in VS Code</span>
+<span class="cm"># 4: open the lab folder in VS Code</span>
 code .</pre></div>
       </div>
     </div>
@@ -607,15 +613,12 @@ scripts/teardown.sh       <span class="cm"># done for the day</span></pre></div>
   <div class="body">
     <div class="work">
       <ol class="steps">
-        <li><b>Park Lab 01's local commits</b> on a branch, then <b>reset <code>main</code></b> to your fork's <code>main</code>.</li>
+        <li><b>Start on <code>main</code>:</b> the setup already put the latest course version there.</li>
         <li><b>Tag what's live:</b> an annotated <code>lab02-v1.2.0</code>, the "production" v1.2. The <code>lab02-</code> prefix keeps this lab's tags apart.</li>
         <li><b>Push the tag</b> to your fork.</li>
       </ol>
       <div class="side">
         <div class="code"><pre>git switch main
-git branch lab01-practice          <span class="cm"># park Lab 01's local commits</span>
-git fetch origin
-git reset --hard origin/main       <span class="cm"># main = your fork's main</span>
 
 git tag -a lab02-v1.2.0 -m "Release 1.2.0"
 git push origin lab02-v1.2.0      <span class="cm"># → "production" is v1.2</span></pre></div>

@@ -49,7 +49,7 @@ One ~3-hour lab that interleaves Git's object model with everyday workflows. The
 labs/01-git-fundamentals/
 ├── README.md
 ├── LICENSE
-├── .gitignore                    ← what Git leaves alone (.venv, caches, NOTES.local.md)
+├── .gitignore                    ← what Git leaves alone (.venv, caches)
 ├── exercises/
 │   └── lab.md
 ├── docs/                         ← reference reading

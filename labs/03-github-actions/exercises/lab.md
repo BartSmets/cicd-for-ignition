@@ -18,6 +18,14 @@ a required gate on every PR, then a look at *where* CI runs when GitHub-hosted i
 
 ## Setup
 
+**First, get the latest course version.** From any folder of your clone, this puts the
+latest course version on your `main`, locally and on your fork. It replaces whatever was on
+your `main`, so there are no merge conflicts:
+
+```bash
+git fetch https://github.com/Mustry-Academy/cicd-for-ignition.git main && git checkout -f -B main FETCH_HEAD && git push -f origin main
+```
+
 You'll need Docker (Compose V2) and Python 3.12. Open your clone in VS Code and a terminal
 in it (**Terminal → New Terminal**, it starts at the root of your clone). Run every command of
 this lab from that terminal, in the lab folder. Stop the Lab 02 gateway (both labs use port
