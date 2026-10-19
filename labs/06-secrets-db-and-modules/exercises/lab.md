@@ -30,17 +30,24 @@ You should leave this lab able to:
 - Wire the whole path: **GitHub secret → secret file written by the deploy workflow → file-type secret provider → referenced secret in gateway config** (the production pattern)
 - Explain why `db-init/` is bootstrap, not deployment
 - Write a schema change as a **golang-migrate up/down pair** (`0002_name.up.sql` / `.down.sql`, like our file-based production repo), apply it with `migrate up`, and read the `schema_migrations` ledger
-- Wire a migrate step into `lab06-deploy.yml` **before** the ship step, and say why the order matters
+- Read the migrate step in `lab06-deploy.yml`, which runs **before** the ship step, and say why the order matters
 - Deploy **third-party modules**: committed `.modl` files, external-modules folder flag, headless license/cert acceptance in `modules.json`
 - Say where the two kinds of **JAR** live: JDBC drivers as 8.3 config resources (inside the config tree), library JARs on the gateway classpath
 
 ## Pre-flight
 
+Get the latest course version first. From any folder of your clone, this puts
+the course's `main` on your `main`, locally and on your fork. It replaces what
+was on your `main`, so earlier exercises can't cause merge conflicts:
+
+```bash
+git fetch https://github.com/Mustry-Academy/cicd-for-ignition.git main && git checkout -f -B main FETCH_HEAD && git push -f origin main
+```
+
 ```bash
 cd ~/mustry-academy/cicd-for-ignition/labs/06-secrets-db-and-modules
 [ -f .env ] || cp .env.example .env   # keeps the .env course-setup.sh may have made
-scripts/setup.sh          # idempotent — safe if the stack is already up
-scripts/validate.sh       # green before you start
+scripts/setup.sh          # idempotent: safe if the stack is already up
 ```
 
 Stop the previous lab's stack first (`docker compose down` in its folder):
@@ -49,8 +56,7 @@ every Docker lab uses the same ports and container names.
 In `.env`, change two lines: `RUNNER_REPO_URL` points at your fork and
 `RUNNER_GITHUB_PAT` holds your Lab 04 token. Leave the database passwords as
 shipped: Part 1 builds on them. Check that `gh repo set-default --view` prints
-`<you>/cicd-for-ignition`; every `gh secret set` in this lab names your fork
-with `-R <you>/cicd-for-ignition`.
+`<you>/cicd-for-ignition`.
 
 The workflows live at the course repo's root, not in this folder:
 `../../.github/workflows/lab06-{ci,deploy,release}.yml`.
@@ -87,30 +93,29 @@ The workflows live at the course repo's root, not in this folder:
 
 Follows [`slides/assignment.html`](https://share.mustrysolutions.com/014ffcf0-71b9-4e7a-81ef-64d13ea0dbc4) ([offline copy](../slides/assignment.html)) 1:1.
 
-### Warm-up (together) — deploy to test and production, and check the db-connections
-Pre-flight first (`validate.sh` green). Then create the two **deploy
-environments** on your fork — *Settings → Environments* → `lab06-gateway-test`
-and `lab06-gateway-production` — each with a secret named `IGNITION_API_KEY`
-holding that gateway's own key from your `.env` (`setup.sh` generated a
-unique `IGNITION_API_KEY_TEST` / `_PRODUCTION` per gateway — nothing
-key-related lives in the repo, and a test key won't authenticate against
-production). `lab06-deploy.yml` picks its environment from the deploy target, so
-without them nothing deploys. From the CLI instead of the UI:
+### Warm-up (together): deploy to test and production, and check the db-connections
 
-```bash
-gh api -X PUT repos/<you>/cicd-for-ignition/environments/lab06-gateway-test
-gh api -X PUT repos/<you>/cicd-for-ignition/environments/lab06-gateway-production
-gh secret set IGNITION_API_KEY -R <you>/cicd-for-ignition --env lab06-gateway-test       --body "$(grep '^IGNITION_API_KEY_TEST=' .env | cut -d= -f2-)"
-gh secret set IGNITION_API_KEY -R <you>/cicd-for-ignition --env lab06-gateway-production --body "$(grep '^IGNITION_API_KEY_PRODUCTION=' .env | cut -d= -f2-)"
-```
+Create the two **deploy environments** on github.com: your fork → **Settings →
+Environments → New environment**. In each one, **Environment secrets → Add
+environment secret**:
 
-Now trigger `lab06-deploy.yml` (*Lab 06 · Deploy*) for test and
-for production from the Actions tab and watch both runs go green. Now open the test
-gateway, Connections → Databases → Connections: both connections (`TimescaleDB` and
-`TimescaleDB_Reports`) are **Faulted**; production shows the same. Write the diagnosis
-question in `NOTES.local.md`: the pipeline is green and the gateway is broken —
-what can a config-only deploy never carry? (Answer lands in Part 1: the password
-values and the per-environment database target.)
+| Environment | Secret | Value | Variables |
+|---|---|---|---|
+| `lab06-gateway-test` | `IGNITION_API_KEY` | `IGNITION_API_KEY_TEST` from your `.env` | none |
+| `lab06-gateway-production` | `IGNITION_API_KEY` | `IGNITION_API_KEY_PRODUCTION` from your `.env` | none |
+
+`setup.sh` generated a unique key per gateway: nothing key-related lives in the
+repo, and a test key won't authenticate against production. `lab06-deploy.yml`
+picks its environment from the deploy target, so without them nothing deploys.
+
+Now deploy. On github.com open your fork → **Actions** tab → **Lab 06 · Deploy**
+in the list on the left → **Run workflow** (on the right) → branch `main`,
+gateway `test` → **Run workflow**. Watch the run go green, then do the same with
+gateway `production`. Open the test gateway, Connections → Databases →
+Connections: both connections (`TimescaleDB` and `TimescaleDB_Reports`) are
+**Faulted**; production shows the same. The pipeline is green and the gateway is
+broken: a config-only deploy can't carry the password values or the
+per-environment database target. Part 1 fixes both.
 <!-- Seeded state: TimescaleDB_Reports exists only in core (username
      `reporting`, connectURL → ignition_local_development); TimescaleDB has the local-development/test/production
      overrides. Both passwords are Embedded ciphertexts under CUSTOM
@@ -120,9 +125,9 @@ values and the per-environment database target.)
      test/production fault with "Unable to decrypt ciphertext", by design.
      The TimescaleDB Historian provider (core + all three modes) carries the
      same kind of custom-key ciphertext for `ignition`; it stays silent until
-     Part 3 installs its module, and the 1B sweep is what catches it. -->
+     Part 3 installs its module, and Part 3 step 5 re-points it in the UI. -->
 
-### Part 1 — hook up a secret for the db-connection (±30 min)
+### Part 1: set up a secret for the db-connection (±30 min)
 Two db-connections, same database server, different users: `TimescaleDB` logs in
 as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
 - **1A.** Both passwords become secret files: compose `environment:` → files
@@ -135,64 +140,39 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
 - **1B.** Create a **file-type secret provider** (`LabSecrets`) on the local
   gateway with secrets `POSTGRES_PASSWORD` and `REPORTING_PASSWORD`; re-point
   **both** connections at their **referenced** secret (in every deployment
-  mode that overrides the password field). Then check `git status`: the UI
-  writes the provider into the **active mode's collection**
-  (`resources/local-development/ignition/secret-provider/`), and
-  `local-development` never deploys: test would fault on a missing provider
-  while local stays green. Move it to core and rescan (already under
-  `resources/core/`? Skip the `mv`):
+  mode that overrides the password field). Then check `git status`: the provider
+  belongs under `resources/core/ignition/secret-provider/`, because
+  `local-development` never deploys.
 
-  ```bash
-  mv services/config/resources/{local-development,core}/ignition/secret-provider
-  ./scripts/scan.sh          # still Valid, now from core
-  ```
-
-  Then **sweep for the last embedded secret**: the two connections were the
-  ones you knew about, but any committed resource can carry a ciphertext.
-  Ask git which committed config files still do:
-
-  ```bash
-  git grep -l '"Embedded"' -- services/config
-  ```
-
-  Two resources answer. The built-in `Ignition OPC UA Server` connection is
-  the gateway's loopback to its own OPC UA server, with Ignition's stock
-  credentials under the default key every installation shares, so it
-  decrypts everywhere: leave it. The other is the **TimescaleDB Historian** provider, in `core` and all
-  three modes (`resources/*/com.inductiveautomation.historian/historian-provider/TimescaleDB Historian/config.json`):
-  it logs in as `ignition` with an embedded password that only your local
-  gateway can decrypt. Part 3 installs its module, so nothing complains yet.
-  Re-point it the same way: in each of the four files, replace the
-  `"password"` block under `settings` with the referenced one for
-  `POSTGRES_PASSWORD`. Edit the JSON by hand: the gateway UI cannot open
-  this provider until its module is installed. Re-run the grep; only the
-  OPC UA connection is left.
+  Landed under `resources/local-development/` by mistake? Test would fault on a
+  missing provider while local stays green. Move it to core and rescan:
+  `mv services/config/resources/{local-development,core}/ignition/secret-provider`
+  and `./scripts/scan.sh`.
 - **1C.** Build the fix for test, in two halves: add the **test
   deployment-mode override** for `TimescaleDB_Reports`
   (`…resources/test/ignition/database-connection/TimescaleDB_Reports/config.json`,
   connectURL → `ignition_test`) **and its `production` twin** (connectURL →
   `ignition_production` — production inherits the same core flaw; copy the pattern from
   `TimescaleDB`, which has all three modes), and add
-  `POSTGRES_PASSWORD` + `REPORTING_PASSWORD` as secrets on **both** the
-  `lab06-gateway-test` and `lab06-gateway-production` environments. Use the
-  same values as `secrets/*.example` (one Postgres serves all three
-  databases), straight from the files you made in 1A:
+  `POSTGRES_PASSWORD` + `REPORTING_PASSWORD` as secrets on **both**
+  environments, on github.com (your fork → **Settings → Environments** → the
+  environment → **Add environment secret**). One Postgres serves all three
+  databases, so the values are the same everywhere:
 
-  ```bash
-  gh secret set POSTGRES_PASSWORD  -R <you>/cicd-for-ignition --env lab06-gateway-test       < secrets/postgres_password.txt
-  gh secret set REPORTING_PASSWORD -R <you>/cicd-for-ignition --env lab06-gateway-test       < secrets/reporting_password.txt
-  gh secret set POSTGRES_PASSWORD  -R <you>/cicd-for-ignition --env lab06-gateway-production < secrets/postgres_password.txt
-  gh secret set REPORTING_PASSWORD -R <you>/cicd-for-ignition --env lab06-gateway-production < secrets/reporting_password.txt
-  ```
+  | Environment | Secret | Value |
+  |---|---|---|
+  | `lab06-gateway-test` | `POSTGRES_PASSWORD` | the content of `secrets/postgres_password.txt` |
+  | `lab06-gateway-test` | `REPORTING_PASSWORD` | the content of `secrets/reporting_password.txt` |
+  | `lab06-gateway-production` | `POSTGRES_PASSWORD` | the content of `secrets/postgres_password.txt` |
+  | `lab06-gateway-production` | `REPORTING_PASSWORD` | the content of `secrets/reporting_password.txt` |
 
-  Then add the **Materialize secret files** step in `lab06-deploy.yml`
-  (umask 177 + `printf`, at the marked `# Part 1C` comment — i.e. before the
-  pre-wired "Ship secret files" step that hands them to the gateway). Nothing is
-  deployed yet.
+  Nothing to change in the workflow: its **Materialize secret files** step
+  already turns these secrets into files, and the **Ship secret files** step
+  hands them to the gateway at `/run/secrets/`. Nothing is deployed yet.
 - **1D.** The full deploy moment, every station separately: **branch**
   (`feature/fix-test-db-connections`) → **commit & push** (your diff **adds** no
-  secret value: `scripts/validate.sh`'s secret scan is the check) → **open the
-  PR** → **watch the PR validate** (`lab06-ci.yml` green) →
+  secret value: the secret scan in `lab06-ci.yml` is the check) → **open the
+  PR on github.com** → **watch the PR validate** (`lab06-ci.yml` green) →
   **merge** → **watch the pipeline deploy** (materialize secret files → ship
   them into the gateway → ship projects and config → scan → smoke check) →
   **verify test** (both connections Valid, `TimescaleDB_Reports` on
@@ -201,16 +181,15 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
   merge on github.com you are still on your feature branch, so switch and pull
   first, or the tag lands on the feature commit. The Lab 04 routing: the tag,
   not the merge, is what ships to production. `lab06-release.yml` fires on the tag and runs the same
-  `lab06-deploy.yml` with `target: production`: same commit, same pipeline steps —
-  including the ones you added — different environment) → **verify production**
+  `lab06-deploy.yml` with `target: production`: same commit, same pipeline steps,
+  different environment) → **verify production**
   (both Valid, `TimescaleDB_Reports` on `ignition_production`). Fork carried a
   stale `lab06-v1.0.0` over? `git tag -l 'lab06-*'`, take the next free number.
 - **Gate:** both connections Valid on test AND production, fixed by the pipeline
-  and not by hand, `git grep -l '"Embedded"' -- services/config` down to the
-  OPC UA loopback connection, and you can narrate: GitHub secret → file →
-  provider → reference.
+  and not by hand, and you can narrate: GitHub secret → file → provider →
+  reference.
 
-### Part 2 — ship a schema change as a migration (±20 min)
+### Part 2: ship a DB-migration (±20 min)
 - **2A.** Write `db-migration/migrate/0002_add_downtime_log.up.sql` **and**
   `.down.sql`; apply with `scripts/migrate.sh up`; read `schema_migrations`
   (version 2, not dirty); re-run to see idempotency (`no change`). Your stack
@@ -220,22 +199,21 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
   Note: golang-migrate will NOT stop you editing an applied migration — that
   discipline is a written rule (the production repo's `docs/MIGRATIONS.md`), not
   a tool feature.
-- **2B.** Add the migrate step to `lab06-deploy.yml` exactly at the marked
-  `# Part 2B: add your "Migrate database" step HERE` comment — **above**
-  the `Prune working tree per .deployignore` step, which deletes `scripts/`
-  and `db-migration/` from the checkout, so a migrate step placed below it
-  fails with `./scripts/migrate.sh: No such file or directory`. Keep it
-  **before** the ship step (and
-  not `continueOnError`), deriving the database from the deploy target —
-  `$DEPLOY_TARGET` is already in the job's env, and a `target: production`
-  promotion must migrate `ignition_production`, not test:
+- **2B.** Read the **Migrate database** step in `lab06-deploy.yml` (repo
+  root). Nothing to change. It sits **above** the `Prune working tree per
+  .deployignore` step, which deletes `scripts/` and `db-migration/` from the
+  checkout, and **before** the ship step, so the table exists before the screen
+  that reads it. It is not `continueOnError`: a failed migration stops the run.
+  The database follows the deploy target, so a `target: production` promotion
+  migrates `ignition_production`, not test:
 
   ```yaml
   - name: Migrate database
     run: |
+      set -euo pipefail
       case "$DEPLOY_TARGET" in
         production) db=ignition_production ;;
-        *)    db=ignition_test ;;
+        *)          db=ignition_test ;;
       esac
       ./scripts/migrate.sh up --database "$db"
   ```
@@ -282,7 +260,7 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
   there. That is the whole argument for migrate-before-ship.
 - **Gate:** a green deploy run whose log shows migrate → ship → scan → verify, and test's ledger at version 2 (the `lab06-v1.1.0` release at the end of Part 3 migrates `ignition_production` the same way).
 
-### Part 3: deploy three third-party modules (±25 min)
+### Part 3: deploy third-party modules (±25 min)
 - Install the three spare `.modl` files by adding **minimal** `services/modules.json` entries, let the gateway derive the acceptance fields, commit them, ship them through the pipeline, and verify they come up **Running** with no hands on the gateway.
 
   The spare modules are **Embr Periscope**, **Embr Charts** and the **TimescaleDB Historian**. Their `.modl` files already sit in `third-party-modules/` — and that is *all* that ships: no `modules.json` entry, and their ids are absent from the compose module env vars. The gateway neither loads nor trusts them.
@@ -338,9 +316,20 @@ as `ignition`, `TimescaleDB_Reports` as the read-only `reporting` user.
 
   Three `Starting up module` lines (Periscope, Charts and the TimescaleDB Historian) = installed and Running. In the UI it is *Platform → Modules*: all three listed, all Running.
 
+  **Step 5b: point the historian's password at the secret.** The TimescaleDB
+  Historian's password is still **Embedded**: it only decrypts on your local
+  gateway, so test and production would fail with `Error adding historian`. On
+  the local gateway (`http://localhost:8088`) open **Services → Historians →
+  TimescaleDB Historian → Edit**, set the password to **Referenced** with
+  provider `LabSecrets` and secret `POSTGRES_PASSWORD`, and **Save**. The
+  historian has its own settings in every deployment mode: do the same for
+  **core**, **local-development**, **test** and **production**. `git status`
+  then shows the four historian `config.json` files changed; commit them with
+  the module changes.
+
   **Step 6: ship them.** PR → merge → deploy run. Because the module manifest changed, the deploy **restarts** the gateway: modules only load at boot, unlike projects and config, which reload hot. The same run ships test's secret files again, so its connections turn Valid.
 
-  Then open *Services → Historians* on test: the **TimescaleDB Historian** provider is **Running**. You never configured it on test: its config waited in the repo for its module, and since your 1B sweep its password is a **reference** (`LabSecrets` / `POSTGRES_PASSWORD`) that each gateway resolves from its own secret file. Skipped the sweep? Test shows `Error adding historian: TimescaleDB Historian`: the embedded ciphertext only decrypts on your local gateway, so a forgotten embedded secret surfaces here, one part later.
+  Then open *Services → Historians* on test: the **TimescaleDB Historian** provider is **Running**. You never configured it on test: its config waited in the repo for its module, and since step 5b its password is a **reference** (`LabSecrets` / `POSTGRES_PASSWORD`) that each gateway resolves from its own secret file. Missed a deployment mode in step 5b? Test shows `Error adding historian: TimescaleDB Historian`: the embedded ciphertext only decrypts on your local gateway, so a forgotten embedded secret surfaces here, one part later.
 
   **Step 7: release it.** Production still runs `lab06-v1.0.0`, and since step 4 its connections are Faulted:
 

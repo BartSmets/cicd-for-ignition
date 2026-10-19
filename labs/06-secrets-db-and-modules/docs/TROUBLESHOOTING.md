@@ -204,9 +204,9 @@ above and below the error in `docker logs lab06-gateway-test`:
 
 - `Failed to resolve password secret` ... `Unable to decrypt ciphertext`: the
   provider still has its seeded **embedded** password, which only your local
-  gateway can decrypt. Do the 1B sweep (`git grep -l '"Embedded"' -- services/config`),
-  re-point the historian's `password` in `core` and all three modes to
-  `LabSecrets` / `POSTGRES_PASSWORD`, and ship it.
+  gateway can decrypt. Re-point the historian's password to `LabSecrets` /
+  `POSTGRES_PASSWORD` in the gateway UI (Part 3 step 5b), for `core` and all
+  three modes, and ship it.
 - `the password is an empty string` or `password authentication failed`: the
   reference is there but resolves to nothing usable on that gateway. Same
   checks as for the `TimescaleDB` connection: the `LabSecrets` provider sits

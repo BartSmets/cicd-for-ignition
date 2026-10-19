@@ -22,7 +22,7 @@ The offline copy is the same deck: open it from your clone if the link doesn't l
 
 ## Prerequisites
 
-- Your fork of the course repo (`cicd-for-ignition`, set up once: see the [course hub](../../README.md)). The warm-up, Parts 1C-1D and 2B deploy through its Actions.
+- Your fork of the course repo (`cicd-for-ignition`, set up once: see the [course hub](../../README.md)). The warm-up and Parts 1D, 2B and 3 deploy through its Actions.
 - Your Lab 04 fine-grained Personal Access Token (Administration: Read and write on your fork) in `.env` as `RUNNER_GITHUB_PAT`: the bundled runner uses it to register against your fork. It never leaves `.env`.
 - The [GitHub CLI](https://cli.github.com/) (`gh`), authenticated (`gh auth status`), with `gh repo set-default <you>/cicd-for-ignition` done once
 - **≥ 8 GB free RAM for Docker** — three Ignition gateways (1 GB heap each, capped at 1.5 GB), plus TimescaleDB, the runner, and the usual Docker Desktop overhead
@@ -129,8 +129,8 @@ GitHub only runs workflows from the repo root, so this lab's three live in the c
 | File | Trigger | Runner | Purpose |
 |---|---|---|---|
 | [`lab06-ci.yml`](../../.github/workflows/lab06-ci.yml) | PR to `main` | `ubuntu-latest` (free) | Linters, JSON validity, `.deployignore` syntax, **secret scan**. |
-| [`lab06-deploy.yml`](../../.github/workflows/lab06-deploy.yml) | Push to `main` (deploy paths only); manual dispatch with `target: test\|production` | `[self-hosted, lab06]` | File-based deploy via `docker cp` + hot scan. Ships secret files (once your 1C step materializes them) and the module manifest (restarting the gateway only when it changed). |
-| [`lab06-release.yml`](../../.github/workflows/lab06-release.yml) | `lab06-v*` tag on `main` | `[self-hosted, lab06]` | The Lab 04 routing: the tag ships to **production**. A thin caller that runs `lab06-deploy.yml` with `target: production` — one pipeline, so your 1C/2B steps ship to both gateways. |
+| [`lab06-deploy.yml`](../../.github/workflows/lab06-deploy.yml) | Push to `main` (deploy paths only); manual dispatch with `target: test\|production` | `[self-hosted, lab06]` | File-based deploy via `docker cp` + hot scan. Writes the secret files from the environment secrets you add in Part 1C, migrates the database and the module manifest (restarting the gateway only when it changed). |
+| [`lab06-release.yml`](../../.github/workflows/lab06-release.yml) | `lab06-v*` tag on `main` | `[self-hosted, lab06]` | The Lab 04 routing: the tag ships to **production**. A thin caller that runs `lab06-deploy.yml` with `target: production` — one pipeline, so every step runs on both gateways. |
 
 > The deploy and release jobs carry `if: github.repository != 'Mustry-Academy/cicd-for-ignition'`. They deploy to gateways on your machine, so they only run in your fork and skip on the course repo itself. CI (`lab06-ci.yml`) runs in both.
 
@@ -142,7 +142,7 @@ Both deploy targets need:
 | Scope | Name | Type | Purpose |
 |---|---|---|---|
 | Environment `lab06-gateway-test` | `IGNITION_API_KEY` | Secret | The `IGNITION_API_KEY_TEST` value from your `.env` — `setup.sh` generates a unique key per gateway (nothing key-related is committed) |
-| Environment `lab06-gateway-test` | `POSTGRES_PASSWORD`, `REPORTING_PASSWORD` | Secrets | **You add these in Part 1C** — the Materialize step turns them into secret files on the test host |
+| Environment `lab06-gateway-test` | `POSTGRES_PASSWORD`, `REPORTING_PASSWORD` | Secrets | **You add these in Part 1C**, in the GitHub UI: the Materialize step turns them into secret files on the test host |
 | Environment `lab06-gateway-test` | `IGNITION_URL`, `IGNITION_CONTAINER` | Variables (optional) | Default to `http://gateway-test:8088` / `lab06-gateway-test` (bundled-runner case) |
 | Environment `lab06-gateway-production` | (same set) | | Defaults: `http://gateway-production:8088` / `lab06-gateway-production` |
 
@@ -152,7 +152,7 @@ Both deploy targets need:
 
 ```bash
 scripts/migrate.sh up                           # apply pending migrations on ignition_local_development
-scripts/migrate.sh up --database ignition_test   # same, against test (what your 2B step runs)
+scripts/migrate.sh up --database ignition_test   # same, against test (what the Migrate database step runs)
 scripts/migrate.sh version                      # current position + dirty flag
 docker exec lab06-timescaledb psql -U ignition -d ignition_local_development \
   -c 'SELECT * FROM schema_migrations;'         # read the ledger directly

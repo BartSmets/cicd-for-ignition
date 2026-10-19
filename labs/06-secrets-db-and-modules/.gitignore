@@ -26,8 +26,6 @@
 /.flint/tokens/*
 !/.flint/tokens/*.example
 
-# Local scratch notes used during the lab
-NOTES.local.md
 
 # OS
 .DS_Store
