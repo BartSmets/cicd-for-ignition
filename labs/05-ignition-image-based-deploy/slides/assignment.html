@@ -546,9 +546,9 @@ a{color:var(--primary-deep)}
   <div class="sechead"><span class="num">THE PLAN</span><h2 class="title">Three stops, in order</h2></div>
   <div class="body">
     <ol class="track">
-      <li><small>We-do · together</small><b>Build and inspect the image</b><span>Build it, trace it to its commit, prove the layer cache, run it <b>with no bind mounts</b>, read what got baked</span></li>
-      <li class="now"><small>Part 1 · solo · 20 min</small><b>Bake a change, keep a file out</b><span>A config change in, a stray backup out with <code>.dockerignore</code>, both proven from the image. Ends with a clean <code>:sha</code> tag, no <code>-dirty</code></span></li>
-      <li><small>Part 2 · solo · 40 min</small><b>Deploy by replacing the container</b><span>Deploy the Part 1 image to test, ship a change end-to-end, roll back to the previous tag</span></li>
+      <li><small>Together</small><b>Build and inspect the image</b></li>
+      <li class="now"><small>Part 1</small><b>Change what goes into the image</b></li>
+      <li><small>Part 2</small><b>Deploy by replacing the container</b></li>
     </ol>
   </div>
 </section>
@@ -583,11 +583,11 @@ scripts/setup.sh          <span class="cm"># 3 gateways + TimescaleDB</span></pr
     <div class="work dense">
       <div class="side">
         <ol class="steps alt">
-          <li><code>scripts/build-image.sh</code> builds and tags <b>:sha-&lt;short&gt;</b> + <b>:local</b>. <code>docker history</code> shows the layers, newest on top: which is the biggest?</li>
+          <li><code>scripts/build-image.sh</code> builds the image and tags it <b>:local</b>. <code>docker history</code> shows the layers, newest on top: which is the biggest?</li>
           <li>Read the <b>revision label</b> back: it matches your last commit.</li>
-          <li><code>touch</code> a project file and rebuild: every layer stays <b>CACHED</b>. Append a newline and rebuild: only <code>projects/</code> rebuilds, and the tag ends in <code>-dirty</code>.</li>
+          <li><code>touch</code> a project file and rebuild: every layer stays <b>CACHED</b>. Append a newline and rebuild: only <code>projects/</code> rebuilds.</li>
           <li>Drop a dummy file into <code>third-party-modules/</code> and rebuild: the 5-second check, modules, config <b>and</b> projects all rebuild.</li>
-          <li><b>Clean up and rebuild:</b> the tag reads <code>sha-&lt;short&gt;</code> without <code>-dirty</code>.</li>
+          <li><b>Clean up:</b> remove the dummy file, restore <code>projects/</code> and rebuild.</li>
         </ol>
       </div>
       <div class="side">
@@ -595,22 +595,23 @@ scripts/setup.sh          <span class="cm"># 3 gateways + TimescaleDB</span></pr
 scripts/build-image.sh
 docker history cicd-lab-05-ignition:local
 
-<span class="cm"># 2: trace the image to its commit</span>
+<span class="cm"># 2: which commit was the image built from?</span>
 docker inspect -f '{{ index .Config.Labels "org.opencontainers.image.revision" }}' \
   cicd-lab-05-ignition:local
 git rev-parse --short HEAD
 
-<span class="cm"># 3: a timestamp busts nothing, content does</span>
+<span class="cm"># 3: touch only changes the date: every layer stays CACHED</span>
 touch projects/example-project/project.json
 scripts/build-image.sh
+<span class="cm">#    a real edit: the projects/ layer rebuilds</span>
 printf '\n' &gt;&gt; projects/example-project/project.json
 scripts/build-image.sh
 
-<span class="cm"># 4: a new file higher up busts much more</span>
+<span class="cm"># 4: a change in an earlier layer: every layer after it rebuilds</span>
 echo test &gt; third-party-modules/dummy.txt
 scripts/build-image.sh
 
-<span class="cm"># 5: clean up, then rebuild from the commit</span>
+<span class="cm"># 5: clean up and rebuild</span>
 rm third-party-modules/dummy.txt &amp;&amp; git checkout -- projects/ &amp;&amp; \
   scripts/build-image.sh</pre></div>
       </div>
@@ -621,7 +622,7 @@ rm third-party-modules/dummy.txt &amp;&amp; git checkout -- projects/ &amp;&amp;
 <!-- WE-DO 2 -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num warm">WE-DO · 2</span><h2 class="title">Run the image with nothing mounted, and read what got baked</h2></div>
+  <div class="sechead"><span class="num warm">WE-DO · 2</span><h2 class="title">Run the image on its own and look at the files inside it</h2></div>
   <div class="body">
     <div class="work dense">
       <ol class="steps alt">
@@ -661,10 +662,10 @@ docker stop demo</pre></div>
     <h2 class="divider-title">Part 1, solo: change what goes into the image, and <em>prove it from the image</em></h2>
     <div class="stack" style="gap:2.25rem;max-width:70rem">
       <div class="code" style="max-width:40rem"><div class="code-title">First: a branch off an up-to-date main</div><pre>git switch main &amp;&amp; git pull
-git switch -c feature/bake-a-change</pre></div>
+git switch -c feature/image-change</pre></div>
       <ol class="flow">
-        <li><b>Part 1.1 · 10 min</b><span>Bake a config change: a note on the gateway's Home page</span></li>
-        <li class="on"><b>Part 1.2 · 10 min</b><span>Keep a stray gateway backup out with <code>.dockerignore</code>, then ship it and rebuild clean</span></li>
+        <li><b>Part 1.1 · 10 min</b><span>Put a config change in the image: a note on the gateway's Home page</span></li>
+        <li class="on"><b>Part 1.2 · 10 min</b><span>Keep a project export out with <code>.dockerignore</code>, merge, build <code>v1.2</code></span></li>
       </ol>
     </div>
   </div>
@@ -673,19 +674,19 @@ git switch -c feature/bake-a-change</pre></div>
 <!-- PART 1.1 -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">PART 1.1</span><h2 class="title">Bake a config change into the image and read it back</h2></div>
+  <div class="sechead"><span class="num">PART 1.1</span><h2 class="title">Put a config change into the image and read it back</h2></div>
   <div class="body">
     <div class="work wide">
       <ol class="steps">
         <li>Open <code>services/config/resources/core/ignition/system-properties/config.json</code> and replace the text of <code>"homepageNotes"</code> with a note of your own: a logged-in user sees it on the gateway's Home page.</li>
         <li>Rebuild. Which layers rebuilt, and which stayed <b>CACHED</b>? Why did the <code>projects/</code> layer rebuild although you never touched a project?</li>
-        <li>Prove it is <b>in the image</b>, not just in your folder: swap the entrypoint for <code>grep</code> and read the baked file.</li>
+        <li>Prove it is <b>in the image</b>, not just in your folder: swap the entrypoint for <code>grep</code> and read the file inside the image.</li>
       </ol>
       <div class="side">
         <div class="code"><pre><span class="cm"># 1: edit the note</span>
-"homepageNotes": "Baked into the gateway image. Deployed by replacing the container.",
+"homepageNotes": "Built into the gateway image. Deployed by replacing the container.",
 
-<span class="cm"># 2: rebuild (the tag says -dirty for now)</span>
+<span class="cm"># 2: rebuild</span>
 scripts/build-image.sh
 
 <span class="cm"># 3: read it back from the image</span>
@@ -699,39 +700,37 @@ docker run --rm --entrypoint grep cicd-lab-05-ignition:local homepageNotes \
 <!-- PART 1.2 -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">PART 1.2</span><h2 class="title">Keep a stray gateway backup out of the image with <code>.dockerignore</code></h2></div>
+  <div class="sechead"><span class="num">PART 1.2</span><h2 class="title">Keep a project export out of the image with <code>.dockerignore</code></h2></div>
   <div class="body">
     <div class="work dense wide">
       <div class="side">
         <ol class="steps">
-          <li>Simulate a stray backup in <code>projects/</code>, rebuild, and <code>find</code> it in the image: it's there.</li>
-          <li>Add <code>**/*.gwbk</code> to <code>.dockerignore</code> with a one-line comment. Rebuild, same <code>find</code>: gone from the image, still on your disk.</li>
-          <li>Delete the stray file; <code>git status</code> shows only your two edits. Commit, push, PR into your fork, merge on GitHub once <code>lab05-ci.yml</code> is green, pull <code>main</code>.</li>
-          <li>Rebuild: the tag reads <code>sha-&lt;short&gt;</code> without <code>-dirty</code>. That clean image is what Part 2 deploys.</li>
+          <li>Someone saved a project export in <code>projects/</code>. Simulate it, rebuild, and <code>find</code> it in the image: it's there.</li>
+          <li>Add <code>**/*.zip</code> to <code>.dockerignore</code> with a one-line comment. Rebuild, same <code>find</code>: gone from the image, still on your disk.</li>
+          <li>Delete the file; <code>git status</code> shows only your two edits. Commit and push, then <b>open the PR on GitHub</b>, merge once <code>lab05-ci.yml</code> is green, and pull <code>main</code>.</li>
+          <li><b>Build version <code>v1.2</code></b> from <code>main</code>: the image Part 2 deploys.</li>
         </ol>
       </div>
-      <div class="code"><pre><span class="cm"># 1: a stray backup in projects/</span>
-echo "pretend this is a 1 GB gateway backup" &gt; projects/old-backup.gwbk
+      <div class="code"><pre><span class="cm"># 1: a project export left in projects/</span>
+echo "pretend this is a project export" &gt; projects/example-project-export.zip
 scripts/build-image.sh
 docker run --rm --entrypoint find cicd-lab-05-ignition:local \
   /usr/local/bin/ignition/data/projects -maxdepth 1
 
 <span class="cm"># 2: in .dockerignore, then rebuild + find again</span>
-<span class="hl"># Gateway backups hold the internal DB (user passwords included): never bake one</span>
-<span class="hl">**/*.gwbk</span>
+<span class="hl"># Project exports are copies of a project: keep them out of the image</span>
+<span class="hl">**/*.zip</span>
 
-<span class="cm"># 3: clean up, commit, PR, merge on GitHub, pull</span>
-rm projects/old-backup.gwbk
+<span class="cm"># 3: clean up, commit, push</span>
+rm projects/example-project-export.zip
 git add .dockerignore services/config/resources/core/ignition/system-properties/config.json
-git commit -m "Bake a homepage note and keep gateway backups out of the image"
-git push -u origin feature/bake-a-change
-gh pr create --fill
-<span class="cm"># checks take a few seconds to register</span>
-sleep 15 &amp;&amp; gh pr checks --watch &amp;&amp; gh pr merge --merge
+git commit -m "Add a homepage note and keep project exports out of the image"
+git push -u origin feature/image-change
+<span class="cm">#    on GitHub: open the PR, wait for green, merge</span>
 git switch main &amp;&amp; git pull
 
-<span class="cm"># 4: the clean build Part 2 deploys</span>
-scripts/build-image.sh</pre></div>
+<span class="cm"># 4: build version v1.2</span>
+scripts/build-image.sh --tag v1.2</pre></div>
     </div>
   </div>
 </section>
@@ -743,9 +742,9 @@ scripts/build-image.sh</pre></div>
   <div class="divider-body">
     <h2 class="divider-title">Part 2, solo: deploy your image to the test gateway by <em>replacing the container</em></h2>
     <ol class="flow" style="max-width:72rem">
-      <li><b>Part 2.1 · 10 min</b><span>Deploy your clean <code>:sha</code> image to test</span></li>
-      <li><b>Part 2.2 · 15 min</b><span>Ship a change end-to-end: edit, commit, rebuild, redeploy</span></li>
-      <li class="on"><b>Part 2.3 · 10 min</b><span>Roll back to the previous build's tag, check what survived</span></li>
+      <li><b>Part 2.1 · 10 min</b><span>Deploy <code>v1.2</code> to test</span></li>
+      <li><b>Part 2.2 · 15 min</b><span>Change a view, build <code>v1.3</code>, deploy it</span></li>
+      <li class="on"><b>Part 2.3 · 10 min</b><span>Roll back to <code>v1.2</code>, check what survived</span></li>
     </ol>
     <p class="muted t-md">No registry involved: your local image store plays that role today.</p>
   </div>
@@ -754,31 +753,30 @@ scripts/build-image.sh</pre></div>
 <!-- PART 2.1 -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART 2.1</span><h2 class="title">Deploy your image to the test gateway, command by command</h2></div>
+  <div class="sechead"><span class="num p2">PART 2.1</span><h2 class="title">Deploy version <code>v1.2</code> to the test gateway</h2></div>
   <div class="body">
     <div class="work dense">
       <ol class="steps">
-        <li>Find your clean tag and <b>write the <code>:sha-&lt;short&gt;</code> down</b>: your rollback point in Part 2.3.</li>
-        <li><b>Before:</b> which commit does test run? A long hash that is none of yours: the base image, an empty gateway. The historian's database: <i>Did not find any relations</i>.</li>
-        <li><b>Deploy</b> with the immutable tag, never the moving <code>:local</code>. Poll <code>/StatusPing</code> until it prints <code>{"state":"RUNNING"}</code>; RUNNING with COMMISSIONING is not done yet. Give it a few minutes.</li>
-        <li><b>Verify:</b> the revision label shows your sha. Launch <b>example-project</b> from <code>:8089/app/home/perspective/session-launcher</code>; log in at <code>:8089</code>: the Home page shows your Part 1.1 note.</li>
+        <li><code>docker images</code> lists your <b><code>v1.2</code></b>.</li>
+        <li><b>Before:</b> which image does test run? The base image: an empty gateway. The historian's database: <i>Did not find any relations</i>.</li>
+        <li><b>Deploy</b> <code>v1.2</code>. Poll <code>/StatusPing</code> until it prints <code>{"state":"RUNNING"}</code>; RUNNING with COMMISSIONING is not done yet. Give it a few minutes.</li>
+        <li><b>Verify:</b> test now runs <code>cicd-lab-05-ignition:v1.2</code>. Launch <b>example-project</b> from <code>:8089/app/home/perspective/session-launcher</code>; log in at <code>:8089</code>: the Home page shows your Part 1.1 note.</li>
         <li>Run the <code>psql</code> line again: the historian's tables are there now.</li>
       </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># 1: your clean tag</span>
+        <div class="code"><pre><span class="cm"># 1: your version</span>
 docker images cicd-lab-05-ignition
 
-<span class="cm"># 2: before: which commit? and the DB</span>
-docker inspect -f '{{ index .Config.Labels "org.opencontainers.image.revision" }}' \
-  lab05-ignition-test
+<span class="cm"># 2: before: which image? and the DB</span>
+docker compose ps ignition-test
 docker exec lab05-timescaledb psql -U ignition -d ignition_test -c '\dt'
 
 <span class="cm"># 3: THE deploy, then wait for RUNNING</span>
-IGNITION_TEST_IMAGE=cicd-lab-05-ignition:sha-&lt;short&gt; \
+IGNITION_TEST_IMAGE=cicd-lab-05-ignition:<span class="hl">v1.2</span> \
   docker compose up -d ignition-test
 curl -s localhost:8089/StatusPing   <span class="cm"># repeat</span>
 
-<span class="cm"># 4 + 5: run the inspect and psql lines again</span></pre></div>
+<span class="cm"># 4 + 5: run the ps and psql lines again</span></pre></div>
       </div>
     </div>
   </div>
@@ -787,28 +785,32 @@ curl -s localhost:8089/StatusPing   <span class="cm"># repeat</span>
 <!-- PART 2.2 -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART 2.2</span><h2 class="title">Ship a change end-to-end: edit, commit, rebuild, redeploy</h2></div>
+  <div class="sechead"><span class="num p2">PART 2.2</span><h2 class="title">Change a view, build <code>v1.3</code> and deploy it</h2></div>
   <div class="body">
     <div class="work">
       <ol class="steps">
-        <li>Edit a Perspective view under <code>projects/example-project/com.inductiveautomation.perspective/views/</code>: make it visibly different (a title text in <code>pages/overview/view.json</code> works well).</li>
-        <li><b>Ship it</b> as in Part 1.2: feature branch, PR, merge on GitHub, pull <code>main</code>. The merge commit gives the next build a <b>new</b> <code>:sha</code> tag.</li>
-        <li>Rebuild, then redeploy with the Part 2.1 one-liner and the <b>new</b> tag <code>build-image.sh</code> printed.</li>
-        <li>Verify at :8089: your view change is live and the revision label shows the new sha. <code>docker images</code> now shows <b>two</b> clean <code>:sha-…</code> tags: two deployable versions, both on your machine.</li>
+        <li><b>Make a branch</b> off an up-to-date <code>main</code>.</li>
+        <li><b>Change the view in the Designer</b> on the local gateway (:8088): open <i>Perspective › Views › pages › overview</i>, change the text of the <b>Title</b> label, <b>File › Save All</b>.</li>
+        <li><b>Commit and push</b>, then <b>open the PR on GitHub</b>, merge once it is green, and pull <code>main</code>.</li>
+        <li><b>Build <code>v1.3</code></b> and deploy it with the Part 2.1 command.</li>
+        <li><b>Verify</b> at :8089: your title is live and test runs <code>v1.3</code>. <code>docker images</code> shows <b><code>v1.2</code> and <code>v1.3</code></b>: two versions, both on your machine.</li>
       </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># 2: branch, PR, merge on GitHub, pull: a new sha</span>
+        <div class="code"><pre><span class="cm"># 1: a branch</span>
+git switch main &amp;&amp; git pull
 git switch -c feature/tweak-view
-git status                     <span class="cm"># only your view should show up</span>
+<span class="cm"># 2: now change the Title in the Designer and save</span>
+
+<span class="cm"># 3: commit and push</span>
+git status                     <span class="cm"># only your view shows up</span>
 git add projects/ &amp;&amp; git commit -m "Change overview title"
 git push -u origin feature/tweak-view
-gh pr create --fill
-sleep 15 &amp;&amp; gh pr checks --watch &amp;&amp; gh pr merge --merge
+<span class="cm">#    on GitHub: open the PR, wait for green, merge</span>
 git switch main &amp;&amp; git pull
 
-<span class="cm"># 3: rebuild + redeploy the new tag</span>
-scripts/build-image.sh
-IGNITION_TEST_IMAGE=cicd-lab-05-ignition:sha-&lt;new-short&gt; \
+<span class="cm"># 4: build v1.3 and deploy it</span>
+scripts/build-image.sh --tag v1.3
+IGNITION_TEST_IMAGE=cicd-lab-05-ignition:<span class="hl">v1.3</span> \
   docker compose up -d ignition-test</pre></div>
       </div>
     </div>
@@ -818,23 +820,22 @@ IGNITION_TEST_IMAGE=cicd-lab-05-ignition:sha-&lt;new-short&gt; \
 <!-- PART 2.3 -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num p2">PART 2.3</span><h2 class="title">Roll back by running the previous build's tag</h2></div>
+  <div class="sechead"><span class="num p2">PART 2.3</span><h2 class="title">Roll back by running <code>v1.2</code> again</h2></div>
   <div class="body">
     <div class="work">
       <ol class="steps">
-        <li>Pretend Part 2.2's change broke something on test. You need the previous version back, <b>now</b>.</li>
-        <li>Deploy the <b>old</b> <code>:sha-&lt;short&gt;</code> tag you wrote down in Part 2.1: the same one-liner, older name. The old image never went away; it's a name in your image store.</li>
-        <li>Verify at :8089: the view is back to its previous state, and the revision label shows the old sha.</li>
+        <li>Pretend <code>v1.3</code> broke something on test. You need the previous version back, <b>now</b>.</li>
+        <li>Deploy <b><code>v1.2</code></b>: the same command, the older version. The old image never went away; it's a name in your image store.</li>
+        <li>Verify at :8089: the title is back to its previous text, and test runs <code>v1.2</code>.</li>
         <li>Count the irreversible steps you just took. (Zero: both versions still exist, and you can flip between them as often as you like.)</li>
       </ol>
       <div class="side">
-        <div class="code"><pre><span class="cm"># 2: rollback = the same deploy, older tag</span>
-IGNITION_TEST_IMAGE=cicd-lab-05-ignition:sha-<span class="cmd2">&lt;the-old-short-sha&gt;</span> \
+        <div class="code"><pre><span class="cm"># 2: rollback = the same deploy, the older version</span>
+IGNITION_TEST_IMAGE=cicd-lab-05-ignition:<span class="hl">v1.2</span> \
   docker compose up -d ignition-test
 
-<span class="cm"># 3: confirm which build test runs now</span>
-docker inspect -f '{{ index .Config.Labels "org.opencontainers.image.revision" }}' \
-  lab05-ignition-test</pre></div>
+<span class="cm"># 3: which version runs on test now?</span>
+docker compose ps ignition-test</pre></div>
       </div>
     </div>
   </div>
@@ -849,14 +850,14 @@ docker inspect -f '{{ index .Config.Labels "org.opencontainers.image.revision" }
       <div class="stack" style="gap:1.25rem">
         <div class="col-head" style="margin:0">Part 1</div>
         <ul class="checks">
-          <li>Your homepage note is <b>in the image</b> (<code>--entrypoint grep</code>); <code>*.gwbk</code> is not (<code>find</code> before and after).</li>
-          <li>Your latest build is tagged <code>sha-&lt;short&gt;</code> without <code>-dirty</code>.</li>
+          <li>Your homepage note is <b>in the image</b> (<code>--entrypoint grep</code>); the project export is not (<code>find</code> before and after).</li>
+          <li>You built <code>v1.2</code> from <code>main</code> after your PR was merged.</li>
         </ul>
         <div class="col-head" style="margin:0">Part 2</div>
         <ul class="checks">
-          <li>The test gateway (:8089) runs <b>your</b> image, proven with its revision label.</li>
-          <li>You shipped a view change end-to-end: edit, commit, rebuild, redeploy, visible on test.</li>
-          <li>Your image store holds <b>two clean <code>:sha</code> tags</b>, and you rolled test back to the older one.</li>
+          <li>The test gateway (:8089) runs <b>your</b> image, shown by <code>docker compose ps</code>.</li>
+          <li>You shipped a view change as <code>v1.3</code>: Designer, PR, build, deploy, visible on test.</li>
+          <li>Your image store holds <b><code>v1.2</code> and <code>v1.3</code></b>, and you rolled test back to <code>v1.2</code>.</li>
           <li>The <b>historian's tables</b> appeared with the first deploy and survived the later ones (<code>psql … -c '\dt'</code>).</li>
         </ul>
       </div>
@@ -922,7 +923,7 @@ docker inspect -f '{{.Image}}' lab05-ignition-production</pre></div>
   <div class="divider-body">
     <h2 class="divider-title">You built the gateway as an image and deployed it by <em>replacing the container</em></h2>
     <ul class="checks" style="max-width:64rem">
-      <li>You baked <b>project, config and modules</b> into a versioned image and proved it self-contained: no mounts, no scan.</li>
+      <li>You put <b>project, config and modules</b> into a versioned image and proved it self-contained: no mounts, no scan.</li>
       <li>You shipped a change end-to-end by hand: <b>edit, commit, build, tag, recreate the container</b>. That loop is what a pipeline automates.</li>
       <li>You rolled test back by <b>running the previous build's tag</b>, and saw why versioned artifacts make that cheap.</li>
       <li>Bring one <b>surprise</b> and one <b>question</b> to the debrief: file-based vs image-based, and what you'd pick for your own plant.</li>

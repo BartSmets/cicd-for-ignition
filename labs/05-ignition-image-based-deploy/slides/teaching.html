@@ -675,7 +675,7 @@ COPY projects/        <span class="cm">…</span></pre>
 <!-- THE LAB'S DOCKERFILE -->
 <section class="slide">
   <header class="topbar"><img class="logo" src="logos/OriginalDark.png" alt="Mustry Solutions"></header>
-  <div class="sechead"><span class="num">03</span><h2 class="title">Read the lab's Dockerfile: what it bakes in, and what each gateway sets itself</h2></div>
+  <div class="sechead"><span class="num">03</span><h2 class="title">Read the lab's Dockerfile: what goes into the image, and what each gateway sets itself</h2></div>
   <div class="body">
     <div class="codenotes">
       <div class="code"><div class="code-title">Dockerfile (… = /usr/local/bin/ignition)</div><pre><span class="cm"># the stock gateway, pinned: never :latest</span>
@@ -697,7 +697,7 @@ COPY <span class="hl">--chown=2003:0</span> projects/             <span class="c
 ARG GIT_SHA=unknown
 LABEL org.opencontainers.image.revision=<span class="hl">"${GIT_SHA}"</span></pre></div>
       <table class="table t-md">
-        <tr><th>Baked into the image</th><th>Set per gateway in docker-compose.yaml</th></tr>
+        <tr><th>In the image</th><th>Set per gateway in docker-compose.yaml</th></tr>
         <tr><td>projects and gateway config</td><td>the admin login: <code>GATEWAY_ADMIN_*</code></td></tr>
         <tr><td><code>modules.json</code> and the <code>.modl</code> files</td><td>EULA and edition: <code>ACCEPT_IGNITION_EULA</code>, <code>IGNITION_EDITION</code></td></tr>
         <tr><td>the commit it came from</td><td>the deployment mode: <code>-Dignition.config.mode=test</code></td></tr>
@@ -783,10 +783,10 @@ ENTRYPOINT ["/usr/local/bin/<span class="hl">entrypoint.sh</span>"]  <span class
 docs/
 exercises/
 scripts/
-<span class="cm"># one gateway's identity: never bake</span>
+<span class="cm"># one gateway's identity: never in the image</span>
 <span class="hl">…/user-source/default/</span>
 …/identity-provider/default/
-<span class="cm"># Ignition operational state: never bake</span>
+<span class="cm"># Ignition operational state: never in the image</span>
 **/.resources/
 **/data/db/
 **/*.idb</pre></div>
@@ -834,8 +834,8 @@ docker inspect -f <span class="cmd2">'{{ index .Config.Labels "org.opencontainer
   <div class="body" style="gap:2.5rem">
     <div class="steps5">
       <ol class="flow big">
-        <li class="reveal" data-step="1"><b>Build</b><span><code>docker build</code> bakes projects, config and modules into layers</span></li>
-        <li class="reveal" data-step="1"><b>Tag</b><span>an immutable name for this build: <code>:sha-&lt;short&gt;</code> or <code>:v0.9.1</code></span></li>
+        <li class="reveal" data-step="1"><b>Build</b><span><code>docker build</code> puts projects, config and modules into layers</span></li>
+        <li class="reveal" data-step="1"><b>Tag</b><span>a fixed name for this build: <code>:v1.2</code></span></li>
         <li class="remote reveal" data-step="2"><b>Push</b><span><code>docker push</code> to a registry: ghcr.io or a company registry</span></li>
         <li class="remote reveal" data-step="3"><b>Pull</b><span><code>docker pull</code> that exact tag</span></li>
         <li class="on reveal" data-step="3"><b>Run</b><span>recreate the container from the new image: that <b>is</b> the deploy</span></li>
@@ -865,9 +865,13 @@ docker inspect -f <span class="cmd2">'{{ index .Config.Labels "org.opencontainer
       <div class="code"><pre><span class="cm"># docker-compose.yaml, the test service: the variable, or the base image</span>
 image: <span class="hl">"${IGNITION_TEST_IMAGE:-inductiveautomation/ignition:8.3.8}"</span>
 
-<span class="cm"># the deploy: a new image, so compose recreates the container</span>
-IGNITION_TEST_IMAGE=cicd-lab-05-ignition:sha-1a2b3c4 \
+<span class="cm"># build a version, then deploy it: compose recreates the container</span>
+scripts/build-image.sh --tag v1.2
+IGNITION_TEST_IMAGE=cicd-lab-05-ignition:<span class="hl">v1.2</span> \
   docker compose up -d ignition-test
+
+<span class="cm"># which version runs?</span>
+docker compose ps ignition-test
 
 <span class="cm"># which build runs? the commit, from the label</span>
 docker inspect -f <span class="cmd2">'{{ index .Config.Labels
@@ -950,9 +954,9 @@ CREATE DATABASE <span class="hl">ignition_production</span>;
   <div class="divider-body">
     <h2 class="divider-title">Next: build the gateway image locally and deploy it by <em>replacing a container</em></h2>
     <ol class="flow" style="max-width:76rem">
-      <li><b>We-do</b><span>Build with <code>scripts/build-image.sh</code>, trace it to its commit, prove the cache, run the image <b>with no bind mounts</b>, read what got baked</span></li>
-      <li><b>You-do, Part 1</b><span>Bake a home page note into the image, keep a stray gateway backup out with <code>.dockerignore</code>, prove both from the image</span></li>
-      <li class="on"><b>You-do, Part 2</b><span><b>Type the deploy yourself</b> to the test gateway, ship a second change, roll back to the previous tag. All local; changes reach <code>main</code> through PRs</span></li>
+      <li><b>We-do</b><span>Build with <code>scripts/build-image.sh</code>, trace it to its commit, prove the cache, run the image <b>with no bind mounts</b>, look at the files inside it</span></li>
+      <li><b>You-do, Part 1</b><span>Put a home page note into the image, keep a project export out with <code>.dockerignore</code>, build <code>v1.2</code></span></li>
+      <li class="on"><b>You-do, Part 2</b><span>Deploy <code>v1.2</code> to test, change a view in the Designer and ship <code>v1.3</code>, roll back to <code>v1.2</code></span></li>
     </ol>
     <p class="muted t-md"><code>exercises/lab.md</code> is the source of truth · <code>docs/</code> has the cheat sheets · <code>docs/TROUBLESHOOTING.md</code> before you sit stuck</p>
   </div>
