@@ -123,3 +123,7 @@ venv/
 **/fonts.digest.json
 **/icons.digest.json
 Flint-Designer-Bridge-1.2.0-8.3/
+
+
+# Project exports are copies of a project: keep them out of the image
+**/*.zip
